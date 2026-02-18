@@ -1,0 +1,104 @@
+@import "tailwindcss";
+
+/* ============================================================================
+   잠사박물관 통합 운영 플랫폼 — 글로벌 스타일
+   ============================================================================ */
+
+@theme inline {
+  /* 박물관 브랜딩 컬러 */
+  --color-museum-primary: #1a472a;
+  --color-museum-secondary: #2d6a4f;
+  --color-museum-tertiary: #40916c;
+  --color-museum-bg: #f7f5f0;
+  --color-museum-card: #ffffff;
+  --color-museum-text: #2c2c2c;
+  --color-museum-light: #888888;
+  --color-museum-border: #e8e4dc;
+
+  /* 시맨틱 컬러 */
+  --color-museum-red: #c0392b;
+  --color-museum-green: #27ae60;
+  --color-museum-blue: #2980b9;
+  --color-museum-orange: #f39c12;
+  --color-museum-kakao: #FEE500;
+
+  /* 폰트 */
+  --font-sans: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Malgun Gothic', sans-serif;
+}
+
+/* 글로벌 리셋 */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  font-family: var(--font-sans);
+  background: var(--color-museum-bg);
+  color: var(--color-museum-text);
+  min-height: 100vh;
+  touch-action: manipulation;
+}
+
+/* 스크롤바 */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 3px;
+}
+
+/* 모바일 입력 최적화 */
+input, textarea, select {
+  font-size: 16px !important;
+}
+
+button, a, [onclick] {
+  touch-action: manipulation;
+  cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* 슬라이드 인 애니메이션 */
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-slide-in {
+  animation: slideIn 0.3s ease;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.2s ease;
+}
+
+/* 모바일 반응형 */
+@media (max-width: 768px) {
+  .page {
+    padding: 12px;
+  }
+}

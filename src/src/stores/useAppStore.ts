@@ -103,7 +103,7 @@ const now = new Date();
 
 export const useAppStore = create<AppState>((set, get) => ({
   // ── 초기 상태 ──
-  facilities: [],
+  facilities: [{ code: 'jp', name: '잠사박물관 플레이팜' }],
   currentFacility: null,
   facilityPrefix: 'jp_',
   mode: null,

@@ -14,6 +14,7 @@ interface FacilitySelectProps {
 export default function FacilitySelect({ onSelect }: FacilitySelectProps) {
   const { facilities, setFacilities } = useAppStore();
   const [newName, setNewName] = useState('');
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     try {
@@ -35,6 +36,7 @@ export default function FacilitySelect({ onSelect }: FacilitySelectProps) {
       ];
       setFacilities(defaults);
     }
+    setMounted(true);
   }, [setFacilities]);
 
   const addFacility = () => {

@@ -1,0 +1,76 @@
+@import "tailwindcss";
+
+@theme {
+  --color-museum-green: #2D5016;
+  --color-museum-green-light: #4A7C2E;
+  --color-museum-green-dark: #1A3009;
+  --color-silk-gold: #8B6914;
+  --color-silk-gold-light: #B8922E;
+  --color-silk-gold-dark: #6B4F0E;
+  --color-sidebar-bg: #1E293B;
+  --color-sidebar-hover: #334155;
+  --color-sidebar-active: #475569;
+  --color-card-bg: #FFFFFF;
+  --color-page-bg: #F1F5F9;
+  --color-border: #E2E8F0;
+  --color-text-primary: #1E293B;
+  --color-text-secondary: #64748B;
+  --color-text-muted: #94A3B8;
+  --color-success: #16A34A;
+  --color-warning: #EAB308;
+  --color-danger: #DC2626;
+  --color-info: #2563EB;
+}
+
+body {
+  margin: 0;
+  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--color-page-bg);
+  color: var(--color-text-primary);
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
+}
+
+.tab-indicator {
+  transition: left 0.3s ease, width 0.3s ease;
+}
+
+.card-hover {
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.card-hover:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transform: translateY(-1px);
+}
+
+.sidebar-transition {
+  transition: width 0.3s ease, padding 0.3s ease;
+}
+
+@keyframes badge-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+.badge-pulse {
+  animation: badge-pulse 2s ease-in-out infinite;
+}

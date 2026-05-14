@@ -1,0 +1,7 @@
+openpyxl
+pandas
+requests
+beautifulsoup4
+Pillow
+pyautogui
+pyperclip

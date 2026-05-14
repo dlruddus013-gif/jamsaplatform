@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>내 위치 찾기 - 한국잠사박물관</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--primary:#1a472a;--secondary:#2d6a4f;--tertiary:#40916c;--bg:#f7f5f0;--card:#fff;--text:#2c2c2c;--border:#e8e4dc}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.header{background:linear-gradient(135deg,var(--primary),var(--secondary));color:#fff;padding:20px;text-align:center;position:sticky;top:0;z-index:100;position:relative}
+.header h1{font-size:20px;font-weight:800}
+.header p{font-size:12px;opacity:.8;margin-top:4px}
+.back-btn{position:absolute;left:16px;top:50%;transform:translateY(-50%);background:none;border:none;color:#fff;font-size:20px;cursor:pointer}
+.container{max-width:480px;margin:0 auto;padding:16px}
+.map-area{width:100%;height:350px;background:#e8f5e9;border-radius:16px;position:relative;overflow:hidden;margin-bottom:16px;border:2px solid var(--border)}
+.map-bg{width:100%;height:100%;position:relative}
+.map-label{position:absolute;background:rgba(255,255,255,.95);padding:4px 8px;border-radius:8px;font-size:10px;font-weight:700;box-shadow:0 2px 6px rgba(0,0,0,.15);cursor:pointer;white-space:nowrap;z-index:10;border:2px solid transparent;transition:all .2s}
+.map-label:hover,.map-label.active{border-color:var(--primary);transform:scale(1.05)}
+.my-pin{position:absolute;width:20px;height:20px;background:#e91e63;border-radius:50%;border:3px solid #fff;box-shadow:0 2px 8px rgba(233,30,99,.4);z-index:20;transform:translate(-50%,-50%);transition:all 1s}
+.my-pin::after{content:'';position:absolute;inset:-6px;border:2px solid rgba(233,30,99,.3);border-radius:50%;animation:pulse 2s infinite}
+@keyframes pulse{0%{transform:scale(1);opacity:1}100%{transform:scale(2);opacity:0}}
+.info-panel{background:var(--card);border-radius:16px;padding:16px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.info-title{font-size:15px;font-weight:800;margin-bottom:8px;color:var(--primary)}
+.info-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px}
+.info-row:last-child{border:none}
+.nearby-list{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.nearby-item{background:#f9f9f6;border-radius:12px;padding:12px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:all .2s;border:2px solid transparent}
+.nearby-item:hover,.nearby-item.active{border-color:var(--primary);background:#e8f5e9}
+.nearby-icon{font-size:28px;min-width:40px;text-align:center}
+.nearby-info{flex:1}
+.nearby-name{font-size:14px;font-weight:700}
+.nearby-dist{font-size:11px;color:#999;margin-top:2px}
+.nearby-status{font-size:11px;padding:3px 8px;border-radius:10px;font-weight:600}
+.ns-open{background:#e8f5e9;color:#2e7d32}
+.ns-busy{background:#fff3e0;color:#e65100}
+.ns-closed{background:#fce4ec;color:#c62828}
+.btn-locate{width:100%;padding:14px;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;background:linear-gradient(135deg,var(--primary),var(--secondary));color:#fff;margin-bottom:12px;transition:all .2s}
+.btn-locate:hover{box-shadow:0 4px 12px rgba(26,71,42,.3)}
+.directions{background:#e3f2fd;border-radius:12px;padding:14px;margin-bottom:12px;font-size:13px;line-height:1.7;color:#1565c0;display:none}
+.route-steps{list-style:none;padding:0}
+.route-steps li{padding:6px 0;border-bottom:1px dotted #bbdefb;display:flex;align-items:center;gap:8px}
+.route-steps li:last-child{border:none}
+.step-num{width:22px;height:22px;border-radius:50%;background:#1565c0;color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+</style>
+</head>
+<body>
+<div class="header">
+  <button class="back-btn" onclick="history.back()">←</button>
+  <h1>📍 내 위치 찾기</h1>
+  <p>잠사박물관 시설 안내 지도</p>
+</div>
+<div class="container">
+  <button class="btn-locate" onclick="locateMe()">📍 내 위치 찾기</button>
+  <div class="map-area" id="mapArea">
+    <div class="map-bg" id="mapBg" style="background:linear-gradient(180deg,#c8e6c9 0%,#a5d6a7 30%,#e8f5e9 60%,#f1f8e9 100%)">
+      <div style="position:absolute;top:8px;left:8px;font-size:10px;font-weight:700;color:var(--primary);background:rgba(255,255,255,.8);padding:4px 8px;border-radius:6px">🏕️ 잠사박물관 플레이팜</div>
+    </div>
+    <div class="my-pin" id="myPin" style="display:none"></div>
+  </div>
+
+  <div id="directions" class="directions"></div>
+
+  <div class="info-panel">
+    <div class="info-title">📍 현재 위치</div>
+    <div id="locInfo" style="font-size:13px;color:#999;padding:8px 0">위치를 확인하려면 위 버튼을 눌러주세요</div>
+  </div>
+
+  <div class="info-panel">
+    <div class="info-title">🏕️ 주변 시설</div>
+    <div class="nearby-list" id="nearbyList"></div>
+  </div>
+</div>
+
+<script>
+const facilities=[
+  {id:1,name:'잠사박물관 본관',icon:'🏛️',x:45,y:25,status:'open',statusLabel:'운영중',desc:'누에/잠사 전시관',hours:'09:00~18:00',dist:0},
+  {id:2,name:'양떼목장',icon:'🐑',x:72,y:20,status:'open',statusLabel:'운영중',desc:'양 먹이주기 체험',hours:'10:00~17:00',dist:0},
+  {id:3,name:'사계절 썰매장',icon:'🎿',x:25,y:45,status:'open',statusLabel:'운영중',desc:'실내/실외 썰매',hours:'10:00~17:00',dist:0},
+  {id:4,name:'키즈카페',icon:'👶',x:55,y:55,status:'open',statusLabel:'운영중',desc:'실내 놀이공간',hours:'10:00~17:30',dist:0},
+  {id:5,name:'식당',icon:'🍽️',x:40,y:65,status:'busy',statusLabel:'혼잡',desc:'오디돈가스 외',hours:'11:00~14:00',dist:0},
+  {id:6,name:'누에쉼터',icon:'🐛',x:60,y:35,status:'open',statusLabel:'운영중',desc:'누에 사육 관찰',hours:'10:00~16:30',dist:0},
+  {id:7,name:'젤캔들 체험장',icon:'🕯️',x:80,y:50,status:'open',statusLabel:'체험가능',desc:'나만의 캔들 만들기',hours:'10:00~16:00',dist:0},
+  {id:8,name:'매표소/안내소',icon:'🎫',x:30,y:80,status:'open',statusLabel:'운영중',desc:'입장권/프로그램 안내',hours:'09:30~17:00',dist:0},
+  {id:9,name:'주차장',icon:'🅿️',x:15,y:85,status:'open',statusLabel:'여유',desc:'대형버스 주차 가능',hours:'24시간',dist:0},
+  {id:10,name:'화장실',icon:'🚻',x:50,y:75,status:'open',statusLabel:'이용가능',desc:'',hours:'24시간',dist:0}
+];
+
+let myX=50,myY=50,selectedFac=null;
+
+function renderMap(){
+  const map=document.getElementById('mapBg');
+  document.querySelectorAll('.map-label').forEach(l=>l.remove());
+  facilities.forEach(f=>{
+    const label=document.createElement('div');
+    label.className='map-label'+(selectedFac===f.id?' active':'');
+    label.textContent=f.icon+' '+f.name;
+    label.style.left=f.x+'%';label.style.top=f.y+'%';
+    label.style.transform='translate(-50%,-50%)';
+    label.onclick=()=>selectFacility(f.id);
+    map.appendChild(label);
+  });
+}
+
+function renderNearby(){
+  facilities.forEach(f=>{
+    f.dist=Math.round(Math.sqrt(Math.pow(f.x-myX,2)+Math.pow(f.y-myY,2))*2.5);
+  });
+  const sorted=[...facilities].sort((a,b)=>a.dist-b.dist);
+  let h='';
+  sorted.forEach(f=>{
+    const scls=f.status==='open'?'ns-open':f.status==='busy'?'ns-busy':'ns-closed';
+    h+=`<div class="nearby-item${selectedFac===f.id?' active':''}" onclick="selectFacility(${f.id})">
+      <div class="nearby-icon">${f.icon}</div>
+      <div class="nearby-info">
+        <div class="nearby-name">${f.name}</div>
+        <div class="nearby-dist">📏 약 ${f.dist}m · ${f.hours}</div>
+      </div>
+      <span class="nearby-status ${scls}">${f.statusLabel}</span>
+    </div>`;
+  });
+  document.getElementById('nearbyList').innerHTML=h;
+}
+
+function locateMe(){
+  myX=30+Math.random()*40;
+  myY=40+Math.random()*40;
+  const pin=document.getElementById('myPin');
+  pin.style.display='block';
+  pin.style.left=myX+'%';
+  pin.style.top=myY+'%';
+  document.getElementById('locInfo').innerHTML=`<div style="color:var(--text)">📍 <b>현재 위치:</b> 잠사박물관 플레이팜 내부</div><div style="margin-top:4px;font-size:12px;color:#999">좌표: ${(36.6341+Math.random()*.001).toFixed(6)}°N, ${(127.4895+Math.random()*.001).toFixed(6)}°E</div>`;
+  renderNearby();
+  renderMap();
+}
+
+function selectFacility(id){
+  selectedFac=id;
+  const f=facilities.find(x=>x.id===id);
+  renderMap();
+  renderNearby();
+  const dir=document.getElementById('directions');
+  dir.style.display='block';
+  const steps=generateRoute(f);
+  dir.innerHTML=`<div style="font-weight:700;margin-bottom:8px">🧭 ${f.name}까지 길안내</div>
+    <div style="font-size:12px;margin-bottom:8px">📏 약 ${f.dist}m · 🚶 도보 약 ${Math.max(1,Math.round(f.dist/60))}분</div>
+    <ul class="route-steps">${steps.map((s,i)=>`<li><span class="step-num">${i+1}</span>${s}</li>`).join('')}</ul>`;
+}
+
+function generateRoute(f){
+  const routes={
+    '잠사박물관 본관':['매표소 방면으로 직진','중앙 광장에서 좌회전','본관 입구 도착 (2층 전시실)'],
+    '양떼목장':['중앙 광장을 지나 우측 길로 진행','언덕길을 따라 200m 이동','양떼목장 입구 도착'],
+    '사계절 썰매장':['매표소에서 좌측 길로 진행','야외 계단을 내려가세요','썰매장 매표소 도착'],
+    '키즈카페':['중앙 광장에서 직진','분수대를 지나 건물 내부 진입','1층 키즈카페 도착'],
+    '식당':['중앙 광장에서 남쪽으로 이동','표지판을 따라 좌회전','식당 건물 입구 도착'],
+    '누에쉼터':['본관 옆 산책로를 따라 이동','정원을 지나 우회전','누에쉼터 도착'],
+    '젤캔들 체험장':['양떼목장 방면으로 이동','갈림길에서 좌측 길 선택','체험장 접수대 도착'],
+    '매표소/안내소':['남쪽 방면 내리막길로 이동','주차장이 보이면 우회전','매표소 도착'],
+    '주차장':['남쪽 출구 방향으로 직진','내리막길을 따라 이동','주차장 입구 도착'],
+    '화장실':['가장 가까운 건물 방향으로 이동','건물 뒤편으로 돌아가세요','화장실 도착']
+  };
+  return routes[f.name]||['직진하세요','목적지 도착'];
+}
+
+renderMap();
+renderNearby();
+</script>
+</body>
+</html>

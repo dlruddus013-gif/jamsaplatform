@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>리뷰체험단 모집 - 한국잠사박물관</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--primary:#1a472a;--secondary:#2d6a4f;--tertiary:#40916c;--bg:#f7f5f0;--card:#fff;--text:#2c2c2c;--border:#e8e4dc;--red:#c0392b;--orange:#f39c12;--blue:#2980b9;--kakao:#FEE500}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.header{background:linear-gradient(135deg,var(--primary),var(--secondary));color:#fff;padding:20px;text-align:center;position:sticky;top:0;z-index:100}
+.header h1{font-size:20px;font-weight:800}
+.header p{font-size:12px;opacity:.8;margin-top:4px}
+.container{max-width:480px;margin:0 auto;padding:16px}
+.campaign-card{background:var(--card);border-radius:16px;overflow:hidden;margin-bottom:16px;box-shadow:0 2px 12px rgba(0,0,0,.08)}
+.campaign-img{width:100%;height:200px;object-fit:cover;background:linear-gradient(135deg,#e8f5e9,#c8e6c9);display:flex;align-items:center;justify-content:center;font-size:60px}
+.campaign-body{padding:16px}
+.campaign-badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;margin-bottom:8px}
+.badge-open{background:#e8f5e9;color:#2e7d32}
+.badge-closed{background:#fce4ec;color:#c62828}
+.badge-soon{background:#fff3e0;color:#e65100}
+.campaign-title{font-size:17px;font-weight:800;margin-bottom:6px}
+.campaign-desc{font-size:13px;color:#666;line-height:1.6;margin-bottom:12px}
+.campaign-meta{display:flex;gap:12px;font-size:11px;color:#999;margin-bottom:12px}
+.campaign-meta span{display:flex;align-items:center;gap:4px}
+.progress-bar{background:#eee;border-radius:10px;height:8px;overflow:hidden;margin-bottom:8px}
+.progress-fill{height:100%;border-radius:10px;background:linear-gradient(90deg,var(--primary),var(--tertiary));transition:width .5s}
+.progress-text{font-size:11px;color:#999;text-align:right;margin-bottom:12px}
+.btn-apply{width:100%;padding:14px;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;transition:all .2s}
+.btn-apply.active{background:linear-gradient(135deg,var(--primary),var(--secondary));color:#fff}
+.btn-apply.active:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(26,71,42,.3)}
+.btn-apply.disabled{background:#ddd;color:#999;cursor:not-allowed}
+.tabs{display:flex;gap:8px;margin-bottom:16px;overflow-x:auto;padding-bottom:4px}
+.tab{padding:8px 16px;border-radius:20px;font-size:13px;font-weight:600;border:2px solid var(--border);background:var(--card);cursor:pointer;white-space:nowrap;transition:all .2s}
+.tab.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+.apply-form{background:var(--card);border-radius:16px;padding:20px;margin-bottom:16px;box-shadow:0 2px 12px rgba(0,0,0,.08);display:none}
+.apply-form.show{display:block}
+.form-title{font-size:16px;font-weight:800;margin-bottom:16px;color:var(--primary)}
+.form-group{margin-bottom:14px}
+.form-group label{display:block;font-size:12px;font-weight:600;margin-bottom:6px;color:#555}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:12px;border:2px solid var(--border);border-radius:10px;font-size:14px;font-family:inherit;outline:none;transition:border .2s}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--tertiary)}
+.form-group textarea{resize:vertical;min-height:80px}
+.sns-select{display:flex;gap:8px;flex-wrap:wrap}
+.sns-chip{padding:8px 14px;border-radius:20px;font-size:12px;font-weight:600;border:2px solid var(--border);cursor:pointer;transition:all .2s}
+.sns-chip.selected{background:var(--primary);color:#fff;border-color:var(--primary)}
+.my-status{background:var(--card);border-radius:16px;padding:20px;margin-bottom:16px;box-shadow:0 2px 12px rgba(0,0,0,.08)}
+.status-item{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border)}
+.status-item:last-child{border:none}
+.status-label{font-size:13px;font-weight:600}
+.status-badge{padding:4px 10px;border-radius:12px;font-size:11px;font-weight:700}
+.s-pending{background:#fff3e0;color:#e65100}
+.s-selected{background:#e8f5e9;color:#2e7d32}
+.s-rejected{background:#fce4ec;color:#c62828}
+.s-completed{background:#e3f2fd;color:#1565c0}
+.back-btn{position:absolute;left:16px;top:50%;transform:translateY(-50%);background:none;border:none;color:#fff;font-size:20px;cursor:pointer}
+.header{position:relative}
+</style>
+</head>
+<body>
+<div class="header">
+  <button class="back-btn" onclick="history.back()">←</button>
+  <h1>🎯 리뷰체험단 모집</h1>
+  <p>잠사박물관 체험 후 리뷰를 작성해주세요!</p>
+</div>
+<div class="container">
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('all',this)">전체</div>
+    <div class="tab" onclick="switchTab('open',this)">모집중</div>
+    <div class="tab" onclick="switchTab('closed',this)">마감</div>
+    <div class="tab" onclick="switchTab('my',this)">내 신청</div>
+  </div>
+
+  <div id="campaignList"></div>
+  <div id="myStatus" style="display:none"></div>
+  <div id="applyForm" class="apply-form">
+    <div class="form-title">📝 체험단 신청</div>
+    <div class="form-group"><label>이름</label><input id="aName" placeholder="이름 입력"></div>
+    <div class="form-group"><label>연락처</label><input id="aPhone" placeholder="010-0000-0000" type="tel"></div>
+    <div class="form-group"><label>SNS 채널 (복수선택)</label>
+      <div class="sns-select">
+        <div class="sns-chip" onclick="toggleSns(this)">📷 인스타그램</div>
+        <div class="sns-chip" onclick="toggleSns(this)">📝 네이버블로그</div>
+        <div class="sns-chip" onclick="toggleSns(this)">🎬 유튜브</div>
+        <div class="sns-chip" onclick="toggleSns(this)">👩‍👧 맘카페</div>
+        <div class="sns-chip" onclick="toggleSns(this)">🐦 기타SNS</div>
+      </div>
+    </div>
+    <div class="form-group"><label>SNS 주소 (대표 1개)</label><input id="aSns" placeholder="https://"></div>
+    <div class="form-group"><label>팔로워/이웃 수</label><input id="aFollower" placeholder="예: 1500" type="number"></div>
+    <div class="form-group"><label>지원동기</label><textarea id="aMotiv" placeholder="체험단에 지원하는 이유를 간단히 적어주세요"></textarea></div>
+    <div class="form-group"><label>희망 방문일</label><input id="aDate" type="date"></div>
+    <button class="btn-apply active" onclick="submitApply()">신청하기</button>
+  </div>
+</div>
+
+<script>
+const campaigns=[
+  {id:1,title:'🐛 누에체험 리뷰단 5기',desc:'누에 생태 체험 프로그램을 무료로 체험하고 리뷰를 작성해주세요! 블로그/인스타그램 리뷰 필수',img:'🐛',status:'open',total:20,applied:14,period:'2026.05.15 ~ 05.31',benefit:'무료 입장권 2매 + 체험비 무료 + 기념품',platform:'블로그, 인스타그램'},
+  {id:2,title:'🎿 사계절 썰매장 체험단',desc:'사계절 썰매장 가족 체험단을 모집합니다. 아이와 함께 즐거운 추억 만들고 리뷰 남겨주세요!',img:'🎿',status:'open',total:15,applied:8,period:'2026.05.20 ~ 06.10',benefit:'가족 4인 무료입장 + 점심 제공',platform:'블로그, 유튜브'},
+  {id:3,title:'🐑 양떼목장 포토 체험단',desc:'양떼목장에서 인생샷 찍고 SNS에 공유! 먹이주기 체험 포함',img:'🐑',status:'open',total:10,applied:10,period:'2026.05.10 ~ 05.25',benefit:'2인 무료입장 + 먹이주기 체험',platform:'인스타그램'},
+  {id:4,title:'🕯️ 젤캔들 만들기 체험단',desc:'나만의 젤캔들을 만들고 후기를 남겨주세요',img:'🕯️',status:'closed',total:10,applied:10,period:'2026.04.01 ~ 04.20',benefit:'체험비 무료 + 완성품 증정',platform:'블로그'},
+  {id:5,title:'🏕️ 플레이팜 종일권 체험단 6기',desc:'잠사박물관 플레이팜 종일 이용권으로 모든 시설을 체험하고 상세 리뷰를 작성해주세요',img:'🏕️',status:'soon',total:25,applied:0,period:'2026.06.01 ~ 06.30',benefit:'가족 종일권 + 식사 + 기념품 패키지',platform:'블로그, 인스타, 유튜브'}
+];
+let curTab='all',curCampaign=null;
+const myApps=JSON.parse(localStorage.getItem('__review_apps')||'[]');
+
+function switchTab(tab,el){
+  curTab=tab;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('applyForm').classList.remove('show');
+  if(tab==='my'){document.getElementById('campaignList').style.display='none';document.getElementById('myStatus').style.display='block';renderMyStatus();}
+  else{document.getElementById('campaignList').style.display='block';document.getElementById('myStatus').style.display='none';renderList();}
+}
+function renderList(){
+  const list=campaigns.filter(c=>{
+    if(curTab==='all')return true;
+    return c.status===curTab;
+  });
+  let h='';
+  list.forEach(c=>{
+    const pct=Math.min(100,Math.round(c.applied/c.total*100));
+    const badge=c.status==='open'?'<span class="campaign-badge badge-open">✅ 모집중</span>':c.status==='closed'?'<span class="campaign-badge badge-closed">❌ 마감</span>':'<span class="campaign-badge badge-soon">🔜 예정</span>';
+    const btnClass=c.status==='open'&&c.applied<c.total?'active':'disabled';
+    const btnText=c.status==='open'?(c.applied>=c.total?'정원 마감':'신청하기'):c.status==='soon'?'오픈 예정':'모집 마감';
+    const alreadyApplied=myApps.find(a=>a.campaignId===c.id);
+    h+=`<div class="campaign-card">
+      <div class="campaign-img">${c.img}</div>
+      <div class="campaign-body">
+        ${badge}
+        <div class="campaign-title">${c.title}</div>
+        <div class="campaign-desc">${c.desc}</div>
+        <div class="campaign-meta">
+          <span>📅 ${c.period}</span>
+          <span>👥 ${c.applied}/${c.total}명</span>
+        </div>
+        <div style="font-size:12px;color:#555;margin-bottom:8px">🎁 <b>혜택:</b> ${c.benefit}</div>
+        <div style="font-size:11px;color:#999;margin-bottom:12px">📱 <b>필수 플랫폼:</b> ${c.platform}</div>
+        <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+        <div class="progress-text">${pct}% (${c.applied}/${c.total}명)</div>
+        <button class="btn-apply ${alreadyApplied?'disabled':btnClass}" onclick="${alreadyApplied?'':'openApply('+c.id+')'}">${alreadyApplied?'✅ 신청완료':btnText}</button>
+      </div>
+    </div>`;
+  });
+  document.getElementById('campaignList').innerHTML=h||'<div style="text-align:center;padding:40px;color:#999">해당 체험단이 없습니다</div>';
+}
+function openApply(id){
+  curCampaign=id;
+  const form=document.getElementById('applyForm');
+  form.classList.add('show');
+  form.scrollIntoView({behavior:'smooth'});
+}
+function toggleSns(el){el.classList.toggle('selected')}
+function submitApply(){
+  const name=document.getElementById('aName').value.trim();
+  const phone=document.getElementById('aPhone').value.trim();
+  if(!name||!phone){alert('이름과 연락처를 입력해주세요');return;}
+  const sns=[];document.querySelectorAll('.sns-chip.selected').forEach(c=>sns.push(c.textContent.trim()));
+  const app={campaignId:curCampaign,name,phone,sns,snsUrl:document.getElementById('aSns').value,follower:document.getElementById('aFollower').value,motiv:document.getElementById('aMotiv').value,date:document.getElementById('aDate').value,status:'pending',appliedAt:new Date().toISOString()};
+  myApps.push(app);
+  localStorage.setItem('__review_apps',JSON.stringify(myApps));
+  const c=campaigns.find(x=>x.id===curCampaign);if(c)c.applied++;
+  document.getElementById('applyForm').classList.remove('show');
+  alert('🎉 체험단 신청이 완료되었습니다!');
+  renderList();
+}
+function renderMyStatus(){
+  let h='<div class="my-status"><div style="font-size:16px;font-weight:800;margin-bottom:12px;color:var(--primary)">📋 내 신청 현황</div>';
+  if(myApps.length===0){h+='<div style="text-align:center;padding:30px;color:#999;font-size:13px">신청 내역이 없습니다</div>';}
+  else{myApps.forEach(a=>{
+    const c=campaigns.find(x=>x.id===a.campaignId);
+    const statusMap={pending:['심사중','s-pending'],selected:['선정됨','s-selected'],rejected:['미선정','s-rejected'],completed:['리뷰완료','s-completed']};
+    const[sLabel,sClass]=statusMap[a.status]||['심사중','s-pending'];
+    h+=`<div class="status-item"><div><div class="status-label">${c?c.title:'체험단'}</div><div style="font-size:11px;color:#999;margin-top:2px">${a.appliedAt?.split('T')[0]||''} 신청</div></div><span class="status-badge ${sClass}">${sLabel}</span></div>`;
+  });}
+  h+='</div>';
+  document.getElementById('myStatus').innerHTML=h;
+}
+renderList();
+</script>
+</body>
+</html>

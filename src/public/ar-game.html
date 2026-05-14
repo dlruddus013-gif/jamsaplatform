@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>AR 증강게임 - 한국잠사박물관</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Noto Sans KR',sans-serif;background:#0a0a2e;color:#fff;min-height:100vh;overflow-x:hidden}
+.header{background:linear-gradient(135deg,#1a0533,#4a148c);padding:20px;text-align:center;position:sticky;top:0;z-index:100;position:relative}
+.header h1{font-size:20px;font-weight:800}
+.header p{font-size:12px;opacity:.7;margin-top:4px}
+.back-btn{position:absolute;left:16px;top:50%;transform:translateY(-50%);background:none;border:none;color:#fff;font-size:20px;cursor:pointer}
+.container{max-width:480px;margin:0 auto;padding:16px}
+.game-card{background:linear-gradient(135deg,rgba(255,255,255,.1),rgba(255,255,255,.05));border:1px solid rgba(255,255,255,.15);border-radius:20px;overflow:hidden;margin-bottom:16px;backdrop-filter:blur(10px)}
+.game-preview{width:100%;height:200px;display:flex;align-items:center;justify-content:center;font-size:70px;position:relative;overflow:hidden}
+.game-preview::after{content:'';position:absolute;inset:0;background:linear-gradient(transparent 60%,rgba(10,10,46,.8))}
+.game-body{padding:16px;position:relative}
+.game-tag{display:inline-block;padding:3px 10px;border-radius:12px;font-size:10px;font-weight:700;margin-bottom:8px;text-transform:uppercase}
+.tag-ar{background:rgba(156,39,176,.3);color:#ce93d8;border:1px solid rgba(156,39,176,.3)}
+.tag-quiz{background:rgba(33,150,243,.3);color:#90caf9;border:1px solid rgba(33,150,243,.3)}
+.tag-collect{background:rgba(255,152,0,.3);color:#ffcc80;border:1px solid rgba(255,152,0,.3)}
+.tag-race{background:rgba(76,175,80,.3);color:#a5d6a7;border:1px solid rgba(76,175,80,.3)}
+.game-title{font-size:17px;font-weight:800;margin-bottom:6px}
+.game-desc{font-size:12px;color:rgba(255,255,255,.6);line-height:1.6;margin-bottom:12px}
+.game-stats{display:flex;gap:16px;margin-bottom:12px}
+.stat{text-align:center}
+.stat-val{font-size:18px;font-weight:800;background:linear-gradient(135deg,#ffd54f,#ff6f00);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.stat-label{font-size:10px;color:rgba(255,255,255,.5)}
+.btn-play{width:100%;padding:14px;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;transition:all .3s;background:linear-gradient(135deg,#7c4dff,#536dfe);color:#fff;position:relative;overflow:hidden}
+.btn-play:hover{transform:translateY(-2px);box-shadow:0 4px 20px rgba(124,77,255,.5)}
+.btn-play::after{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:linear-gradient(transparent,rgba(255,255,255,.1),transparent);transform:rotate(45deg);transition:all .5s}
+.btn-play:hover::after{left:100%}
+.leaderboard{background:linear-gradient(135deg,rgba(255,255,255,.08),rgba(255,255,255,.03));border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:16px;margin-bottom:16px}
+.lb-title{font-size:14px;font-weight:800;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.lb-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.08)}
+.lb-item:last-child{border:none}
+.lb-rank{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800}
+.lb-1{background:linear-gradient(135deg,#ffd54f,#ff8f00);color:#4e342e}
+.lb-2{background:linear-gradient(135deg,#e0e0e0,#9e9e9e);color:#424242}
+.lb-3{background:linear-gradient(135deg,#ffab91,#d84315);color:#fff}
+.lb-other{background:rgba(255,255,255,.1);color:rgba(255,255,255,.5)}
+.lb-name{flex:1;font-size:13px;font-weight:600}
+.lb-score{font-size:13px;font-weight:800;color:#ffd54f}
+.game-modal{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:300;display:none;align-items:center;justify-content:center;padding:20px}
+.game-modal.show{display:flex}
+.game-area{background:#0d0d3b;border-radius:20px;padding:20px;max-width:400px;width:100%;text-align:center}
+.game-area h2{font-size:18px;margin-bottom:16px}
+.catch-area{width:100%;height:300px;border-radius:16px;background:linear-gradient(180deg,#1a237e,#283593);position:relative;overflow:hidden;touch-action:none;cursor:crosshair}
+.silkworm{position:absolute;font-size:30px;cursor:pointer;transition:all .3s;user-select:none;animation:float 2s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.score-display{font-size:24px;font-weight:800;margin:12px 0;background:linear-gradient(135deg,#ffd54f,#ff6f00);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.timer-bar{width:100%;height:6px;background:rgba(255,255,255,.1);border-radius:3px;margin-bottom:12px;overflow:hidden}
+.timer-fill{height:100%;background:linear-gradient(90deg,#76ff03,#ffd54f,#ff1744);border-radius:3px;transition:width .1s linear}
+</style>
+</head>
+<body>
+<div class="header">
+  <button class="back-btn" onclick="history.back()">←</button>
+  <h1>🎮 AR 증강게임</h1>
+  <p>잠사박물관에서 즐기는 인터랙티브 게임!</p>
+</div>
+<div class="container">
+  <div id="gameList"></div>
+  <div class="leaderboard">
+    <div class="lb-title">🏆 오늘의 랭킹</div>
+    <div id="leaderboard"></div>
+  </div>
+</div>
+<div class="game-modal" id="gameModal">
+  <div class="game-area" id="gameArea"></div>
+</div>
+<script>
+const games=[
+  {id:1,title:'🐛 누에 잡기 챌린지',desc:'화면에 나타나는 누에를 터치해서 잡으세요! 30초 안에 최대한 많이!',preview:'🐛',tag:'ar',tagLabel:'AR게임',difficulty:'쉬움',time:'30초',players:1247,highScore:42},
+  {id:2,title:'🧠 잠사 퀴즈 배틀',desc:'누에, 실크, 잠사에 대한 퀴즈를 풀어보세요. 10문제 중 7개 이상 맞추면 보상!',preview:'🧠',tag:'quiz',tagLabel:'퀴즈',difficulty:'보통',time:'3분',players:892,highScore:10},
+  {id:3,title:'🍃 뽕잎 수집 레이스',desc:'박물관 곳곳에 숨겨진 AR 뽕잎을 찾아 수집하세요! GPS 기반 보물찾기',preview:'🍃',tag:'collect',tagLabel:'수집',difficulty:'보통',time:'무제한',players:634,highScore:15},
+  {id:4,title:'🏃 실크로드 레이스',desc:'실크로드를 따라 장애물을 피하며 달리는 러닝 게임! 거리가 점수!',preview:'🏃',tag:'race',tagLabel:'레이스',difficulty:'어려움',time:'무제한',players:456,highScore:2840}
+];
+const lbData=[
+  {name:'김*현',score:42,game:'누에잡기'},{name:'이*준',score:38,game:'누에잡기'},{name:'박*서',score:35,game:'누에잡기'},
+  {name:'최*아',score:10,game:'퀴즈'},{name:'정*율',score:2840,game:'레이스'}
+];
+let gameScore=0,gameTimer=null,gameTimeLeft=30;
+
+function renderGames(){
+  let h='';
+  games.forEach(g=>{
+    const colors={ar:'linear-gradient(135deg,#4a148c,#7c4dff)',quiz:'linear-gradient(135deg,#0d47a1,#42a5f5)',collect:'linear-gradient(135deg,#e65100,#ff9800)',race:'linear-gradient(135deg,#1b5e20,#4caf50)'};
+    h+=`<div class="game-card">
+      <div class="game-preview" style="background:${colors[g.tag]}">${g.preview}</div>
+      <div class="game-body">
+        <span class="game-tag tag-${g.tag}">${g.tagLabel}</span>
+        <div class="game-title">${g.title}</div>
+        <div class="game-desc">${g.desc}</div>
+        <div class="game-stats">
+          <div class="stat"><div class="stat-val">${g.players.toLocaleString()}</div><div class="stat-label">참여자</div></div>
+          <div class="stat"><div class="stat-val">${g.highScore}</div><div class="stat-label">최고점수</div></div>
+          <div class="stat"><div class="stat-val">${g.difficulty}</div><div class="stat-label">난이도</div></div>
+          <div class="stat"><div class="stat-val">${g.time}</div><div class="stat-label">시간</div></div>
+        </div>
+        <button class="btn-play" onclick="startGame(${g.id})">🎮 플레이</button>
+      </div>
+    </div>`;
+  });
+  document.getElementById('gameList').innerHTML=h;
+}
+function renderLB(){
+  let h='';
+  lbData.slice(0,5).forEach((l,i)=>{
+    const cls=i===0?'lb-1':i===1?'lb-2':i===2?'lb-3':'lb-other';
+    h+=`<div class="lb-item"><div class="lb-rank ${cls}">${i+1}</div><div class="lb-name">${l.name}</div><div style="font-size:11px;color:rgba(255,255,255,.4);margin-right:8px">${l.game}</div><div class="lb-score">${l.score.toLocaleString()}점</div></div>`;
+  });
+  document.getElementById('leaderboard').innerHTML=h;
+}
+function startGame(id){
+  if(id===1)startCatchGame();
+  else if(id===2)startQuizGame();
+  else alert('📱 이 게임은 잠사박물관 현장에서 GPS와 카메라를 이용해 플레이할 수 있습니다!');
+}
+function startCatchGame(){
+  gameScore=0;gameTimeLeft=30;
+  const area=document.getElementById('gameArea');
+  area.innerHTML=`<h2>🐛 누에 잡기!</h2><div class="timer-bar"><div class="timer-fill" id="timerFill" style="width:100%"></div></div><div class="score-display" id="scoreDisp">0점</div><div class="catch-area" id="catchArea"></div><button style="margin-top:12px;padding:10px 20px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;border-radius:10px;cursor:pointer" onclick="endCatchGame()">그만하기</button>`;
+  document.getElementById('gameModal').classList.add('show');
+  spawnWorm();
+  gameTimer=setInterval(()=>{
+    gameTimeLeft--;
+    document.getElementById('timerFill').style.width=(gameTimeLeft/30*100)+'%';
+    if(gameTimeLeft<=0)endCatchGame();
+  },1000);
+}
+function spawnWorm(){
+  if(gameTimeLeft<=0)return;
+  const area=document.getElementById('catchArea');
+  if(!area)return;
+  const worm=document.createElement('div');
+  worm.className='silkworm';
+  worm.textContent=['🐛','🐛','🦋','🍃','⭐'][Math.floor(Math.random()*5)];
+  const pts=worm.textContent==='⭐'?5:worm.textContent==='🦋'?3:1;
+  worm.style.left=Math.random()*80+'%';
+  worm.style.top=Math.random()*80+'%';
+  worm.style.animationDelay=Math.random()+'s';
+  worm.onclick=()=>{gameScore+=pts;document.getElementById('scoreDisp').textContent=gameScore+'점';worm.style.transform='scale(0)';setTimeout(()=>worm.remove(),200);};
+  area.appendChild(worm);
+  setTimeout(()=>{if(worm.parentNode)worm.remove();},2000);
+  setTimeout(spawnWorm,Math.max(300,800-gameScore*10));
+}
+function endCatchGame(){
+  clearInterval(gameTimer);
+  const area=document.getElementById('gameArea');
+  area.innerHTML=`<h2>🎉 게임 종료!</h2><div class="score-display" style="font-size:36px">${gameScore}점</div><p style="color:rgba(255,255,255,.6);margin-bottom:16px">잘하셨습니다!</p><button class="btn-play" onclick="document.getElementById('gameModal').classList.remove('show')">닫기</button>`;
+}
+function startQuizGame(){
+  const qs=[
+    {q:'누에가 주로 먹는 식물은?',o:['뽕나무잎','참나무잎','소나무잎','은행잎'],a:0},
+    {q:'누에고치 하나에서 뽑을 수 있는 실의 길이는?',o:['약 100m','약 500m','약 1,200m','약 3,000m'],a:2},
+    {q:'실크로드의 시작점은?',o:['로마','장안(시안)','사마르칸드','콘스탄티노플'],a:1},
+    {q:'누에의 학명은?',o:['Bombyx mori','Apis mellifera','Gallus gallus','Canis lupus'],a:0},
+    {q:'한국에서 잠사업이 가장 번성했던 시대는?',o:['고려시대','조선시대','일제강점기','현대'],a:1}
+  ];
+  let qi=0,score=0;
+  function showQ(){
+    if(qi>=qs.length){
+      document.getElementById('gameArea').innerHTML=`<h2>🧠 퀴즈 결과</h2><div class="score-display" style="font-size:36px">${score}/${qs.length}</div><p style="color:rgba(255,255,255,.6);margin-bottom:16px">${score>=4?'🎉 훌륭합니다!':score>=2?'👍 좋아요!':'📚 다시 도전해보세요!'}</p><button class="btn-play" onclick="document.getElementById('gameModal').classList.remove('show')">닫기</button>`;
+      return;
+    }
+    const q=qs[qi];
+    let h=`<h2>Q${qi+1}/${qs.length}</h2><p style="font-size:15px;font-weight:700;margin:16px 0">${q.q}</p>`;
+    q.o.forEach((o,i)=>h+=`<button style="display:block;width:100%;padding:14px;margin:6px 0;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.05);color:#fff;border-radius:10px;font-size:14px;cursor:pointer;font-family:inherit" onclick="checkA(${i},${q.a})">${o}</button>`);
+    document.getElementById('gameArea').innerHTML=h;
+  }
+  window.checkA=(sel,ans)=>{if(sel===ans)score++;qi++;showQ();};
+  document.getElementById('gameModal').classList.add('show');
+  showQ();
+}
+renderGames();renderLB();
+</script>
+</body>
+</html>

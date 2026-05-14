@@ -109,6 +109,37 @@ export default function FacilitySelect({ onSelect }: FacilitySelectProps) {
           )}
         </div>
 
+        {/* 부가기능 */}
+        <div className="mt-5 pt-4 border-t-2 border-gray-100">
+          <div className="text-xs font-bold text-gray-500 mb-3 text-center">🎯 부가기능</div>
+          <div className="grid grid-cols-3 gap-2">
+            <a href="/review-crew.html" className="flex flex-col items-center gap-1 py-3 px-1 bg-green-50 rounded-xl text-center no-underline hover:bg-green-100 transition-colors border border-green-200">
+              <span className="text-[22px]">🎯</span>
+              <span className="text-[10px] font-bold text-green-800 leading-tight">리뷰체험단</span>
+            </a>
+            <a href="/restaurant.html" className="flex flex-col items-center gap-1 py-3 px-1 bg-amber-50 rounded-xl text-center no-underline hover:bg-amber-100 transition-colors border border-amber-200">
+              <span className="text-[22px]">🍽️</span>
+              <span className="text-[10px] font-bold text-amber-800 leading-tight">식당메뉴</span>
+            </a>
+            <a href="/event.html" className="flex flex-col items-center gap-1 py-3 px-1 bg-pink-50 rounded-xl text-center no-underline hover:bg-pink-100 transition-colors border border-pink-200">
+              <span className="text-[22px]">🎉</span>
+              <span className="text-[10px] font-bold text-pink-800 leading-tight">이벤트응모</span>
+            </a>
+            <a href="/ar-game.html" className="flex flex-col items-center gap-1 py-3 px-1 bg-purple-50 rounded-xl text-center no-underline hover:bg-purple-100 transition-colors border border-purple-200">
+              <span className="text-[22px]">🎮</span>
+              <span className="text-[10px] font-bold text-purple-800 leading-tight">AR 증강게임</span>
+            </a>
+            <a href="/find-me.html" className="flex flex-col items-center gap-1 py-3 px-1 bg-blue-50 rounded-xl text-center no-underline hover:bg-blue-100 transition-colors border border-blue-200">
+              <span className="text-[22px]">📍</span>
+              <span className="text-[10px] font-bold text-blue-800 leading-tight">내위치찾기</span>
+            </a>
+            <a href="/reservation.html" className="flex flex-col items-center gap-1 py-3 px-1 bg-gray-50 rounded-xl text-center no-underline hover:bg-gray-100 transition-colors border border-gray-200">
+              <span className="text-[22px]">📋</span>
+              <span className="text-[10px] font-bold text-gray-700 leading-tight">예약시스템</span>
+            </a>
+          </div>
+        </div>
+
         {/* 시설 추가 */}
         <div className="flex gap-2 mt-4">
           <input

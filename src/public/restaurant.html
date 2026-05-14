@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>식당 메뉴 - 한국잠사박물관</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--primary:#1a472a;--secondary:#2d6a4f;--tertiary:#40916c;--bg:#f7f5f0;--card:#fff;--text:#2c2c2c;--border:#e8e4dc}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.header{background:linear-gradient(135deg,#8B4513,#D2691E);color:#fff;padding:20px;text-align:center;position:sticky;top:0;z-index:100;position:relative}
+.header h1{font-size:20px;font-weight:800}
+.header p{font-size:12px;opacity:.8;margin-top:4px}
+.back-btn{position:absolute;left:16px;top:50%;transform:translateY(-50%);background:none;border:none;color:#fff;font-size:20px;cursor:pointer}
+.container{max-width:480px;margin:0 auto;padding:16px}
+.cat-tabs{display:flex;gap:6px;overflow-x:auto;margin-bottom:16px;padding-bottom:4px}
+.cat-tab{padding:8px 16px;border-radius:20px;font-size:13px;font-weight:600;border:2px solid var(--border);background:var(--card);cursor:pointer;white-space:nowrap;transition:all .2s}
+.cat-tab.active{background:#8B4513;color:#fff;border-color:#8B4513}
+.menu-card{background:var(--card);border-radius:16px;padding:16px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,.06);display:flex;gap:14px;align-items:center}
+.menu-emoji{font-size:48px;min-width:60px;text-align:center}
+.menu-info{flex:1}
+.menu-name{font-size:16px;font-weight:800;margin-bottom:4px}
+.menu-desc{font-size:12px;color:#888;line-height:1.5;margin-bottom:6px}
+.menu-price{font-size:15px;font-weight:800;color:#D2691E}
+.menu-badges{display:flex;gap:4px;margin-top:4px}
+.mbadge{font-size:10px;padding:2px 8px;border-radius:10px;font-weight:600}
+.mbadge.popular{background:#fff3e0;color:#e65100}
+.mbadge.new{background:#e8f5e9;color:#2e7d32}
+.mbadge.spicy{background:#fce4ec;color:#c62828}
+.mbadge.kids{background:#e3f2fd;color:#1565c0}
+.section-title{font-size:14px;font-weight:800;color:#8B4513;margin:20px 0 10px;padding-left:4px}
+.notice{background:#fff8e1;border-radius:12px;padding:14px;margin-bottom:16px;font-size:12px;color:#795548;line-height:1.6}
+.notice b{color:#5d4037}
+.allergy{font-size:11px;color:#999;margin-top:6px;line-height:1.5}
+.order-float{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#8B4513,#D2691E);color:#fff;padding:14px 28px;border-radius:30px;font-size:14px;font-weight:700;box-shadow:0 4px 20px rgba(139,69,19,.4);cursor:pointer;z-index:200;display:none;border:none}
+</style>
+</head>
+<body>
+<div class="header">
+  <button class="back-btn" onclick="history.back()">←</button>
+  <h1>🍽️ 식당 메뉴</h1>
+  <p>잠사박물관 플레이팜 구내식당</p>
+</div>
+<div class="container">
+  <div class="notice">
+    <b>📢 안내사항</b><br>
+    • 단체 식사는 예약 시 사전 주문 필수<br>
+    • 알레르기 정보는 직원에게 문의해주세요<br>
+    • 영업시간: 11:00 ~ 14:00 (단체 15:00까지)
+  </div>
+  <div class="cat-tabs">
+    <div class="cat-tab active" onclick="filterCat('all',this)">전체</div>
+    <div class="cat-tab" onclick="filterCat('main',this)">🍛 메인</div>
+    <div class="cat-tab" onclick="filterCat('side',this)">🥗 사이드</div>
+    <div class="cat-tab" onclick="filterCat('kids',this)">👶 키즈</div>
+    <div class="cat-tab" onclick="filterCat('drink',this)">🥤 음료</div>
+    <div class="cat-tab" onclick="filterCat('dessert',this)">🍰 디저트</div>
+  </div>
+  <div id="menuList"></div>
+</div>
+<button class="order-float" id="orderBtn" onclick="alert('단체 주문은 예약 시 담당자에게 연락해주세요.\n☎ 043-XXX-XXXX')">🛒 단체 주문 문의</button>
+<script>
+const menus=[
+  {cat:'main',emoji:'🍛',name:'오디돈가스',desc:'잠사박물관 시그니처! 오디(뽕나무 열매)소스를 곁들인 수제 돈가스',price:'유아 8,000원 / 초등이상 10,000원',badges:['popular']},
+  {cat:'main',emoji:'🍝',name:'크림파스타',desc:'부드러운 크림소스에 새우와 버섯을 넣은 파스타',price:'9,000원',badges:['new']},
+  {cat:'main',emoji:'🍲',name:'김치찌개 정식',desc:'돼지고기 김치찌개 + 밥 + 반찬 3종',price:'8,500원',badges:[]},
+  {cat:'main',emoji:'🥘',name:'불고기 덮밥',desc:'달콤한 양념 불고기와 야채를 올린 덮밥',price:'9,000원',badges:[]},
+  {cat:'main',emoji:'🍜',name:'잔치국수',desc:'멸치 육수에 삶은 소면, 호박, 당근 고명',price:'6,000원',badges:['kids']},
+  {cat:'main',emoji:'🍛',name:'카레라이스',desc:'야채와 고기가 듬뿍 들어간 일본식 카레',price:'7,500원',badges:['kids']},
+  {cat:'side',emoji:'🥗',name:'계절 샐러드',desc:'신선한 제철 채소와 오리엔탈 드레싱',price:'5,000원',badges:[]},
+  {cat:'side',emoji:'🍟',name:'감자튀김',desc:'바삭한 수제 감자튀김 (케첩 포함)',price:'4,000원',badges:['kids']},
+  {cat:'side',emoji:'🥟',name:'왕만두 (4개)',desc:'쫄깃한 피에 고기와 야채가 가득',price:'4,500원',badges:[]},
+  {cat:'side',emoji:'🌽',name:'콘치즈',desc:'달콤한 옥수수와 모짜렐라 치즈',price:'4,000원',badges:['kids','popular']},
+  {cat:'kids',emoji:'🧒',name:'키즈 돈가스 세트',desc:'미니 돈가스 + 주스 + 감자튀김',price:'7,000원',badges:['kids','popular']},
+  {cat:'kids',emoji:'🍱',name:'키즈 도시락',desc:'주먹밥 + 미니 반찬 + 과일 + 주스',price:'6,500원',badges:['kids']},
+  {cat:'drink',emoji:'🧃',name:'오디주스',desc:'잠사박물관 특산 오디(뽕나무 열매) 생과일주스',price:'3,500원',badges:['popular']},
+  {cat:'drink',emoji:'☕',name:'아메리카노',desc:'원두커피 (ICE/HOT)',price:'3,000원',badges:[]},
+  {cat:'drink',emoji:'🥛',name:'딸기우유',desc:'신선한 딸기와 우유 블렌딩',price:'3,500원',badges:['kids']},
+  {cat:'drink',emoji:'🍵',name:'뽕잎차',desc:'직접 재배한 뽕잎으로 만든 건강차',price:'2,500원',badges:['new']},
+  {cat:'dessert',emoji:'🍦',name:'소프트아이스크림',desc:'바닐라 / 초코 / 혼합',price:'2,500원',badges:['kids']},
+  {cat:'dessert',emoji:'🧇',name:'와플',desc:'벨기에식 와플 + 아이스크림 + 과일',price:'5,500원',badges:['new']},
+  {cat:'dessert',emoji:'🍡',name:'오디떡',desc:'오디 앙금이 들어간 찹쌀떡 (2개)',price:'3,000원',badges:['popular']}
+];
+let curCat='all';
+function filterCat(cat,el){
+  curCat=cat;
+  document.querySelectorAll('.cat-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  render();
+}
+function render(){
+  const filtered=curCat==='all'?menus:menus.filter(m=>m.cat===curCat);
+  const grouped={};
+  filtered.forEach(m=>{
+    if(!grouped[m.cat])grouped[m.cat]=[];
+    grouped[m.cat].push(m);
+  });
+  const catNames={main:'🍛 메인 메뉴',side:'🥗 사이드',kids:'👶 키즈 메뉴',drink:'🥤 음료',dessert:'🍰 디저트'};
+  let h='';
+  for(const[cat,items]of Object.entries(grouped)){
+    if(curCat==='all')h+=`<div class="section-title">${catNames[cat]||cat}</div>`;
+    items.forEach(m=>{
+      const badges=m.badges.map(b=>{
+        if(b==='popular')return'<span class="mbadge popular">🔥 인기</span>';
+        if(b==='new')return'<span class="mbadge new">✨ 신메뉴</span>';
+        if(b==='spicy')return'<span class="mbadge spicy">🌶 매운맛</span>';
+        if(b==='kids')return'<span class="mbadge kids">👶 키즈</span>';
+        return'';
+      }).join('');
+      h+=`<div class="menu-card">
+        <div class="menu-emoji">${m.emoji}</div>
+        <div class="menu-info">
+          <div class="menu-name">${m.name}</div>
+          <div class="menu-desc">${m.desc}</div>
+          <div class="menu-price">${m.price}</div>
+          <div class="menu-badges">${badges}</div>
+        </div>
+      </div>`;
+    });
+  }
+  document.getElementById('menuList').innerHTML=h;
+  document.getElementById('orderBtn').style.display='block';
+}
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>이벤트 응모 - 한국잠사박물관</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--primary:#1a472a;--secondary:#2d6a4f;--bg:#f7f5f0;--card:#fff;--text:#2c2c2c;--border:#e8e4dc}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.header{background:linear-gradient(135deg,#e91e63,#ff5722);color:#fff;padding:20px;text-align:center;position:sticky;top:0;z-index:100;position:relative}
+.header h1{font-size:20px;font-weight:800}
+.header p{font-size:12px;opacity:.8;margin-top:4px}
+.back-btn{position:absolute;left:16px;top:50%;transform:translateY(-50%);background:none;border:none;color:#fff;font-size:20px;cursor:pointer}
+.container{max-width:480px;margin:0 auto;padding:16px}
+.event-card{background:var(--card);border-radius:16px;overflow:hidden;margin-bottom:16px;box-shadow:0 2px 12px rgba(0,0,0,.08)}
+.event-banner{width:100%;height:180px;display:flex;align-items:center;justify-content:center;font-size:60px;position:relative}
+.event-timer{position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,.7);color:#fff;padding:4px 10px;border-radius:8px;font-size:11px;font-weight:600}
+.event-body{padding:16px}
+.event-badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;margin-bottom:8px}
+.eb-active{background:#e8f5e9;color:#2e7d32}
+.eb-ended{background:#eee;color:#999}
+.eb-coming{background:#e3f2fd;color:#1565c0}
+.event-title{font-size:17px;font-weight:800;margin-bottom:6px}
+.event-desc{font-size:13px;color:#666;line-height:1.6;margin-bottom:10px}
+.event-prizes{background:#f9f9f6;border-radius:10px;padding:12px;margin-bottom:12px}
+.prize-item{display:flex;align-items:center;gap:8px;padding:6px 0;font-size:13px}
+.prize-item:not(:last-child){border-bottom:1px solid var(--border)}
+.prize-rank{font-size:11px;font-weight:800;padding:2px 8px;border-radius:8px;min-width:36px;text-align:center}
+.r1{background:#fff3e0;color:#e65100}
+.r2{background:#f3e5f5;color:#7b1fa2}
+.r3{background:#e3f2fd;color:#1565c0}
+.event-meta{font-size:11px;color:#999;margin-bottom:12px}
+.btn-enter{width:100%;padding:14px;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;transition:all .2s}
+.btn-enter.active{background:linear-gradient(135deg,#e91e63,#ff5722);color:#fff}
+.btn-enter.active:hover{box-shadow:0 4px 12px rgba(233,30,99,.3)}
+.btn-enter.done{background:#eee;color:#999;cursor:not-allowed}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:300;display:none;align-items:center;justify-content:center;padding:20px}
+.modal-bg.show{display:flex}
+.modal{background:#fff;border-radius:20px;padding:24px;max-width:400px;width:100%;max-height:80vh;overflow-y:auto}
+.modal h2{font-size:18px;font-weight:800;margin-bottom:16px;color:#e91e63}
+.fg{margin-bottom:14px}
+.fg label{display:block;font-size:12px;font-weight:600;margin-bottom:6px;color:#555}
+.fg input,.fg select,.fg textarea{width:100%;padding:12px;border:2px solid var(--border);border-radius:10px;font-size:14px;font-family:inherit;outline:none}
+.fg input:focus,.fg textarea:focus{border-color:#e91e63}
+.fg textarea{resize:vertical;min-height:60px}
+.agree{display:flex;align-items:center;gap:8px;font-size:12px;color:#666;margin-bottom:16px}
+.agree input{width:18px;height:18px}
+.confetti{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:400;display:none}
+</style>
+</head>
+<body>
+<div class="header">
+  <button class="back-btn" onclick="history.back()">←</button>
+  <h1>🎉 이벤트 응모</h1>
+  <p>잠사박물관 특별 이벤트에 참여하세요!</p>
+</div>
+<div class="container" id="eventList"></div>
+<div class="modal-bg" id="modalBg" onclick="if(event.target===this)closeModal()">
+  <div class="modal" id="modal"></div>
+</div>
+<canvas class="confetti" id="confetti"></canvas>
+<script>
+const events=[
+  {id:1,title:'🎫 무료입장권 추첨 이벤트',desc:'인스타그램 팔로우 + 게시물 좋아요로 무료 입장권 추첨!',banner:'🎫',color:'linear-gradient(135deg,#ff6f00,#ffc107)',status:'active',end:'2026-05-31',prizes:[{rank:'1등',name:'가족 종일권 (4인)',count:5,cls:'r1'},{rank:'2등',name:'주중 2인 입장권',count:10,cls:'r2'},{rank:'3등',name:'오디주스 쿠폰',count:30,cls:'r3'}],entered:142,fields:['name','phone','instagram']},
+  {id:2,title:'📸 포토콘테스트',desc:'잠사박물관에서 찍은 최고의 사진을 응모하고 상품을 받아가세요!',banner:'📸',color:'linear-gradient(135deg,#1565c0,#42a5f5)',status:'active',end:'2026-06-15',prizes:[{rank:'대상',name:'잠사박물관 연간회원권',count:1,cls:'r1'},{rank:'금상',name:'가족 패키지 이용권',count:3,cls:'r2'},{rank:'은상',name:'체험 프로그램 이용권',count:5,cls:'r3'}],entered:67,fields:['name','phone','photo','caption']},
+  {id:3,title:'🐛 누에 퀴즈왕',desc:'누에와 잠사에 대한 퀴즈를 풀고 선물 받아가세요! 전문가도 어려워하는 난이도!',banner:'🐛',color:'linear-gradient(135deg,#2e7d32,#66bb6a)',status:'active',end:'2026-05-25',prizes:[{rank:'1등',name:'젤캔들+먹이주기 세트',count:10,cls:'r1'},{rank:'2등',name:'오디떡 세트',count:20,cls:'r2'},{rank:'참여',name:'500원 할인쿠폰',count:100,cls:'r3'}],entered:234,fields:['name','phone','quiz']},
+  {id:4,title:'🏕️ 여름방학 사전예약 이벤트',desc:'여름방학 기간 사전예약 시 특별 할인 + 추첨 경품!',banner:'🏕️',color:'linear-gradient(135deg,#6a1b9a,#ab47bc)',status:'coming',end:'2026-07-01',prizes:[{rank:'1등',name:'글램핑 1박 이용권',count:2,cls:'r1'},{rank:'2등',name:'BBQ 패키지',count:5,cls:'r2'},{rank:'3등',name:'아이스크림 세트',count:20,cls:'r3'}],entered:0,fields:['name','phone','date']},
+  {id:5,title:'🎄 봄나들이 스탬프투어',desc:'봄 시즌 스탬프투어 완주자 대상 경품 추첨 (종료)',banner:'🌸',color:'linear-gradient(135deg,#ad1457,#ec407a)',status:'ended',end:'2026-04-30',prizes:[{rank:'1등',name:'10만원 상품권',count:1,cls:'r1'}],entered:389,fields:[]}
+];
+const myEntries=JSON.parse(localStorage.getItem('__event_entries')||'[]');
+const quizzes=[
+  {q:'누에가 먹는 잎은?',o:['뽕나무잎','참나무잎','소나무잎','대나무잎'],a:0},
+  {q:'누에고치에서 뽑는 실의 이름은?',o:['면사','견사(실크)','마사','모사'],a:1},
+  {q:'누에의 한살이 순서로 맞는 것은?',o:['알→유충→번데기→성충','알→번데기→유충→성충','유충→알→성충→번데기'],a:0}
+];
+
+function render(){
+  let h='';
+  events.forEach(ev=>{
+    const done=myEntries.find(e=>e.eventId===ev.id);
+    const badge=ev.status==='active'?'<span class="event-badge eb-active">🔥 진행중</span>':ev.status==='coming'?'<span class="event-badge eb-coming">🔜 예정</span>':'<span class="event-badge eb-ended">종료</span>';
+    const daysLeft=Math.ceil((new Date(ev.end)-Date.now())/(1000*60*60*24));
+    const timer=ev.status==='active'?`⏰ D-${daysLeft}`:'';
+    const btnCls=done?'done':ev.status==='active'?'active':'done';
+    const btnTxt=done?'✅ 응모완료':ev.status==='active'?'응모하기':ev.status==='coming'?'오픈 예정':'종료됨';
+    h+=`<div class="event-card">
+      <div class="event-banner" style="background:${ev.color}"><span style="font-size:60px">${ev.banner}</span>${timer?`<div class="event-timer">${timer}</div>`:''}</div>
+      <div class="event-body">${badge}
+        <div class="event-title">${ev.title}</div>
+        <div class="event-desc">${ev.desc}</div>
+        <div class="event-prizes">${ev.prizes.map(p=>`<div class="prize-item"><span class="prize-rank ${p.cls}">${p.rank}</span><span>${p.name} (${p.count}명)</span></div>`).join('')}</div>
+        <div class="event-meta">📅 ~${ev.end} | 👥 ${ev.entered}명 참여</div>
+        <button class="btn-enter ${btnCls}" onclick="${!done&&ev.status==='active'?'openEntry('+ev.id+')':''}">${btnTxt}</button>
+      </div>
+    </div>`;
+  });
+  document.getElementById('eventList').innerHTML=h;
+}
+
+function openEntry(id){
+  const ev=events.find(e=>e.id===id);if(!ev)return;
+  let h=`<h2>🎯 ${ev.title}</h2>`;
+  h+='<div class="fg"><label>이름</label><input id="eName" placeholder="이름"></div>';
+  h+='<div class="fg"><label>연락처</label><input id="ePhone" placeholder="010-0000-0000" type="tel"></div>';
+  if(ev.fields.includes('instagram'))h+='<div class="fg"><label>인스타그램 계정</label><input id="eInsta" placeholder="@username"></div>';
+  if(ev.fields.includes('photo'))h+='<div class="fg"><label>사진 업로드</label><input type="file" id="ePhoto" accept="image/*"></div>';
+  if(ev.fields.includes('caption'))h+='<div class="fg"><label>사진 설명</label><textarea id="eCaption" placeholder="사진에 대한 짧은 설명"></textarea></div>';
+  if(ev.fields.includes('date'))h+='<div class="fg"><label>희망 방문일</label><input id="eDate" type="date"></div>';
+  if(ev.fields.includes('quiz')){
+    h+='<div style="margin-bottom:16px">';
+    quizzes.forEach((q,i)=>{
+      h+=`<div style="margin-bottom:14px;background:#f9f9f6;padding:12px;border-radius:10px"><div style="font-size:13px;font-weight:700;margin-bottom:8px">Q${i+1}. ${q.q}</div>`;
+      q.o.forEach((o,j)=>h+=`<label style="display:block;padding:6px 0;font-size:13px;cursor:pointer"><input type="radio" name="q${i}" value="${j}"> ${o}</label>`);
+      h+='</div>';
+    });
+    h+='</div>';
+  }
+  h+='<div class="agree"><input type="checkbox" id="eAgree"><label for="eAgree">개인정보 수집·이용에 동의합니다</label></div>';
+  h+=`<button class="btn-enter active" style="width:100%" onclick="submitEntry(${id})">응모하기</button>`;
+  h+='<button style="width:100%;padding:12px;border:none;background:none;color:#999;font-size:13px;margin-top:8px;cursor:pointer" onclick="closeModal()">취소</button>';
+  document.getElementById('modal').innerHTML=h;
+  document.getElementById('modalBg').classList.add('show');
+}
+function closeModal(){document.getElementById('modalBg').classList.remove('show')}
+function submitEntry(id){
+  const name=document.getElementById('eName')?.value.trim();
+  const phone=document.getElementById('ePhone')?.value.trim();
+  const agree=document.getElementById('eAgree')?.checked;
+  if(!name||!phone){alert('이름과 연락처를 입력해주세요');return;}
+  if(!agree){alert('개인정보 수집에 동의해주세요');return;}
+  const ev=events.find(e=>e.id===id);
+  if(ev.fields.includes('quiz')){
+    let score=0;
+    quizzes.forEach((q,i)=>{const sel=document.querySelector(`input[name=q${i}]:checked`);if(sel&&parseInt(sel.value)===q.a)score++;});
+    if(score<quizzes.length){alert(`퀴즈 ${score}/${quizzes.length} 정답! 모두 맞춰야 응모 가능합니다.`);return;}
+  }
+  myEntries.push({eventId:id,name,phone,ts:new Date().toISOString()});
+  localStorage.setItem('__event_entries',JSON.stringify(myEntries));
+  ev.entered++;
+  closeModal();
+  showConfetti();
+  setTimeout(()=>alert('🎉 응모가 완료되었습니다! 추첨 결과는 SMS로 안내됩니다.'),300);
+  render();
+}
+function showConfetti(){
+  const c=document.getElementById('confetti'),ctx=c.getContext('2d');
+  c.width=innerWidth;c.height=innerHeight;c.style.display='block';
+  const particles=[];for(let i=0;i<100;i++)particles.push({x:Math.random()*c.width,y:Math.random()*c.height-c.height,vx:(Math.random()-.5)*4,vy:Math.random()*3+2,color:`hsl(${Math.random()*360},80%,60%)`,size:Math.random()*6+4});
+  let frames=0;
+  function draw(){ctx.clearRect(0,0,c.width,c.height);particles.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=.05;ctx.fillStyle=p.color;ctx.fillRect(p.x,p.y,p.size,p.size);});frames++;if(frames<120)requestAnimationFrame(draw);else c.style.display='none';}
+  draw();
+}
+render();
+</script>
+</body>
+</html>

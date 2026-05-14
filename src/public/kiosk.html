@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no,maximum-scale=1">
+<title>한국잠사박물관 - 입장 확인</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;user-select:none}
+html,body{height:100%;overflow:hidden}
+body{font-family:'Malgun Gothic','맑은 고딕',sans-serif;background:#080815;color:#fff}
+.app{height:100vh;display:flex;flex-direction:column}
+.hdr{background:linear-gradient(135deg,#e91e7a,#c4166a);padding:14px 20px;display:flex;align-items:center;gap:10px;flex-shrink:0}
+.hdr svg{flex-shrink:0}
+.hdr h1{font-size:20px;font-weight:800}
+.hdr .sub{font-size:10px;opacity:.8;margin-top:1px}
+.hdr .clock{margin-left:auto;font-size:13px;font-weight:600;opacity:.7}
+.main{flex:1;display:flex;align-items:center;justify-content:center;padding:16px;overflow-y:auto}
+.ftr{background:#0a0a14;padding:8px;text-align:center;font-size:9px;color:#444;flex-shrink:0;border-top:1px solid #151530}
+.box{width:100%;max-width:480px}
+.card{background:#111128;border:1px solid #252550;border-radius:14px;padding:16px;margin-bottom:10px}
+.digits{display:flex;gap:8px;justify-content:center;margin-bottom:16px}
+.dbox{width:56px;height:66px;background:#151530;border:2px solid #333;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:800;transition:all .2s}
+.dbox.on{border-color:#e91e7a;box-shadow:0 0 12px rgba(233,30,122,.3)}
+.dbox.filled{border-color:#e91e7a;color:#e91e7a}
+.numpad{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;max-width:280px;margin:0 auto}
+.nk{padding:14px;font-size:26px;font-weight:700;text-align:center;background:#151530;border-radius:12px;cursor:pointer;color:#fff;border:none;font-family:inherit}
+.nk:active{background:#e91e7a;transform:scale(.95)}
+.nk-del{background:#2a1525;font-size:14px;color:#e91e7a}
+.nk-go{background:#3b82f6;font-size:14px;font-weight:700}
+.r-card{background:#111128;border:2px solid #252550;border-radius:14px;padding:14px 16px;margin-bottom:8px;cursor:pointer;transition:all .15s}
+.r-card:active{border-color:#e91e7a;background:#1a1035;transform:scale(.98)}
+.r-card.used{opacity:.35;pointer-events:none}
+.r-name{font-size:18px;font-weight:800;margin-bottom:2px}
+.r-tag{display:inline-block;font-size:9px;padding:2px 7px;border-radius:5px;font-weight:600;margin-right:4px}
+.tag-naver{background:#1ec86420;color:#1ec864}
+.tag-life{background:#3b82f620;color:#3b82f6}
+.tag-used{background:#10b98120;color:#10b981}
+.r-item{display:flex;justify-content:space-between;padding:3px 0;font-size:12px;color:#aaa;border-bottom:1px solid #1a1a3a}
+.r-item:last-child{border:none}
+.r-total{display:flex;justify-content:space-between;padding:6px 0 0;margin-top:4px;border-top:2px solid #252550;font-size:14px;font-weight:800}
+.verify-err{text-align:center;color:#ef4444;font-size:12px;margin-top:8px;font-weight:600}
+.btn{border:none;border-radius:10px;padding:14px 24px;font-size:15px;font-weight:800;cursor:pointer;font-family:inherit;width:100%}
+.btn:active{transform:scale(.96)}
+.btn-pink{background:linear-gradient(135deg,#e91e7a,#c4166a);color:#fff}
+.btn-green{background:#10b981;color:#fff}
+.btn-gray{background:#252550;color:#999}
+.btn-row{display:flex;gap:8px;margin-top:10px}
+.btn-row .btn{flex:1}
+.back{display:inline-block;margin-top:12px;padding:8px 20px;font-size:11px;color:#666;cursor:pointer;text-align:center}
+.done-check{font-size:72px;text-align:center;margin-bottom:10px;animation:pop .4s ease}
+@keyframes pop{0%{transform:scale(0)}60%{transform:scale(1.2)}100%{transform:scale(1)}}
+.done-guide{background:#111128;border:1px solid #252550;border-radius:12px;padding:14px;font-size:12px;color:#aaa;line-height:1.7;margin:14px 0;text-align:left}
+.done-guide b{color:#fff}
+.loading{text-align:center;padding:30px;color:#888}
+.spinner{width:28px;height:28px;border:3px solid #333;border-top-color:#e91e7a;border-radius:50%;animation:spin .6s linear infinite;margin:0 auto 12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="hdr">
+    <svg viewBox="0 0 60 50" width="32" height="26"><path d="M5 40Q15 10 30 25Q45 10 55 40" stroke="#fff" fill="none" stroke-width="2.5" opacity=".9"/><path d="M8 40Q18 15 30 28Q42 15 52 40" stroke="#fff" fill="none" stroke-width="2" opacity=".7"/></svg>
+    <div><h1>한국잠사박물관</h1><div class="sub">셀프 입장 확인</div></div>
+    <div class="clock" id="clock">--:--</div>
+  </div>
+  <div class="main" id="M"></div>
+  <div class="ftr">한국잠사플레이팜 농업회사법인(주)</div>
+</div>
+<script>
+var S={scr:'start',ph:'',mid:'',res:[],sel:null,last:null,err:''};
+var TM=null;
+setInterval(function(){var d=new Date();document.getElementById('clock').textContent=d.getHours().toString().padStart(2,'0')+':'+d.getMinutes().toString().padStart(2,'0');},10000);
+document.getElementById('clock').textContent=new Date().getHours().toString().padStart(2,'0')+':'+new Date().getMinutes().toString().padStart(2,'0');
+function idleReset(){if(TM)clearTimeout(TM);if(S.scr!=='start')TM=setTimeout(goStart,45000);}
+document.addEventListener('touchstart',idleReset);document.addEventListener('click',idleReset);
+
+function R(){
+  var m=document.getElementById('M');
+  var f={start:vStart,input:vInput,loading:vLoad,results:vRes,verify:vVerify,processing:vProc,done:vDone};
+  m.innerHTML=(f[S.scr]||vStart)();idleReset();
+}
+
+function digitBoxes(val,max){
+  var d=[];for(var i=0;i<max;i++)d.push(val[i]||'');
+  return '<div class="digits">'+d.map(function(c,i){
+    var cls='dbox';
+    if(i===val.length&&val.length<max)cls+=' on';
+    if(c)cls+=' filled';
+    return '<div class="'+cls+'">'+(c||'·')+'</div>';
+  }).join('')+'</div>';
+}
+function numGrid(fn,goFn,goLabel,goBg){
+  return '<div class="numpad">'+['1','2','3','4','5','6','7','8','9','del','0','go'].map(function(k){
+    if(k==='del')return '<div class="nk nk-del" onclick="'+fn+'(\'del\')">← 지우기</div>';
+    if(k==='go')return '<div class="nk nk-go" style="background:'+(goBg||'#3b82f6')+'" onclick="'+goFn+'()">'+goLabel+'</div>';
+    return '<div class="nk" onclick="'+fn+'(\''+k+'\')">'+k+'</div>';
+  }).join('')+'</div>';
+}
+
+// ═══ 화면들 ═══
+function vStart(){
+  return '<div class="box" style="text-align:center"><div style="font-size:56px;margin-bottom:14px">🎫</div>'+
+  '<div style="font-size:26px;font-weight:800;margin-bottom:6px">입장 확인</div>'+
+  '<div style="font-size:14px;color:#888;margin-bottom:28px;line-height:1.6">네이버 · 라이프도시 예약 고객<br>아래 버튼을 눌러주세요</div>'+
+  '<button class="btn btn-pink" style="max-width:300px;margin:0 auto;display:block;font-size:20px;padding:18px" onclick="goInput()">예약 확인하기</button></div>';
+}
+
+function vInput(){
+  return '<div class="box" style="text-align:center">'+
+  '<div style="font-size:18px;font-weight:700;margin-bottom:4px">📱 연락처 뒤 4자리</div>'+
+  '<div style="font-size:12px;color:#888;margin-bottom:14px">예약 시 입력한 번호 뒤 4자리를 눌러주세요</div>'+
+  digitBoxes(S.ph,4)+numGrid('nP','doSearch','조회','#3b82f6')+
+  '<div class="back" onclick="goStart()">← 처음으로</div></div>';
+}
+function vLoad(){return '<div class="loading"><div class="spinner"></div>조회 중...</div>';}
+
+function vRes(){
+  if(!S.res.length) return '<div class="box" style="text-align:center"><div style="font-size:44px;margin-bottom:10px">😥</div>'+
+    '<div style="font-size:18px;font-weight:700;margin-bottom:4px">조회 결과가 없습니다</div>'+
+    '<div style="font-size:12px;color:#777;line-height:1.6">연락처를 다시 확인하시거나<br>매표소 직원에게 문의해 주세요</div>'+
+    '<div class="btn-row" style="max-width:300px;margin:16px auto 0"><button class="btn btn-gray" onclick="goInput()">다시 입력</button></div></div>';
+
+  return '<div class="box"><div style="text-align:center;margin-bottom:10px">'+
+    '<div style="font-size:16px;font-weight:700">예약 내역을 확인해주세요</div>'+
+    '<div style="font-size:11px;color:#888">성함·품목·매수를 확인하고 본인 예약을 터치하세요</div></div>'+
+    S.res.map(function(r){
+      var u=r.status==='used';
+      var pc=r.platform==='네이버'?'tag-naver':r.platform==='라이프도시'?'tag-life':'';
+      var ps=[];if(r.adultCount>0)ps.push('성인'+r.adultCount);if(r.childCount>0)ps.push('아동'+r.childCount);
+      var items=(r.items||[]).map(function(it){
+        return '<div class="r-item"><span style="flex:1">'+it.name+'</span><span style="width:36px;text-align:center;color:#fff;font-weight:600">x'+it.qty+'</span><span style="width:70px;text-align:right;color:#e91e7a;font-weight:600">'+Number(it.price*it.qty).toLocaleString()+'원</span></div>';
+      }).join('');
+      return '<div class="r-card'+(u?' used':'')+'" onclick="'+(u?'':'pickR(\''+r.id+'\')')+'">'+
+        '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">'+
+          '<div class="r-name">'+r.nameDisplay+'</div>'+
+          '<span class="r-tag '+pc+'">'+r.platform+'</span>'+
+          (u?'<span class="r-tag tag-used">사용완료 '+r.usedAt+'</span>':'')+
+        '</div>'+
+        '<div style="font-size:13px;font-weight:600;margin-bottom:4px;color:#ccc">'+r.ticketType+' · '+ps.join(' / ')+'</div>'+
+        (items?'<div style="margin-top:4px">'+items+'</div>':'')+
+        '<div class="r-total"><span>합계</span><span style="color:#e91e7a">'+Number(r.totalAmount).toLocaleString()+'원</span></div>'+
+        '<div style="font-size:11px;color:#e91e7a;text-align:center;margin-top:6px;font-weight:600">'+(u?'':'▲ 본인이면 터치하세요 ▲')+'</div>'+
+      '</div>';
+    }).join('')+
+    '<div class="back" onclick="goInput()">← 다시 입력</div></div>';
+}
+
+function vVerify(){
+  var r=S.sel;if(!r)return '';
+  var ps=[];if(r.adultCount>0)ps.push('성인 '+r.adultCount+'명');if(r.childCount>0)ps.push('아동 '+r.childCount+'명');
+  var tot=(r.adultCount||0)+(r.childCount||0)||1;
+  return '<div class="box" style="text-align:center">'+
+    '<div class="card"><div style="font-size:12px;color:#888;margin-bottom:4px">선택한 예약</div>'+
+    '<div style="font-size:24px;font-weight:800;margin-bottom:4px">'+r.name+'</div>'+
+    '<div style="font-size:13px;color:#aaa">'+r.ticketType+' ['+r.platform+'] · '+ps.join(' / ')+'</div>'+
+    '<div style="font-size:15px;color:#e91e7a;font-weight:700;margin-top:4px">팔찌 '+tot+'매 발급</div></div>'+
+    '<div style="font-size:16px;font-weight:700;margin-bottom:4px">📱 본인확인</div>'+
+    '<div style="font-size:12px;color:#aaa;margin-bottom:8px">휴대폰 <b style="color:#fff">중간 4자리</b>를 입력해주세요</div>'+
+    '<div style="font-size:16px;color:#aaa;margin-bottom:10px;letter-spacing:2px">010 - <b style="color:#fff;font-size:22px">'+(S.mid||'____')+'</b> - '+r.phone4+'</div>'+
+    digitBoxes(S.mid,4)+
+    (S.err?'<div class="verify-err">'+S.err+'</div>':'')+
+    numGrid('mP','doVerify','확인','#10b981')+
+    '<div class="back" onclick="goRes()">← 뒤로</div></div>';
+}
+
+function vProc(){return '<div class="loading"><div class="spinner" style="border-top-color:#10b981"></div><div style="font-size:15px">사용처리 중...<br><span style="font-size:12px;color:#666">잠시만 기다려주세요</span></div></div>';}
+
+function vDone(){
+  var d=S.last;if(!d)return '';var r=d.reservation;
+  var ps=[];if(r.adultCount>0)ps.push('성인 '+r.adultCount+'명');if(r.childCount>0)ps.push('아동 '+r.childCount+'명');
+  var items=(r.items||[]).map(function(it){
+    return '<div style="display:flex;justify-content:space-between;padding:3px 0;font-size:12px"><span>'+it.name+' x'+it.qty+'</span><span style="color:#e91e7a">'+Number(it.price*it.qty).toLocaleString()+'원</span></div>';
+  }).join('');
+  return '<div class="box" style="text-align:center"><div class="done-check">✅</div>'+
+    '<div style="font-size:24px;font-weight:800;margin-bottom:6px">입장 확인 완료!</div>'+
+    '<div style="font-size:15px;color:#aaa">'+r.name+' 님 환영합니다</div>'+
+    '<div style="font-size:13px;color:#aaa;margin-bottom:4px">'+r.ticketType+' · '+ps.join(' / ')+'</div>'+
+    '<div style="font-size:18px;color:#e91e7a;font-weight:800;margin:10px 0">🎫 팔찌 '+d.totalBands+'매 + 🧾 영수증 발급</div>'+
+    (items?'<div class="card" style="text-align:left"><div style="font-size:11px;color:#888;margin-bottom:4px">구매 내역</div>'+items+
+    '<div style="display:flex;justify-content:space-between;padding:6px 0 0;margin-top:4px;border-top:1px solid #252550;font-weight:800;font-size:14px"><span>합계</span><span style="color:#e91e7a">'+Number(r.totalAmount).toLocaleString()+'원</span></div></div>':'')+
+    '<div class="done-guide"><b>📌 이용 안내</b><br>• 팔찌를 받으시면 <b>반드시 손목에 착용</b>해 주세요<br>• 박물관, 키즈카페, 에어바운스, 양떼정원, 사계절썰매장 자유 이용<br>• 팔찌 양도·환불·재발급 불가</div>'+
+    '<button class="btn btn-pink" onclick="goStart()" style="font-size:18px">확인</button>'+
+    '<div style="font-size:10px;color:#444;margin-top:8px">15초 후 자동으로 처음 화면으로 돌아갑니다</div></div>';
+}
+
+// ═══ 액션 ═══
+function goStart(){S={scr:'start',ph:'',mid:'',res:[],sel:null,last:null,err:''};R();}
+function goInput(){S.scr='input';S.ph='';R();}
+function goRes(){S.scr='results';S.mid='';S.err='';R();}
+function nP(k){if(k==='del'){S.ph=S.ph.slice(0,-1);R();return;}if(S.ph.length<4){S.ph+=k;R();}if(S.ph.length===4)setTimeout(doSearch,400);}
+function mP(k){if(k==='del'){S.mid=S.mid.slice(0,-1);S.err='';R();return;}if(S.mid.length<4){S.mid+=k;S.err='';R();}if(S.mid.length===4)setTimeout(doVerify,400);}
+function pickR(id){S.sel=S.res.find(function(x){return x.id===id;});S.mid='';S.err='';S.scr='verify';R();}
+
+async function doSearch(){
+  if(S.ph.length<2)return;S.scr='loading';R();
+  try{var r=await fetch('/api/kiosk/search/'+encodeURIComponent(S.ph));var d=await r.json();S.res=d.results||[];}catch(e){S.res=[];}
+  S.scr='results';R();
+}
+async function doVerify(){
+  if(S.mid.length!==4){S.err='4자리를 모두 입력해주세요';R();return;}
+  S.scr='processing';R();
+  try{
+    var r=await fetch('/api/kiosk/verify-and-use',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:S.sel.id,phoneMid:S.mid})});
+    var d=await r.json();
+    if(d.ok){
+      S.last=d;S.scr='done';
+      if(d.receiptHtml){var w=window.open('','_blank','width=400,height=500');if(w){w.document.open();w.document.write(d.receiptHtml);w.document.close();w.onload=function(){setTimeout(function(){w.print();setTimeout(function(){w.close();},2000);},500);};}}
+      if(d.bandPageHtml && d.totalBands>0){setTimeout(function(){var w2=window.open('','_blank','width=600,height=300');if(w2){w2.document.open();w2.document.write(d.bandPageHtml);w2.document.close();w2.onload=function(){setTimeout(function(){w2.print();setTimeout(function(){w2.close();},2000);},500);};}},1500);}
+    }else if(d.needVerify){S.err='❌ 중간번호가 일치하지 않습니다';S.mid='';S.scr='verify';}
+    else{S.err=d.error||'오류 발생';S.mid='';S.scr='verify';}
+  }catch(e){S.err='네트워크 오류. 매표소에 문의해주세요';S.mid='';S.scr='verify';}
+  R();
+  if(S.scr==='done')setTimeout(function(){if(S.scr==='done')goStart();},15000);
+}
+R();
+</script>
+</body>
+</html>

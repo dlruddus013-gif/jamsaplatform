@@ -256,6 +256,7 @@ var LOCAL_DATA_DIR = path.join(__dirname, '.data');
 if (!fs.existsSync(LOCAL_DATA_DIR)) fs.mkdirSync(LOCAL_DATA_DIR, { recursive: true });
 var LOCAL_TICKETS_FILE = path.join(LOCAL_DATA_DIR, 'tickets.json');
 var LOCAL_USEHISTORY_FILE = path.join(LOCAL_DATA_DIR, 'use_history.json');
+var LOCAL_APPDATA_FILE = path.join(LOCAL_DATA_DIR, 'app_data.json');
 
 // 저장 (디바운스: 2초 내 중복 호출 방지)
 var _saveTimer = null;
@@ -272,6 +273,48 @@ function saveTicketsLocal() {
       fs.writeFileSync(LOCAL_TICKETS_FILE, JSON.stringify(data), 'utf-8');
     } catch(e) { /* 저장 실패 무시 */ }
   }, 2000);
+}
+
+// 앱 데이터 로컬 저장 (디바운스 3초)
+var _saveAppTimer = null;
+function saveAppDataLocal() {
+  if (_saveAppTimer) clearTimeout(_saveAppTimer);
+  _saveAppTimer = setTimeout(function() {
+    try {
+      var data = {
+        foodOrders: STATE.foodOrders || [],
+        foodReviews: STATE.foodReviews || [],
+        spotVisits: STATE.spotVisits || {},
+        experienceApps: STATE.experienceApps || [],
+        eventSubs: STATE.eventSubs || [],
+        detailedReviews: STATE.detailedReviews || [],
+        rentalBookings: STATE.rentalBookings || [],
+        expBookings: STATE.expBookings || [],
+        reviews: STATE.reviews || [],
+        savedAt: new Date().toISOString()
+      };
+      fs.writeFileSync(LOCAL_APPDATA_FILE, JSON.stringify(data), 'utf-8');
+    } catch(e) {}
+  }, 3000);
+}
+
+function loadAppDataLocal() {
+  try {
+    if (fs.existsSync(LOCAL_APPDATA_FILE)) {
+      var raw = fs.readFileSync(LOCAL_APPDATA_FILE, 'utf-8');
+      var data = JSON.parse(raw);
+      if (data.foodOrders && data.foodOrders.length > 0 && (!STATE.foodOrders || STATE.foodOrders.length === 0)) STATE.foodOrders = data.foodOrders;
+      if (data.foodReviews && data.foodReviews.length > 0 && (!STATE.foodReviews || STATE.foodReviews.length === 0)) STATE.foodReviews = data.foodReviews;
+      if (data.spotVisits && Object.keys(data.spotVisits).length > 0 && (!STATE.spotVisits || Object.keys(STATE.spotVisits).length === 0)) STATE.spotVisits = data.spotVisits;
+      if (data.experienceApps && data.experienceApps.length > 0 && (!STATE.experienceApps || STATE.experienceApps.length === 0)) STATE.experienceApps = data.experienceApps;
+      if (data.eventSubs && data.eventSubs.length > 0 && (!STATE.eventSubs || STATE.eventSubs.length === 0)) STATE.eventSubs = data.eventSubs;
+      if (data.detailedReviews && data.detailedReviews.length > 0 && (!STATE.detailedReviews || STATE.detailedReviews.length === 0)) STATE.detailedReviews = data.detailedReviews;
+      if (data.rentalBookings && data.rentalBookings.length > 0 && (!STATE.rentalBookings || STATE.rentalBookings.length === 0)) STATE.rentalBookings = data.rentalBookings;
+      if (data.expBookings && data.expBookings.length > 0 && (!STATE.expBookings || STATE.expBookings.length === 0)) STATE.expBookings = data.expBookings;
+      if (data.reviews && data.reviews.length > 0 && (!STATE.reviews || STATE.reviews.length === 0)) STATE.reviews = data.reviews;
+      console.log('  💾 앱 데이터 복원: 주문 ' + (STATE.foodOrders||[]).length + '건, 리뷰 ' + (STATE.detailedReviews||[]).length + '건, 예약 ' + (STATE.rentalBookings||[]).length + '건');
+    }
+  } catch(e) { console.log('  💾 앱 데이터 복원 실패: ' + e.message); }
 }
 
 // 복원 (서버 시작 시)
@@ -302,6 +345,7 @@ function loadTicketsLocal() {
   } catch(e) { console.log('  💾 로컬 복원 실패: ' + e.message); }
 }
 loadTicketsLocal();
+loadAppDataLocal();
 
 // ═══ 크롤링 중단 메커니즘 ═══
 class CrawlAbortError extends Error { constructor() { super('크롤링 중단됨'); this.name = 'CrawlAbortError'; } }
@@ -8333,6 +8377,7 @@ app.post('/api/review/submit', async function(req, res) {
   };
   
   STATE.reviews.push(review);
+  saveAppDataLocal();
   log('review', '🎁 리뷰 리워드 발급: ' + (b.name || phone) + ' → ' + reward.name + ' [' + b.platform + '] 코드: ' + rewardCode, 'success');
   broadcast({ type: 'reviewUpdate', data: review });
   
@@ -8407,7 +8452,8 @@ app.post('/api/review/use', function(req, res) {
   review.usedAt = new Date().toISOString();
   log('review', '✅ 리워드 사용: ' + review.rewardCode + ' ' + review.rewardName + ' (' + (review.name || review.phone) + ')', 'success');
   broadcast({ type: 'reviewUpdate', data: review });
-  
+  saveAppDataLocal();
+
   res.json({ ok: true, reward: review });
 });
 
@@ -8418,6 +8464,7 @@ app.get('/api/reviews', function(req, res) {
 
 app.post('/api/ticket/add', function(req, res) {
   var tk = addManualOrder(req.body);
+  sbSync.saveTicket(tk).catch(function(){});
   res.json({ ok: true, ticket: tk });
 });
 
@@ -8436,6 +8483,8 @@ app.post('/api/ticket/edit', function(req, res) {
   if (changed.length > 0) {
     log('ticket', '✏️ ' + tk.buyer + ' 수정: ' + changed.join(', '));
     broadcast({ type: 'ticketUpdate', data: tk });
+    sbSync.saveTicket(tk).catch(function(){});
+    saveTicketsLocal();
   }
   res.json({ ok: true, ticket: tk, changed: changed });
 });
@@ -8447,6 +8496,8 @@ app.post('/api/ticket/delete', function(req, res) {
   var removed = STATE.tickets.splice(idx, 1)[0];
   log('ticket', '🗑️ ' + removed.buyer + ' (' + removed.orderNo + ') 삭제');
   broadcast({ type: 'state', data: { tickets: STATE.tickets } });
+  sbSync.deleteTicket(removed.id).catch(function(){});
+  saveTicketsLocal();
   res.json({ ok: true });
 });
 
@@ -8469,6 +8520,9 @@ app.post('/api/ticket/force-use', function(req, res) {
   if (STATE.useHistory.length > 500) STATE.useHistory.length = 500;
   broadcast({ type: 'useLog', data: useEntry });
   broadcast({ type: 'ticketUpdate', data: tk });
+  sbSync.updateTicketStatus(tk.id, tk.status, tk.usedAt);
+  sbSync.saveUseHistory({ ticketId: tk.id, orderNo: tk.orderNo, buyer: tk.buyer, phone: tk.phone, product: tk.product, qty: tk.qty, price: tk.price, source: tk.source, method: 'force' }).catch(function(){});
+  saveTicketsLocal();
   res.json({ ok: true, ticket: tk });
 });
 
@@ -11074,6 +11128,8 @@ app.post('/api/ticket/issue', function(req, res) {
     isFreePass: !b.price || b.price === 0,
   };
   STATE.tickets.unshift(tk);
+  sbSync.saveTicket(tk).catch(function(){});
+  saveTicketsLocal();
   broadcast({ type: 'newTicket', data: tk });
   log('ticket', tk.buyer + ' 발권 (' + tk.source + ') by ' + tk.issuedBy, 'success');
   res.json({ ok: true, ticket: tk });
@@ -11128,6 +11184,7 @@ app.post('/api/exp-booking/add', function(req, res) {
     createdAt: new Date().toISOString(), autoUsed: isExternal,
   };
   STATE.expBookings.unshift(bk);
+  saveAppDataLocal();
   broadcast({ type: 'expBookingNew', data: bk });
   log('exp-booking', bk.buyer + ' → ' + exp.name + ' ' + b.time + (isExternal ? ' ⚡즉시사용' : ''), 'success');
   res.json({ ok: true, booking: bk });
@@ -11153,6 +11210,8 @@ app.post('/api/rental-booking/add', function(req, res) {
     createdAt: new Date().toISOString(), autoUsed: isExternal,
   };
   STATE.rentalBookings.unshift(bk);
+  sbSync.saveRentalBooking(bk).catch(function(){});
+  saveAppDataLocal();
   broadcast({ type: 'rentalBookingNew', data: bk });
   log('rental', bk.buyer + ' → ' + rental.name + ' ' + b.time + (isExternal ? ' ⚡즉시사용' : ''), 'success');
   res.json({ ok: true, booking: bk });
@@ -11397,6 +11456,7 @@ app.post('/api/ticket/note', function(req, res) {
   });
   sendState();
   saveTicketsLocal();
+  sbSync.saveTicket(tk).catch(function(){});
   res.json({ ok: true, notes: tk.notes });
 });
 
@@ -11418,7 +11478,7 @@ app.post('/api/customer/note', function(req, res) {
     type: b.type || 'call',
     time: new Date().toISOString(),
   };
-  tickets.forEach(function(t) { if (!t.notes) t.notes = []; t.notes.push(note); });
+  tickets.forEach(function(t) { if (!t.notes) t.notes = []; t.notes.push(note); sbSync.saveTicket(t).catch(function(){}); });
   sendState();
   saveTicketsLocal();
   res.json({ ok: true, affected: tickets.length, note: note });
@@ -12422,6 +12482,8 @@ app.post('/api/portal/book-cabin', function(req, res) {
   };
   STATE.rentalBookings.push(booking);
   sendState();
+  sbSync.saveRentalBooking(booking).catch(function(){});
+  saveAppDataLocal();
   log('rental', '📌 오두막 예약: ' + rental.name + ' (' + date + ' ' + booking.timeSlot + ')', 'success');
   res.json({ ok: true, booking: booking });
 });
@@ -12449,6 +12511,8 @@ app.post('/api/food-order', function(req, res) {
     createdAt: new Date().toISOString()
   };
   STATE.foodOrders.push(order);
+  sbSync.saveFoodOrder(order).catch(function(){});
+  saveAppDataLocal();
   log('food', '🍜 사전주문: ' + b.name + ' (' + b.items.length + '건, ' + total.toLocaleString() + '원)', 'success');
   broadcast({ type: 'foodOrder', data: order });
   res.json({ ok: true, order: order });
@@ -12469,6 +12533,8 @@ app.post('/api/food-order/status', function(req, res) {
     order.readyAt = new Date().toISOString();
     log('food', '🍜 음식 완료: ' + order.name + ' (' + order.id + ')', 'success');
   }
+  sbSync.updateFoodOrder(order.id, order.status).catch(function(){});
+  saveAppDataLocal();
   broadcast({ type: 'foodOrderUpdate', data: order });
   res.json({ ok: true, order: order });
 });
@@ -12490,6 +12556,8 @@ app.post('/api/food-review', function(req, res) {
     createdAt: new Date().toISOString()
   };
   STATE.foodReviews.push(review);
+  sbSync.saveFoodReview(review).catch(function(){});
+  saveAppDataLocal();
   log('food', '⭐ 음식후기: ' + review.name + ' (' + review.rating + '점) → 쿠폰 ' + code, 'success');
   res.json({ ok: true, review: review, couponCode: code });
 });
@@ -12556,6 +12624,7 @@ app.post('/api/spot/checkin', function(req, res) {
     return res.json({ ok: true, already: true, message: '이미 체크인한 스팟입니다' });
   }
   STATE.spotVisits[b.visitorId][b.spotId] = new Date().toISOString();
+  sbSync.saveSpotVisit(b.visitorId, b.spotId).catch(function(){});
   if (STATE.crowdData[spot.zone]) STATE.crowdData[spot.zone].count = (STATE.crowdData[spot.zone].count || 0) + 1;
   var completed = Object.keys(STATE.spotVisits[b.visitorId]).filter(function(k) { return k !== '_coupon'; }).length;
   var allDone = completed >= SPOTS.length;
@@ -12563,9 +12632,11 @@ app.post('/api/spot/checkin', function(req, res) {
   if (allDone && !STATE.spotVisits[b.visitorId]._coupon) {
     couponCode = 'SJ' + Math.random().toString(36).substring(2, 8).toUpperCase();
     STATE.spotVisits[b.visitorId]._coupon = couponCode;
+    sbSync.saveStampReward(b.visitorId, couponCode).catch(function(){});
   } else if (allDone) {
     couponCode = STATE.spotVisits[b.visitorId]._coupon;
   }
+  saveAppDataLocal();
   log('stamp', '📍 스탬프: ' + spot.name + ' 체크인 (방문자 ' + b.visitorId.substring(0, 8) + ', ' + completed + '/' + SPOTS.length + ')', 'success');
   res.json({ ok: true, spot: spot, completed: completed, total: SPOTS.length, allDone: allDone, couponCode: couponCode });
 });
@@ -12590,6 +12661,8 @@ app.post('/api/experience-team/apply', function(req, res) {
     createdAt: new Date().toISOString()
   };
   STATE.experienceApps.push(app);
+  sbSync.saveExperienceApp(app).catch(function(){});
+  saveAppDataLocal();
   log('event', '🎯 체험단 응모: ' + b.name + ' (' + b.sns + ')', 'success');
   res.json({ ok: true, application: app });
 });
@@ -12606,6 +12679,8 @@ app.post('/api/event/subscribe', function(req, res) {
   var existing = STATE.eventSubs.find(function(s) { return s.phone === b.phone; });
   if (existing) return res.json({ ok: true, message: '이미 구독중입니다' });
   STATE.eventSubs.push({ phone: b.phone, createdAt: new Date().toISOString() });
+  sbSync.saveEventSub(b.phone).catch(function(){});
+  saveAppDataLocal();
   log('event', '📩 이벤트 알림 구독: ' + b.phone, 'info');
   res.json({ ok: true, message: '이벤트 알림 구독 완료!' });
 });
@@ -12633,6 +12708,8 @@ app.post('/api/review/detailed', function(req, res) {
     createdAt: new Date().toISOString()
   };
   STATE.detailedReviews.push(review);
+  sbSync.saveDetailedReview(review).catch(function(){});
+  saveAppDataLocal();
   log('review', '⭐ 상세리뷰: ' + b.name + ' → 입장권 ' + ticketCode + ' (유효: ' + review.ticketExpiry + ')', 'success');
   res.json({
     ok: true,
@@ -12669,6 +12746,8 @@ app.post('/api/review/ticket/use', function(req, res) {
   if (new Date(review.ticketExpiry) < new Date()) return res.json({ ok: false, error: '유효기간이 만료되었습니다' });
   review.ticketUsed = true;
   review.ticketUsedAt = new Date().toISOString();
+  sbSync.updateDetailedReviewUsed(code).catch(function(){});
+  saveAppDataLocal();
   log('review', '🎫 리뷰 입장권 사용: ' + review.name + ' (' + code + ')', 'success');
   res.json({ ok: true });
 });
@@ -12708,6 +12787,46 @@ var PORT = process.env.PORT || 3500;
           return { id: t.id, name: t.name, type: t.type, body: t.body, kakaoCode: t.kakao_code };
         });
       }
+      // 신규 데이터 복원 (로컬에 없는 경우만)
+      if (restored.foodOrders && restored.foodOrders.length > 0 && (!STATE.foodOrders || STATE.foodOrders.length === 0)) {
+        STATE.foodOrders = restored.foodOrders.map(function(o) {
+          return { id: o.id, phone: o.phone, name: o.name, items: o.items||[], total: o.total||0, date: o.order_date, time: o.order_time, status: o.status, cancelDeadline: o.cancel_deadline, readyAt: o.ready_at, createdAt: o.created_at };
+        });
+      }
+      if (restored.foodReviews && restored.foodReviews.length > 0 && (!STATE.foodReviews || STATE.foodReviews.length === 0)) {
+        STATE.foodReviews = restored.foodReviews.map(function(r) {
+          return { id: r.id, phone: r.phone, name: r.name, rating: r.rating, comment: r.comment, couponCode: r.coupon_code, couponUsed: r.coupon_used, createdAt: r.created_at };
+        });
+      }
+      if (restored.spotVisits && restored.spotVisits.length > 0 && (!STATE.spotVisits || Object.keys(STATE.spotVisits).length === 0)) {
+        STATE.spotVisits = {};
+        restored.spotVisits.forEach(function(v) {
+          if (!STATE.spotVisits[v.visitor_id]) STATE.spotVisits[v.visitor_id] = {};
+          STATE.spotVisits[v.visitor_id][v.spot_id] = v.visited_at;
+        });
+        if (restored.stampRewards) {
+          restored.stampRewards.forEach(function(sr) { if (STATE.spotVisits[sr.visitor_id]) STATE.spotVisits[sr.visitor_id]._coupon = sr.coupon_code; });
+        }
+      }
+      if (restored.experienceApps && restored.experienceApps.length > 0 && (!STATE.experienceApps || STATE.experienceApps.length === 0)) {
+        STATE.experienceApps = restored.experienceApps.map(function(a) {
+          return { id: a.id, name: a.name, phone: a.phone, sns: a.sns, snsAccount: a.sns_account, followers: a.followers, experience: a.experience, preferDate: a.prefer_date, intro: a.intro, status: a.status, createdAt: a.created_at };
+        });
+      }
+      if (restored.eventSubs && restored.eventSubs.length > 0 && (!STATE.eventSubs || STATE.eventSubs.length === 0)) {
+        STATE.eventSubs = restored.eventSubs.map(function(s) { return { phone: s.phone, createdAt: s.created_at }; });
+      }
+      if (restored.detailedReviews && restored.detailedReviews.length > 0 && (!STATE.detailedReviews || STATE.detailedReviews.length === 0)) {
+        STATE.detailedReviews = restored.detailedReviews.map(function(r) {
+          return { id: r.id, name: r.name, phone: r.phone, platform: r.platform, reviewUrl: r.review_url, content: r.content, rating: r.rating, photos: r.photos, ticketCode: r.ticket_code, ticketExpiry: r.ticket_expiry, ticketUsed: r.ticket_used, ticketUsedAt: r.ticket_used_at, createdAt: r.created_at };
+        });
+      }
+      if (restored.rentalBookings && restored.rentalBookings.length > 0 && (!STATE.rentalBookings || STATE.rentalBookings.length === 0)) {
+        STATE.rentalBookings = restored.rentalBookings.map(function(b) {
+          return { id: b.id, rentalId: b.rental_id, rentalName: b.rental_name, phone: b.phone, buyer: b.buyer, date: b.booking_date, timeSlot: b.time_slot, price: b.price, status: b.status, createdAt: b.created_at };
+        });
+      }
+      console.log('  ☁️  신규 데이터 복원: 주문 '+(STATE.foodOrders||[]).length+'건, 스탬프 '+Object.keys(STATE.spotVisits||{}).length+'명, 체험단 '+(STATE.experienceApps||[]).length+'건');
     }
   }
 

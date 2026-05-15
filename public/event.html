@@ -430,7 +430,12 @@ function subscribePush() {
   .catch(function(err) {
     btn.disabled = false;
     btn.textContent = '알림 받기';
-    showToast('🔔 이벤트 알림 등록이 완료되었습니다!');
+    try {
+      var q = JSON.parse(localStorage.getItem('jams_offline_queue') || '[]');
+      q.push({ type: 'event/subscribe', payload: { phone: phone }, time: Date.now() });
+      localStorage.setItem('jams_offline_queue', JSON.stringify(q));
+    } catch(e2) {}
+    showToast('네트워크 오류: 구독 요청이 대기열에 저장되었습니다');
     document.getElementById('pushPhone').value = '';
   });
 }

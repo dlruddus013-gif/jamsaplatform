@@ -244,6 +244,22 @@ input::placeholder,textarea::placeholder{color:var(--muted)}
 <script>
 var state = { step: 1, platform: '', reward: '', name: '', phone: '' };
 
+// ── 폼 자동저장 ──
+function saveReviewFormLocal() {
+  try { localStorage.setItem('jams_review_form', JSON.stringify(state)); } catch(e) {}
+}
+function loadReviewFormLocal() {
+  try {
+    var raw = localStorage.getItem('jams_review_form');
+    if (!raw) return;
+    var d = JSON.parse(raw);
+    if (d.name) { state.name = d.name; var el = document.getElementById('inpName'); if (el) el.value = d.name; }
+    if (d.phone) { state.phone = d.phone; var el = document.getElementById('inpPhone'); if (el) el.value = d.phone; }
+    if (d.platform) { state.platform = d.platform; selectPlatform(d.platform); }
+  } catch(e) {}
+}
+function clearReviewFormLocal() { try { localStorage.removeItem('jams_review_form'); } catch(e) {} }
+
 // ── 라우팅: /reward/:code 인 경우 리워드 확인 모드 ──
 (function(){
   var m = location.pathname.match(/\/reward\/([A-Za-z0-9]+)/);
@@ -341,6 +357,7 @@ function goStep(n) {
     if (!phone || phone.length < 10) { showToast('전화번호를 정확히 입력해주세요','error'); return; }
     state.name = name;
     state.phone = phone;
+    saveReviewFormLocal();
   }
   if (n === 3 && !state.platform) { showToast('리뷰 플랫폼을 선택해주세요','error'); return; }
   
@@ -358,8 +375,10 @@ function goStep(n) {
 function selectPlatform(p) {
   state.platform = p;
   ['naver','momcafe','sns'].forEach(function(id){
-    document.getElementById('pf-'+id).className='platform-btn'+(id===p?' selected':'');
+    var el = document.getElementById('pf-'+id);
+    if (el) el.className='platform-btn'+(id===p?' selected':'');
   });
+  saveReviewFormLocal();
 }
 
 function selectReward(r) {
@@ -390,6 +409,7 @@ async function submitReview() {
     });
     var d = await r.json();
     if (d.ok) {
+      clearReviewFormLocal();
       showDone(d.review);
     } else {
       showToast(d.error||'제출 실패','error');
@@ -441,6 +461,7 @@ function showToast(msg, type) {
   document.body.appendChild(t);
   setTimeout(function(){t.remove()},2500);
 }
+loadReviewFormLocal();
 </script>
 </body>
 </html>

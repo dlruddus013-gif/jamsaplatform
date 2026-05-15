@@ -405,6 +405,37 @@ function formatPhone(input) {
   input.value = val;
 }
 
+// ===== 폼 자동저장 (localStorage) =====
+var FORM_FIELDS = ['name','phone','platform','snsUrl','followers','visitDate','intro'];
+function saveFormLocal() {
+  try {
+    var d = {};
+    FORM_FIELDS.forEach(function(f) { var el = document.getElementById(f); if(el) d[f] = el.value; });
+    d.experience = selectedExp;
+    localStorage.setItem('jams_exp_form', JSON.stringify(d));
+  } catch(e) {}
+}
+function loadFormLocal() {
+  try {
+    var raw = localStorage.getItem('jams_exp_form');
+    if (!raw) return;
+    var d = JSON.parse(raw);
+    FORM_FIELDS.forEach(function(f) { var el = document.getElementById(f); if(el && d[f]) el.value = d[f]; });
+    if (d.experience) {
+      selectedExp = d.experience;
+      document.getElementById('experience').value = d.experience;
+      document.querySelectorAll('.exp-btn').forEach(function(b) { b.classList.toggle('selected', b.dataset.exp === d.experience); });
+    }
+  } catch(e) {}
+}
+function clearFormLocal() { try { localStorage.removeItem('jams_exp_form'); } catch(e) {} }
+FORM_FIELDS.forEach(function(f) {
+  var el = document.getElementById(f);
+  if (el) el.addEventListener('input', saveFormLocal);
+  if (el) el.addEventListener('change', saveFormLocal);
+});
+loadFormLocal();
+
 document.getElementById('phone').addEventListener('input', function() {
   formatPhone(this);
 });
@@ -454,6 +485,7 @@ function submitForm(e) {
   .then(function(result) {
     btn.disabled = false;
     btn.textContent = '체험단 신청하기';
+    clearFormLocal();
     showModal();
     document.getElementById('applyForm').reset();
     document.querySelectorAll('.exp-btn').forEach(function(b) { b.classList.remove('selected'); });
@@ -463,7 +495,14 @@ function submitForm(e) {
   .catch(function(err) {
     btn.disabled = false;
     btn.textContent = '체험단 신청하기';
+    try {
+      var q = JSON.parse(localStorage.getItem('jams_offline_queue') || '[]');
+      q.push({ type: 'experience-team/apply', payload: data, time: Date.now() });
+      localStorage.setItem('jams_offline_queue', JSON.stringify(q));
+    } catch(e2) {}
+    clearFormLocal();
     showModal();
+    document.getElementById('applyForm').reset();
   });
 
   return false;

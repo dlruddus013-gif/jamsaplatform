@@ -318,6 +318,50 @@ let currentTab = 'restaurant';
 let cart = {}; // { id: { item, qty } }
 let reviewRating = 0;
 
+// ===== 오프라인 큐 + localStorage 자동저장 =====
+function saveCartLocal() {
+  try {
+    var items = {};
+    Object.keys(cart).forEach(function(k) { items[k] = { id: cart[k].item.id, qty: cart[k].qty }; });
+    localStorage.setItem('jams_cart', JSON.stringify(items));
+  } catch(e) {}
+}
+function loadCartLocal() {
+  try {
+    var raw = localStorage.getItem('jams_cart');
+    if (!raw) return;
+    var items = JSON.parse(raw);
+    Object.keys(items).forEach(function(k) {
+      var item = findItem(items[k].id);
+      if (item) cart[k] = { item: item, qty: items[k].qty };
+    });
+    updateCartBadge();
+  } catch(e) {}
+}
+function clearCartLocal() { try { localStorage.removeItem('jams_cart'); } catch(e) {} }
+
+function getOfflineQueue() { try { return JSON.parse(localStorage.getItem('jams_offline_queue') || '[]'); } catch(e) { return []; } }
+function addToOfflineQueue(type, payload) {
+  var q = getOfflineQueue();
+  q.push({ type: type, payload: payload, time: Date.now() });
+  localStorage.setItem('jams_offline_queue', JSON.stringify(q));
+}
+async function processOfflineQueue() {
+  var q = getOfflineQueue();
+  if (q.length === 0) return;
+  var remaining = [];
+  for (var i = 0; i < q.length; i++) {
+    try {
+      var res = await fetch('/api/' + q[i].type, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(q[i].payload) });
+      if (!res.ok) remaining.push(q[i]);
+    } catch(e) { remaining.push(q[i]); }
+  }
+  localStorage.setItem('jams_offline_queue', JSON.stringify(remaining));
+  if (remaining.length < q.length) showToast('오프라인 대기 주문 ' + (q.length - remaining.length) + '건 전송 완료');
+}
+window.addEventListener('online', processOfflineQueue);
+setTimeout(processOfflineQueue, 3000);
+
 // ===== 탭 전환 =====
 function switchTab(tab) {
   currentTab = tab;
@@ -370,6 +414,7 @@ function addToCart(id) {
     cart[id] = { item, qty: 1 };
   }
   updateCartBadge();
+  saveCartLocal();
   showToast(`${item.emoji} ${item.name} 추가됨`);
 }
 
@@ -392,6 +437,7 @@ function getCartTotal() {
 function resetCart() {
   cart = {};
   updateCartBadge();
+  clearCartLocal();
 }
 
 // ===== 주문 모달 =====
@@ -591,13 +637,16 @@ async function submitOrder() {
       body: JSON.stringify(payload)
     });
     const data = await res.json();
+    if (data.ok) clearCartLocal();
     showConfirmation(data, payload);
   } catch (e) {
-    // 오프라인/데모: 가상 주문 확인
+    addToOfflineQueue('food-order', payload);
+    clearCartLocal();
     const fakeOrder = {
-      orderNumber: 'F' + Date.now().toString().slice(-6),
+      orderNumber: 'Q' + Date.now().toString().slice(-6),
       estimatedTime: time
     };
+    showToast('네트워크 오류: 주문이 대기열에 저장되었습니다');
     showConfirmation(fakeOrder, payload);
   }
 }
@@ -713,6 +762,7 @@ function showToast(msg) {
 }
 
 // ===== 초기화 =====
+loadCartLocal();
 renderMenu();
 </script>
 </body>

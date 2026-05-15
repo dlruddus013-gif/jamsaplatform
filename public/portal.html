@@ -1048,16 +1048,13 @@ body{
         showToast(data.message || '예약에 실패했습니다. 다시 시도해주세요.');
       }
     } catch(err) {
-      // Demo fallback
+      try {
+        var q = JSON.parse(localStorage.getItem('jams_offline_queue') || '[]');
+        q.push({ type: 'portal/book-cabin', payload: { phone: pendingBooking.phone, rentalId: pendingBooking.rentalId, date: pendingBooking.date, timeSlot: pendingBooking.timeSlot }, time: Date.now() });
+        localStorage.setItem('jams_offline_queue', JSON.stringify(q));
+      } catch(e2) {}
       closeModal();
-      showToast('✅ 예약이 완료되었습니다!');
-      document.querySelectorAll('.time-slot.selected').forEach(function(el){
-        el.classList.remove('selected');
-        el.classList.add('booked');
-        el.disabled = true;
-        el.textContent = pendingBooking.timeSlot + ' 마감';
-        el.onclick = null;
-      });
+      showToast('네트워크 오류: 예약 요청이 대기열에 저장되었습니다');
     }
 
     confirmBtn.disabled = false;

@@ -63,6 +63,19 @@ async function saveMsgHistory(e) { if (!cfg.enabled) return; try { await sb('msg
 async function saveLog(src, lvl, msg) { if (!cfg.enabled) return; try { await sb('crawl_logs','POST',{source:src,level:lvl,message:(msg||'').substring(0,500)}); } catch(e) {} }
 async function getSettings(key) { if (!cfg.enabled) return null; try { var d = await sb('settings?key=eq.'+key+'&select=value','GET'); return d&&d[0]?d[0].value:null; } catch(e) { return null; } }
 async function saveSettings(key, val) { if (!cfg.enabled) return; try { await sb('settings','POST',{key:key,value:val,updated_at:new Date().toISOString()}); } catch(e) {} }
+async function deleteTicket(id) { if (!cfg.enabled) return; try { await sb('tickets?id=eq.'+id,'DELETE',null); } catch(e) {} }
+
+// ═══ 신규 테이블 CRUD ═══
+async function saveFoodOrder(o) { if (!cfg.enabled) return; try { await sb('food_orders','POST',{id:o.id,phone:o.phone,name:o.name||'',items:o.items||[],total:o.total||0,order_date:o.date,order_time:o.time,status:o.status||'pending',cancel_deadline:o.cancelDeadline||null}); } catch(e) {} }
+async function updateFoodOrder(id,status) { if (!cfg.enabled) return; try { var b={status:status}; if(status==='ready')b.ready_at=new Date().toISOString(); await sb('food_orders?id=eq.'+id,'PATCH',b); } catch(e) {} }
+async function saveFoodReview(r) { if (!cfg.enabled) return; try { await sb('food_reviews','POST',{id:r.id,phone:r.phone,name:r.name||'',rating:r.rating||5,comment:r.comment||'',coupon_code:r.couponCode,coupon_used:!!r.couponUsed}); } catch(e) {} }
+async function saveSpotVisit(visitorId,spotId) { if (!cfg.enabled) return; try { await sb('spot_visits','POST',{visitor_id:visitorId,spot_id:spotId}); } catch(e) {} }
+async function saveStampReward(visitorId,code) { if (!cfg.enabled) return; try { await sb('stamp_rewards','POST',{id:'SR'+Date.now(),visitor_id:visitorId,coupon_code:code,coupon_type:'juice'}); } catch(e) {} }
+async function saveExperienceApp(a) { if (!cfg.enabled) return; try { await sb('experience_apps','POST',{id:a.id,name:a.name,phone:a.phone,sns:a.sns||'',sns_account:a.snsAccount||'',followers:a.followers||'',experience:a.experience||'',prefer_date:a.preferDate||'',intro:a.intro||'',status:a.status||'pending'}); } catch(e) {} }
+async function saveEventSub(phone) { if (!cfg.enabled) return; try { await sb('event_subscribers','POST',{phone:phone}); } catch(e) {} }
+async function saveDetailedReview(r) { if (!cfg.enabled) return; try { await sb('detailed_reviews','POST',{id:r.id,name:r.name,phone:r.phone,platform:r.platform||'direct',review_url:r.reviewUrl||'',content:r.content||'',rating:r.rating||5,photos:r.photos||0,ticket_code:r.ticketCode,ticket_expiry:r.ticketExpiry,ticket_used:!!r.ticketUsed}); } catch(e) {} }
+async function updateDetailedReviewUsed(code) { if (!cfg.enabled) return; try { await sb('detailed_reviews?ticket_code=eq.'+code,'PATCH',{ticket_used:true,ticket_used_at:new Date().toISOString()}); } catch(e) {} }
+async function saveRentalBooking(b) { if (!cfg.enabled) return; try { await sb('rental_bookings','POST',{id:b.id,rental_id:b.rentalId,rental_name:b.rentalName||'',phone:b.phone,buyer:b.buyer||'',booking_date:b.date,time_slot:b.timeSlot||'종일',price:b.price||0,status:b.status||'confirmed'}); } catch(e) {} }
 
 // ═══ 서버 시작 시 복원 ═══
 async function loadFromSupabase() {
@@ -70,13 +83,32 @@ async function loadFromSupabase() {
   try {
     console.log('  ☁️  Supabase 데이터 복원 중...');
     var weekAgo = new Date(Date.now()-7*86400000).toISOString().split('T')[0];
+    var today = new Date().toISOString().split('T')[0];
     var tickets = await sb('tickets?use_date=gte.'+weekAgo+'&order=detected_at.desc&limit=500','GET');
     var settings = await sb('settings?select=key,value','GET');
     var templates = await sb('msg_templates?order=sort_order','GET');
     var useHistory = await sb('use_history?order=created_at.desc&limit=100','GET');
-    var r = { tickets: Array.isArray(tickets)?tickets.map(fromSb):[], settings: {}, templates: Array.isArray(templates)?templates:[], useHistory: Array.isArray(useHistory)?useHistory:[] };
+    var foodOrders = await sb('food_orders?order_date=gte.'+weekAgo+'&order=created_at.desc&limit=200','GET');
+    var foodReviews = await sb('food_reviews?order=created_at.desc&limit=200','GET');
+    var spotVisits = await sb('spot_visits?order=visited_at.desc&limit=500','GET');
+    var stampRewards = await sb('stamp_rewards?order=created_at.desc&limit=200','GET');
+    var experienceApps = await sb('experience_apps?order=created_at.desc&limit=200','GET');
+    var eventSubs = await sb('event_subscribers?order=created_at.desc&limit=500','GET');
+    var detailedReviews = await sb('detailed_reviews?order=created_at.desc&limit=200','GET');
+    var rentalBookings = await sb('rental_bookings?booking_date=gte.'+today+'&order=created_at.desc&limit=200','GET');
+    var r = {
+      tickets: Array.isArray(tickets)?tickets.map(fromSb):[], settings: {}, templates: Array.isArray(templates)?templates:[], useHistory: Array.isArray(useHistory)?useHistory:[],
+      foodOrders: Array.isArray(foodOrders)?foodOrders:[],
+      foodReviews: Array.isArray(foodReviews)?foodReviews:[],
+      spotVisits: Array.isArray(spotVisits)?spotVisits:[],
+      stampRewards: Array.isArray(stampRewards)?stampRewards:[],
+      experienceApps: Array.isArray(experienceApps)?experienceApps:[],
+      eventSubs: Array.isArray(eventSubs)?eventSubs:[],
+      detailedReviews: Array.isArray(detailedReviews)?detailedReviews:[],
+      rentalBookings: Array.isArray(rentalBookings)?rentalBookings:[]
+    };
     if (Array.isArray(settings)) settings.forEach(function(s){r.settings[s.key]=s.value;});
-    console.log('  ☁️  복원: 티켓 '+r.tickets.length+'건, 설정 '+Object.keys(r.settings).length+'개');
+    console.log('  ☁️  복원: 티켓 '+r.tickets.length+'건, 주문 '+r.foodOrders.length+'건, 리뷰 '+r.detailedReviews.length+'건, 설정 '+Object.keys(r.settings).length+'개');
     return r;
   } catch(e) { console.log('  ☁️  복원 실패: '+e.message); return null; }
 }
@@ -89,6 +121,10 @@ async function fullSync(STATE) {
     if (STATE.tickets&&STATE.tickets.length>0) { var res=await saveTickets(STATE.tickets); if(res&&res.ok) r.tickets=res.count; }
     var today=new Date().toISOString().split('T')[0];
     if (STATE.monthlyData&&STATE.monthlyData[today]) await saveDailySales(today,STATE.monthlyData[today]);
+    if (STATE.foodOrders) for(var i=0;i<STATE.foodOrders.length;i++) await saveFoodOrder(STATE.foodOrders[i]);
+    if (STATE.foodReviews) for(var i=0;i<STATE.foodReviews.length;i++) await saveFoodReview(STATE.foodReviews[i]);
+    if (STATE.experienceApps) for(var i=0;i<STATE.experienceApps.length;i++) await saveExperienceApp(STATE.experienceApps[i]);
+    if (STATE.detailedReviews) for(var i=0;i<STATE.detailedReviews.length;i++) await saveDetailedReview(STATE.detailedReviews[i]);
   } catch(e) {}
   return r;
 }
@@ -164,9 +200,12 @@ function startAutoSync(STATE, ms) {
 function stopAutoSync() { if(cfg.timer){clearInterval(cfg.timer);cfg.timer=null;} if(cfg.cmdTimer){clearInterval(cfg.cmdTimer);cfg.cmdTimer=null;} }
 
 module.exports = {
-  init, isEnabled, loadFromSupabase,
-  saveTicket, saveTickets, updateTicketStatus, saveUseHistory, savePosLog,
+  init, isEnabled, loadFromSupabase, fromSb,
+  saveTicket, saveTickets, updateTicketStatus, deleteTicket, saveUseHistory, savePosLog,
   saveDailySales, saveMsgHistory, saveLog, getSettings, saveSettings,
+  saveFoodOrder, updateFoodOrder, saveFoodReview,
+  saveSpotVisit, saveStampReward, saveExperienceApp, saveEventSub,
+  saveDetailedReview, updateDetailedReviewUsed, saveRentalBooking,
   fullSync, startAutoSync, stopAutoSync, updateWorkerStatus, startCommandListener,
   syncTickets: saveTickets, syncDailySales: saveDailySales, syncUseHistory: saveUseHistory, syncLog: saveLog,
 };

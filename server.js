@@ -127,16 +127,28 @@ const STATE = {
       kakaoTemplateCode: process.env.KAKAO_TEMPLATE || '',
       autoSend: false,        // 크롤링 감지 시 자동 발송
       naverPlaceUrl: process.env.NAVER_PLACE_URL || 'https://map.naver.com/p/search/%EC%9E%A0%EC%82%AC%EB%B0%95%EB%AC%BC%EA%B4%80/place/1591058710',
-      naverNotice: process.env.NAVER_NOTICE || '운영 10:00~18:00(입장마감17시)/24개월미만 무료(증빙지참)/매표소 핸드링착용 후 입장/주차가능/반려동물 불가',
+      naverNotice: process.env.NAVER_NOTICE || '운영 10:00~17:00(입장마감16시)/24개월미만 무료(증빙지참)/매표소 핸드링착용 후 입장/주차가능/반려동물 불가',
+      smsUrlOptions: {
+        mapAndCourse: { enabled: false, label: '위치·코스', desc: '실시간 혼잡도, 나만의 코스짜기', path: '/map-me' },
+        menuAndOrder: { enabled: false, label: '메뉴·주문', desc: '식당메뉴, 체험 사전주문', path: '/menu' },
+        eventAndReview: { enabled: false, label: '이벤트·리뷰', desc: '보물찾기, 리뷰이벤트, 서포터즈', path: '/event' }
+      },
+      crawlInfoSources: {
+        homepage: 'https://jamsamuseum.co.kr/',
+        naverPlace: 'https://map.naver.com/p/search/%EC%9E%A0%EC%82%AC%EB%B0%95%EB%AC%BC%EA%B4%80/place/1591058710',
+        la2fdoci: 'https://la2fdoci.com/main/product/productDetail.do?id=1579'
+      },
+      crawledNotice: '',
+      lastNoticeCrawl: null,
       templates: [
         { id: 'welcome', name: '입장권 안내', type: 'sms',
-          body: '[한국잠사박물관]\n{buyer}님 입장권이 확인되었습니다.\n\n■ 상품: {product}\n■ 매수: {qty}매\n■ QR코드: {qrUrl}\n\n즐거운 관람 되세요!' },
+          body: '[한국잠사박물관]\n{buyer}님 입장권이 확인되었습니다.\n\n■ 상품: {product}\n■ 매수: {qty}매\n■ QR코드: {qrUrl}\n\n{notice}\n{optUrls}\n즐거운 관람 되세요!' },
         { id: 'remind', name: '방문 리마인드', type: 'sms',
-          body: '[한국잠사박물관]\n{buyer}님, 오늘 방문 예정입니다.\n\n■ 상품: {product}\n■ 매수: {qty}매\n\n운영시간: 09:00~18:00\n주소: 충북 청주시 흥덕구' },
+          body: '[한국잠사박물관]\n{buyer}님, 오늘 방문 예정입니다.\n\n■ 상품: {product}\n■ 매수: {qty}매\n\n{notice}\n{optUrls}\n즐거운 하루 되세요!' },
         { id: 'complete', name: '이용완료 감사', type: 'sms',
-          body: '[한국잠사박물관]\n{buyer}님 이용해주셔서 감사합니다.\n\n방문 후기를 남겨주시면 다음 방문 시 할인 혜택을 드립니다.\n\n감사합니다.' },
+          body: '[한국잠사박물관]\n{buyer}님 이용해주셔서 감사합니다.\n\n방문 후기를 남겨주시면 무료 입장권(1개월)을 드립니다!\n{optUrls}\n감사합니다.' },
         { id: 'kakao_welcome', name: '카카오 입장안내', type: 'kakao',
-          body: '{buyer}님의 입장권이 확인되었습니다.\n상품: {product}\n매수: {qty}매' },
+          body: '{buyer}님의 입장권이 확인되었습니다.\n상품: {product}\n매수: {qty}매\n\n{notice}\n{optUrls}' },
       ],
     },
   },
@@ -12151,6 +12163,180 @@ function sendTCP2(data, ip, port) {
 // ═══ [통합 끝] ═══════════════════════════════════════════════
 
 // ═══════════════════════════════════════════════════════════════
+//  운영정보 크롤링 + 문자 URL 옵션
+// ═══════════════════════════════════════════════════════════════
+
+async function crawlOperatingNotice() {
+  var cfg = STATE.config.msg;
+  var notices = [];
+  try {
+    var cheerioMod = cheerio;
+    if (!cheerioMod) { log('notice', '⚠️ cheerio 미설치 → 크롤링 불가', 'warning'); return; }
+
+    // 1. 홈페이지 크롤링
+    try {
+      var homeHtml = await fetchUrl(cfg.crawlInfoSources.homepage);
+      if (homeHtml) {
+        var $ = cheerioMod.load(homeHtml);
+        var texts = [];
+        $('body').find('*').each(function() {
+          var t = $(this).clone().children().remove().end().text().trim();
+          if (t && t.length > 5 && t.length < 200) texts.push(t);
+        });
+        var hours = texts.find(function(t) { return t.match(/운영|영업|이용시간|오전|오후|10[:시]|17[:시]/); });
+        var holiday = texts.find(function(t) { return t.match(/휴[무관]|쉬는|정기/); });
+        var caution = texts.find(function(t) { return t.match(/주[의차]|안전|불가|금지|마감|입장/); });
+        if (hours) notices.push(hours.substring(0, 80));
+        if (holiday) notices.push(holiday.substring(0, 60));
+        if (caution) notices.push(caution.substring(0, 80));
+        log('notice', '🌐 홈페이지 크롤링 완료', 'success');
+      }
+    } catch(e) { log('notice', '홈페이지 크롤링 실패: ' + e.message, 'warning'); }
+
+    // 2. la2fdoci 상품페이지 크롤링
+    try {
+      var la2fHtml = await fetchUrl(cfg.crawlInfoSources.la2fdoci);
+      if (la2fHtml) {
+        var $2 = cheerioMod.load(la2fHtml);
+        var prodTexts = [];
+        $2('.product_detail, .detail_content, .info_table, body').find('*').each(function() {
+          var t = $2(this).clone().children().remove().end().text().trim();
+          if (t && t.length > 5 && t.length < 200) prodTexts.push(t);
+        });
+        var opHours = prodTexts.find(function(t) { return t.match(/운영시간|10시|17시|입장마감/); });
+        var holiday2 = prodTexts.find(function(t) { return t.match(/휴[무관]|월요일/); });
+        var price = prodTexts.find(function(t) { return t.match(/\d+[,.]?\d*원/); });
+        if (opHours && notices.indexOf(opHours.substring(0, 80)) < 0) notices.push(opHours.substring(0, 80));
+        if (holiday2 && !notices.find(function(n) { return n.match(/휴[무관]/); })) notices.push(holiday2.substring(0, 60));
+        log('notice', '🌐 la2fdoci 상품페이지 크롤링 완료', 'success');
+      }
+    } catch(e) { log('notice', 'la2fdoci 크롤링 실패: ' + e.message, 'warning'); }
+
+  } catch(e) {
+    log('notice', '운영정보 크롤링 오류: ' + e.message, 'error');
+  }
+
+  // 기본 운영정보 (크롤링 실패 시 폴백)
+  if (notices.length === 0) {
+    notices.push('운영 10:00~17:00(입장마감 16시)');
+    notices.push('월요일 휴무');
+  }
+
+  cfg.crawledNotice = notices.join(' / ');
+  cfg.lastNoticeCrawl = new Date().toISOString();
+  log('notice', '📋 운영정보: ' + cfg.crawledNotice, 'info');
+  return cfg.crawledNotice;
+}
+
+function fetchUrl(url) {
+  return new Promise(function(resolve, reject) {
+    var mod = url.startsWith('https') ? https : require('http');
+    var opts = { timeout: 15000, headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' } };
+    mod.get(url, opts, function(resp) {
+      if (resp.statusCode >= 300 && resp.statusCode < 400 && resp.headers.location) {
+        return fetchUrl(resp.headers.location).then(resolve).catch(reject);
+      }
+      var data = [];
+      resp.on('data', function(c) { data.push(c); });
+      resp.on('end', function() { resolve(Buffer.concat(data).toString('utf-8')); });
+    }).on('error', reject).on('timeout', function() { reject(new Error('timeout')); });
+  });
+}
+
+function buildNoticeText() {
+  var cfg = STATE.config.msg;
+  return cfg.crawledNotice || cfg.naverNotice || '운영 10:00~17:00(입장마감16시)/월요일 휴무';
+}
+
+function buildOptUrlsText(baseUrl) {
+  var cfg = STATE.config.msg;
+  var opts = cfg.smsUrlOptions;
+  var lines = [];
+  var base = (baseUrl || cfg.baseUrl || '').replace(/\/$/, '');
+  if (!base) return '';
+  if (opts.mapAndCourse && opts.mapAndCourse.enabled) {
+    lines.push('📍 위치·코스: ' + base + opts.mapAndCourse.path);
+  }
+  if (opts.menuAndOrder && opts.menuAndOrder.enabled) {
+    lines.push('🍜 메뉴·주문: ' + base + opts.menuAndOrder.path);
+  }
+  if (opts.eventAndReview && opts.eventAndReview.enabled) {
+    lines.push('🎁 이벤트·리뷰: ' + base + opts.eventAndReview.path);
+  }
+  return lines.length > 0 ? '\n' + lines.join('\n') : '';
+}
+
+// 문자 템플릿 치환 시 {notice}와 {optUrls}도 처리
+function applyMsgVars(template, vars) {
+  var text = template;
+  text = text.replace(/\{notice\}/g, buildNoticeText());
+  text = text.replace(/\{optUrls\}/g, buildOptUrlsText(vars.baseUrl || STATE.config.msg.baseUrl));
+  Object.keys(vars).forEach(function(k) {
+    text = text.replace(new RegExp('\\{' + k + '\\}', 'g'), vars[k] || '');
+  });
+  // 빈 줄 정리 (연속 2줄 이상 공백 제거)
+  text = text.replace(/\n{3,}/g, '\n\n').trim();
+  return text;
+}
+
+// ── API: 문자 URL 옵션 조회/수정 ──
+app.get('/api/msg/url-options', function(req, res) {
+  res.json({ ok: true, options: STATE.config.msg.smsUrlOptions, baseUrl: STATE.config.msg.baseUrl });
+});
+
+app.post('/api/msg/url-options', function(req, res) {
+  var b = req.body;
+  if (b.baseUrl !== undefined) STATE.config.msg.baseUrl = b.baseUrl;
+  if (b.options) {
+    var opts = STATE.config.msg.smsUrlOptions;
+    if (b.options.mapAndCourse !== undefined) opts.mapAndCourse.enabled = !!b.options.mapAndCourse;
+    if (b.options.menuAndOrder !== undefined) opts.menuAndOrder.enabled = !!b.options.menuAndOrder;
+    if (b.options.eventAndReview !== undefined) opts.eventAndReview.enabled = !!b.options.eventAndReview;
+  }
+  sendState();
+  log('msg', '📩 문자 URL 옵션 변경', 'info');
+  res.json({ ok: true, options: STATE.config.msg.smsUrlOptions });
+});
+
+// ── API: 운영정보 크롤링 ──
+app.post('/api/msg/crawl-notice', function(req, res) {
+  crawlOperatingNotice().then(function(notice) {
+    res.json({ ok: true, notice: notice, crawledAt: STATE.config.msg.lastNoticeCrawl });
+  }).catch(function(e) {
+    res.json({ ok: false, error: e.message });
+  });
+});
+
+app.get('/api/msg/notice', function(req, res) {
+  res.json({
+    ok: true,
+    notice: buildNoticeText(),
+    crawledNotice: STATE.config.msg.crawledNotice,
+    lastCrawl: STATE.config.msg.lastNoticeCrawl,
+    optUrls: buildOptUrlsText(STATE.config.msg.baseUrl),
+    smsUrlOptions: STATE.config.msg.smsUrlOptions
+  });
+});
+
+// ── API: 문자 미리보기 (치환 결과) ──
+app.post('/api/msg/preview', function(req, res) {
+  var b = req.body;
+  var templateId = b.templateId || 'welcome';
+  var cfg = STATE.config.msg;
+  var tmpl = cfg.templates.find(function(t) { return t.id === templateId; });
+  if (!tmpl) return res.json({ ok: false, error: '템플릿을 찾을 수 없습니다' });
+  var vars = {
+    buyer: b.buyer || '홍길동',
+    product: b.product || '종일권(10시~17시)',
+    qty: b.qty || '2',
+    qrUrl: (cfg.baseUrl || 'https://example.com') + '/qr/SAMPLE123',
+    baseUrl: cfg.baseUrl || ''
+  };
+  var result = applyMsgVars(tmpl.body, vars);
+  res.json({ ok: true, preview: result, length: result.length });
+});
+
+// ═══════════════════════════════════════════════════════════════
 //  방문자 포털 · 식당메뉴 · 위치추적 · 체험단 · 이벤트
 // ═══════════════════════════════════════════════════════════════
 
@@ -12564,7 +12750,14 @@ server.listen(PORT, '0.0.0.0', function() {
   // ⏰ 자동 마감 타이머 초기화
   setupDailyAutoTimer();
   setupTimeAutoTimer();
-  
+
+  // 📋 운영정보 크롤링 (시작 시 1회 + 매일 09:00)
+  crawlOperatingNotice().catch(function(){});
+  setInterval(function() {
+    var h = new Date().getHours();
+    if (h === 9) crawlOperatingNotice().catch(function(){});
+  }, 3600000);
+
   // 🔧 브라우저 자동 복구 워치독 (60초마다 체크)
   if (puppeteer) {
     setInterval(async function() {

@@ -112,6 +112,9 @@ const STATE = {
     crawlDateTo: '',
     msg: {
       provider: process.env.MSG_PROVIDER || 'ppurio',  // ppurio, aligo, coolsms, kakao, direct
+      ppurioId: process.env.PPURIO_ID || '',
+      ppurioKey: process.env.PPURIO_KEY || '',
+      ppurioSender: process.env.PPURIO_SENDER || '',
       baseUrl: process.env.BASE_URL || '',  // 외부 접속 URL (예: https://jamsabak.kr)
       aligoKey: process.env.ALIGO_KEY || '',
       aligoId: process.env.ALIGO_ID || '',

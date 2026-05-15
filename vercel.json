@@ -8,6 +8,12 @@
     { "src": "/closing", "dest": "/server.js" },
     { "src": "/crm", "dest": "/server.js" },
     { "src": "/c", "dest": "/server.js" },
+    { "src": "/portal", "dest": "/server.js" },
+    { "src": "/menu", "dest": "/server.js" },
+    { "src": "/map-me", "dest": "/server.js" },
+    { "src": "/experience-team", "dest": "/server.js" },
+    { "src": "/event", "dest": "/server.js" },
+    { "src": "/spot/(.*)", "dest": "/server.js" },
     { "src": "/api/(.*)", "dest": "/server.js" },
     { "src": "/overlay.js", "dest": "/public/overlay.js" },
     { "src": "/(.*)", "dest": "/public/$1" }

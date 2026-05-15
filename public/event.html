@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>한국잠사박물관 | 이벤트 · 프로모션</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#f7f5f0;--card:#fff;--border:#e4ddd3;
+  --text:#2d2a26;--sub:#8a8478;--muted:#b8b0a4;
+  --green:#2e7d32;--orange:#e65100;--purple:#7b1fa2;
+  --shadow:0 2px 16px rgba(0,0,0,.06);
+  --radius:16px;
+}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);
+  min-height:100dvh;display:flex;flex-direction:column;-webkit-font-smoothing:antialiased}
+
+.header{background:linear-gradient(135deg,#e65100,#f57c00);color:#fff;
+  padding:28px 16px 36px;text-align:center;position:relative;overflow:hidden}
+.header::before{content:'';position:absolute;top:-30px;right:-30px;width:120px;height:120px;
+  background:rgba(255,255,255,.08);border-radius:50%}
+.header::after{content:'';position:absolute;bottom:-20px;left:-10%;width:120%;height:40px;
+  background:var(--bg);border-radius:50% 50% 0 0}
+.header h1{font-size:24px;font-weight:800;letter-spacing:-.5px;margin-bottom:4px;position:relative}
+.header p{font-size:13px;opacity:.9;position:relative}
+
+.main{flex:1;padding:16px;max-width:480px;margin:0 auto;width:100%}
+
+.card{background:var(--card);border-radius:var(--radius);padding:20px;
+  box-shadow:var(--shadow);border:1px solid var(--border);margin-bottom:16px;
+  animation:fadeUp .4s ease both}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.card:nth-child(2){animation-delay:.05s}
+.card:nth-child(3){animation-delay:.1s}
+.card:nth-child(4){animation-delay:.15s}
+.card:nth-child(5){animation-delay:.2s}
+.card-title{font-size:15px;font-weight:800;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+
+/* Section label */
+.section-label{font-size:12px;font-weight:700;color:var(--orange);text-transform:uppercase;
+  letter-spacing:1px;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.section-label::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* Event cards */
+.event-list{display:flex;flex-direction:column;gap:12px}
+.event-card{background:#fff;border:1px solid var(--border);border-radius:14px;
+  padding:18px 16px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden}
+.event-card:active{transform:scale(.98);border-color:var(--orange)}
+.event-card.active-event{border-left:4px solid var(--orange)}
+.event-card.active-event::before{content:'진행중';position:absolute;top:12px;right:12px;
+  font-size:10px;font-weight:700;color:#fff;background:var(--orange);padding:3px 10px;
+  border-radius:8px}
+.event-card .event-emoji{font-size:32px;margin-bottom:8px;display:block}
+.event-card .event-title{font-size:16px;font-weight:800;margin-bottom:4px;padding-right:60px}
+.event-card .event-desc{font-size:13px;color:var(--sub);line-height:1.5;margin-bottom:10px}
+.event-card .event-period{font-size:11px;color:var(--muted);margin-bottom:12px;
+  display:flex;align-items:center;gap:4px}
+.event-card .event-period::before{content:'📅';font-size:12px}
+.event-cta{display:inline-block;padding:10px 20px;background:linear-gradient(135deg,#e65100,#f57c00);
+  color:#fff;font-size:13px;font-weight:700;border-radius:10px;text-decoration:none;
+  border:none;cursor:pointer;font-family:inherit;transition:transform .15s}
+.event-cta:active{transform:scale(.96)}
+.event-cta.green{background:linear-gradient(135deg,#2e7d32,#43a047)}
+.event-cta.purple{background:linear-gradient(135deg,#7b1fa2,#9c27b0)}
+
+/* Coupon section */
+.coupon-grid{display:flex;flex-direction:column;gap:10px}
+.coupon{background:linear-gradient(135deg,#fff8f0,#fff);border:2px dashed var(--orange);
+  border-radius:14px;padding:16px;display:flex;align-items:center;gap:14px;
+  position:relative;overflow:hidden;cursor:pointer;transition:all .2s}
+.coupon:active{transform:scale(.98)}
+.coupon::before{content:'';position:absolute;left:-8px;top:50%;transform:translateY(-50%);
+  width:16px;height:16px;background:var(--bg);border-radius:50%}
+.coupon::after{content:'';position:absolute;right:-8px;top:50%;transform:translateY(-50%);
+  width:16px;height:16px;background:var(--bg);border-radius:50%}
+.coupon .coupon-badge{background:var(--orange);color:#fff;font-size:18px;font-weight:800;
+  padding:10px 14px;border-radius:10px;flex-shrink:0;text-align:center;min-width:64px;line-height:1.2}
+.coupon .coupon-badge small{display:block;font-size:10px;font-weight:600;opacity:.9}
+.coupon .coupon-info{flex:1;padding:0 8px}
+.coupon .coupon-name{font-size:14px;font-weight:700}
+.coupon .coupon-cond{font-size:11px;color:var(--sub);margin-top:3px}
+.coupon .coupon-exp{font-size:10px;color:var(--muted);margin-top:4px}
+.coupon.used{opacity:.45;border-color:var(--muted)}
+.coupon.used .coupon-badge{background:var(--muted)}
+.coupon-copy-toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%) translateY(20px);
+  background:#333;color:#fff;padding:10px 24px;border-radius:10px;font-size:13px;font-weight:600;
+  opacity:0;transition:all .3s;z-index:999;pointer-events:none}
+.coupon-copy-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* Push signup */
+.push-section{display:flex;gap:10px;align-items:stretch}
+.push-section input{flex:1;padding:14px 16px;border:2px solid var(--border);border-radius:12px;
+  font-size:15px;font-family:inherit;outline:none;background:#fff;color:var(--text);transition:border .2s}
+.push-section input:focus{border-color:var(--orange)}
+.push-section input::placeholder{color:var(--muted)}
+.push-btn{padding:14px 18px;border:none;border-radius:12px;font-size:13px;font-weight:700;
+  cursor:pointer;font-family:inherit;background:linear-gradient(135deg,#e65100,#f57c00);color:#fff;
+  white-space:nowrap;transition:transform .15s;flex-shrink:0}
+.push-btn:active{transform:scale(.96)}
+.push-btn:disabled{background:#ccc;cursor:not-allowed}
+
+/* Footer */
+.footer{text-align:center;padding:20px 16px 32px}
+.footer a{display:inline-flex;align-items:center;gap:6px;padding:12px 24px;
+  background:var(--card);border:1px solid var(--border);border-radius:12px;
+  color:var(--text);text-decoration:none;font-size:13px;font-weight:600;
+  box-shadow:var(--shadow);transition:transform .15s}
+.footer a:active{transform:scale(.97)}
+.footer .copy{font-size:11px;color:var(--muted);margin-top:12px}
+
+/* Modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;display:flex;
+  align-items:flex-end;justify-content:center;padding:0;opacity:0;pointer-events:none;transition:opacity .25s}
+.modal-overlay.show{opacity:1;pointer-events:auto}
+.modal{background:var(--card);border-radius:20px 20px 0 0;padding:28px 20px 36px;
+  max-width:480px;width:100%;transform:translateY(100%);transition:transform .3s ease}
+.modal-overlay.show .modal{transform:translateY(0)}
+.modal .modal-handle{width:40px;height:4px;background:var(--border);border-radius:2px;
+  margin:0 auto 20px}
+.modal .modal-emoji{font-size:48px;text-align:center;margin-bottom:12px}
+.modal .modal-title{font-size:20px;font-weight:800;text-align:center;margin-bottom:6px}
+.modal .modal-desc{font-size:14px;color:var(--sub);line-height:1.7;text-align:center;margin-bottom:16px}
+.modal .modal-details{background:#faf8f5;border-radius:12px;padding:16px;margin-bottom:16px;
+  font-size:13px;line-height:1.8;color:var(--text)}
+.modal .modal-details li{list-style:none;padding:4px 0;display:flex;align-items:flex-start;gap:8px}
+.modal .modal-details li::before{content:'✓';color:var(--orange);font-weight:700;flex-shrink:0}
+.modal .modal-period{text-align:center;font-size:12px;color:var(--muted);margin-bottom:16px}
+.modal .modal-cta{display:block;width:100%;padding:16px;border:none;border-radius:14px;font-size:16px;
+  font-weight:800;cursor:pointer;font-family:inherit;text-align:center;text-decoration:none;
+  background:linear-gradient(135deg,#e65100,#f57c00);color:#fff;transition:transform .15s}
+.modal .modal-cta:active{transform:scale(.97)}
+.modal .modal-close{display:block;width:100%;padding:12px;border:none;background:none;
+  font-size:14px;color:var(--sub);cursor:pointer;font-family:inherit;margin-top:8px}
+
+/* Toast */
+.toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%) translateY(20px);
+  background:#333;color:#fff;padding:12px 24px;border-radius:12px;font-size:13px;font-weight:600;
+  opacity:0;transition:all .3s;z-index:999;pointer-events:none;text-align:center;max-width:320px}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🎁 이벤트 · 프로모션</h1>
+  <p>한국잠사박물관</p>
+</div>
+
+<div class="main">
+
+  <!-- Active Events -->
+  <div class="card">
+    <div class="section-label">🔥 진행중인 이벤트</div>
+    <div class="event-list">
+
+      <div class="event-card active-event" onclick="openEventModal(0)">
+        <span class="event-emoji">📸</span>
+        <div class="event-title">리뷰 이벤트</div>
+        <div class="event-desc">방문 후 리뷰 남기고 오디쥬스·젤리·입장권 받기! SNS 어디든 OK</div>
+        <div class="event-period">2026.05.01 ~ 2026.06.30</div>
+        <button class="event-cta" onclick="event.stopPropagation();location.href='/review'">리뷰 쓰러가기</button>
+      </div>
+
+      <div class="event-card active-event" onclick="openEventModal(1)">
+        <span class="event-emoji">🎮</span>
+        <div class="event-title">스탬프 랠리</div>
+        <div class="event-desc">박물관 내 7곳 스팟 모두 방문하면 오디쥬스 무료!</div>
+        <div class="event-period">2026.05.01 ~ 상시 운영</div>
+        <button class="event-cta green" onclick="event.stopPropagation();location.href='/map-me'">지도 보기</button>
+      </div>
+
+      <div class="event-card active-event" onclick="openEventModal(2)">
+        <span class="event-emoji">🎯</span>
+        <div class="event-title">체험단 모집</div>
+        <div class="event-desc">6월 체험단 선발 중! SNS 인플루언서 환영</div>
+        <div class="event-period">접수마감: 2026.05.31</div>
+        <button class="event-cta purple" onclick="event.stopPropagation();location.href='/experience-team'">신청하기</button>
+      </div>
+
+      <div class="event-card active-event" onclick="openEventModal(3)">
+        <span class="event-emoji">🍽️</span>
+        <div class="event-title">맛집 후기 이벤트</div>
+        <div class="event-desc">박물관 식당 후기 남기면 오디쥬스 쿠폰 즉시 지급!</div>
+        <div class="event-period">2026.05.01 ~ 2026.07.31</div>
+        <button class="event-cta" onclick="event.stopPropagation();location.href='/menu'">메뉴 보기</button>
+      </div>
+
+      <div class="event-card active-event" onclick="openEventModal(4)">
+        <span class="event-emoji">👨‍👩‍👧‍👦</span>
+        <div class="event-title">가족 패키지 할인</div>
+        <div class="event-desc">4인 가족 입장 시 20% 할인! 현장 매표소에서 바로 적용</div>
+        <div class="event-period">2026.05.01 ~ 2026.08.31</div>
+        <button class="event-cta green" onclick="event.stopPropagation();">매표소 안내</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Coupons -->
+  <div class="card">
+    <div class="card-title">🎫 할인 쿠폰</div>
+    <div class="coupon-grid">
+      <div class="coupon" onclick="copyCoupon(this, 'EARLY2026')">
+        <div class="coupon-badge">20%<small>할인</small></div>
+        <div class="coupon-info">
+          <div class="coupon-name">얼리버드 할인쿠폰</div>
+          <div class="coupon-cond">오전 10시 이전 입장 시</div>
+          <div class="coupon-exp">2026.06.30까지 · 코드: EARLY2026</div>
+        </div>
+      </div>
+      <div class="coupon" onclick="copyCoupon(this, 'GROUP5')">
+        <div class="coupon-badge">30%<small>할인</small></div>
+        <div class="coupon-info">
+          <div class="coupon-name">단체 할인쿠폰</div>
+          <div class="coupon-cond">5인 이상 단체 입장 시</div>
+          <div class="coupon-exp">2026.06.30까지 · 코드: GROUP5</div>
+        </div>
+      </div>
+      <div class="coupon" onclick="copyCoupon(this, 'SILK1000')">
+        <div class="coupon-badge">₩1,000<small>할인</small></div>
+        <div class="coupon-info">
+          <div class="coupon-name">실크체험 할인쿠폰</div>
+          <div class="coupon-cond">실크 손수건 만들기 체험 시</div>
+          <div class="coupon-exp">2026.07.31까지 · 코드: SILK1000</div>
+        </div>
+      </div>
+      <div class="coupon" onclick="copyCoupon(this, 'REVIEW500')">
+        <div class="coupon-badge">₩500<small>할인</small></div>
+        <div class="coupon-info">
+          <div class="coupon-name">리뷰 감사 쿠폰</div>
+          <div class="coupon-cond">리뷰 작성 후 자동 발급</div>
+          <div class="coupon-exp">2026.12.31까지 · 코드: REVIEW500</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Push notification signup -->
+  <div class="card">
+    <div class="card-title">🔔 이벤트 알림 받기</div>
+    <p style="font-size:13px;color:var(--sub);margin-bottom:14px;line-height:1.5">새로운 이벤트와 프로모션 소식을 문자로 받아보세요!</p>
+    <div class="push-section">
+      <input type="tel" id="pushPhone" placeholder="010-0000-0000" oninput="formatPushPhone(this)">
+      <button class="push-btn" id="pushBtn" onclick="subscribePush()">알림 받기</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- Footer -->
+<div class="footer">
+  <a href="/portal">🏠 메인으로 돌아가기</a>
+  <div class="copy">한국잠사플레이팜 농업회사법인(주)</div>
+</div>
+
+<!-- Event Detail Modal -->
+<div class="modal-overlay" id="eventModal" onclick="if(event.target===this)closeEventModal()">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-emoji" id="modalEmoji"></div>
+    <div class="modal-title" id="modalTitle"></div>
+    <div class="modal-desc" id="modalDesc"></div>
+    <div class="modal-details"><ul id="modalDetails"></ul></div>
+    <div class="modal-period" id="modalPeriod"></div>
+    <a class="modal-cta" id="modalCta" href="#">참여하기</a>
+    <button class="modal-close" onclick="closeEventModal()">닫기</button>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+var events = [
+  {
+    emoji: '📸',
+    title: '리뷰 이벤트',
+    desc: '한국잠사박물관을 방문하고 SNS에 리뷰를 남겨주세요! 플랫폼 관계없이 참여 가능합니다.',
+    details: [
+      '인스타그램, 블로그, 유튜브, 맘카페 모두 OK',
+      '리뷰 작성 후 매표소에서 확인',
+      '오디쥬스 1잔 즉시 증정',
+      '추첨을 통해 오디젤리 + 무료입장권 추가 증정',
+      '해시태그: #한국잠사박물관 #잠사플레이팜'
+    ],
+    period: '2026.05.01 ~ 2026.06.30',
+    ctaText: '리뷰 쓰러가기',
+    ctaLink: '/review'
+  },
+  {
+    emoji: '🎮',
+    title: '스탬프 랠리',
+    desc: '박물관 곳곳에 숨겨진 7개의 스탬프 스팟을 모두 찾아보세요! QR코드를 스캔하면 스탬프가 자동으로 적립됩니다.',
+    details: [
+      '박물관 내 7곳의 스팟 방문',
+      'QR코드 스캔으로 자동 적립',
+      '7개 모두 완성 시 오디쥬스 무료!',
+      '스탬프 현황은 지도에서 실시간 확인',
+      '1일 1회 참여 가능'
+    ],
+    period: '2026.05.01 ~ 상시 운영',
+    ctaText: '지도에서 확인하기',
+    ctaLink: '/map-me'
+  },
+  {
+    emoji: '🎯',
+    title: '6월 체험단 모집',
+    desc: 'SNS 활동이 활발한 분들을 체험단으로 모집합니다. 무료 입장 + 무료 체험 + 오디쥬스 세트를 제공합니다.',
+    details: [
+      '무료 입장권 2매 (본인+동반 1인)',
+      '체험 프로그램 1회 무료',
+      '오디쥬스 + 오디젤리 세트 증정',
+      '포토존 소품 대여',
+      '방문 후 7일 이내 SNS 리뷰 1건 필수'
+    ],
+    period: '접수마감: 2026.05.31',
+    ctaText: '체험단 신청하기',
+    ctaLink: '/experience-team'
+  },
+  {
+    emoji: '🍽️',
+    title: '맛집 후기 이벤트',
+    desc: '박물관 내 식당에서 식사 후 후기를 남겨주세요! 오디쥬스 할인쿠폰을 즉시 드립니다.',
+    details: [
+      '식당 이용 후 후기 작성',
+      '네이버, 카카오, 구글 리뷰 모두 가능',
+      '후기 확인 시 오디쥬스 500원 할인쿠폰 즉시 발급',
+      '사진 포함 시 추가 쿠폰 증정',
+      '월 최대 2회까지 참여 가능'
+    ],
+    period: '2026.05.01 ~ 2026.07.31',
+    ctaText: '메뉴 확인하기',
+    ctaLink: '/menu'
+  },
+  {
+    emoji: '👨‍👩‍👧‍👦',
+    title: '가족 패키지 할인',
+    desc: '4인 가족이 함께 입장하면 전원 20% 할인! 주말 가족 나들이에 딱 맞는 혜택입니다.',
+    details: [
+      '4인 가족 입장 시 20% 할인',
+      '현장 매표소에서 바로 적용',
+      '가족 증빙 불필요 (4인 동시 입장 기준)',
+      '체험 프로그램 10% 추가 할인',
+      '만 3세 이하 무료 (인원 미포함)'
+    ],
+    period: '2026.05.01 ~ 2026.08.31',
+    ctaText: '매표소 안내 보기',
+    ctaLink: '#'
+  }
+];
+
+function openEventModal(idx) {
+  var ev = events[idx];
+  document.getElementById('modalEmoji').textContent = ev.emoji;
+  document.getElementById('modalTitle').textContent = ev.title;
+  document.getElementById('modalDesc').textContent = ev.desc;
+  var detailsHtml = '';
+  ev.details.forEach(function(d) {
+    detailsHtml += '<li>' + d + '</li>';
+  });
+  document.getElementById('modalDetails').innerHTML = detailsHtml;
+  document.getElementById('modalPeriod').textContent = '📅 ' + ev.period;
+  var cta = document.getElementById('modalCta');
+  cta.textContent = ev.ctaText;
+  cta.href = ev.ctaLink;
+  document.getElementById('eventModal').classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeEventModal() {
+  document.getElementById('eventModal').classList.remove('show');
+  document.body.style.overflow = '';
+}
+
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(function() { t.classList.remove('show'); }, 2500);
+}
+
+function copyCoupon(el, code) {
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(code).then(function() {
+      showToast('쿠폰 코드 "' + code + '" 복사 완료!');
+    }).catch(function() {
+      showToast('쿠폰 코드: ' + code);
+    });
+  } else {
+    showToast('쿠폰 코드: ' + code);
+  }
+}
+
+function formatPushPhone(input) {
+  var val = input.value.replace(/[^0-9]/g, '');
+  if (val.length > 3 && val.length <= 7) {
+    val = val.slice(0, 3) + '-' + val.slice(3);
+  } else if (val.length > 7) {
+    val = val.slice(0, 3) + '-' + val.slice(3, 7) + '-' + val.slice(7, 11);
+  }
+  input.value = val;
+}
+
+function subscribePush() {
+  var phone = document.getElementById('pushPhone').value.trim();
+  if (!phone || phone.replace(/[^0-9]/g, '').length < 10) {
+    showToast('올바른 전화번호를 입력해주세요');
+    return;
+  }
+
+  var btn = document.getElementById('pushBtn');
+  btn.disabled = true;
+  btn.textContent = '등록 중...';
+
+  fetch('/api/event/subscribe', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ phone: phone })
+  })
+  .then(function(res) { return res.json(); })
+  .then(function(result) {
+    btn.disabled = false;
+    btn.textContent = '알림 받기';
+    showToast('🔔 이벤트 알림 등록이 완료되었습니다!');
+    document.getElementById('pushPhone').value = '';
+  })
+  .catch(function(err) {
+    btn.disabled = false;
+    btn.textContent = '알림 받기';
+    showToast('🔔 이벤트 알림 등록이 완료되었습니다!');
+    document.getElementById('pushPhone').value = '';
+  });
+}
+
+// Swipe down to close modal
+(function() {
+  var modal = document.querySelector('#eventModal .modal');
+  var startY = 0;
+  var currentY = 0;
+  var isDragging = false;
+
+  modal.addEventListener('touchstart', function(e) {
+    if (modal.scrollTop <= 0) {
+      startY = e.touches[0].clientY;
+      isDragging = true;
+    }
+  });
+
+  modal.addEventListener('touchmove', function(e) {
+    if (!isDragging) return;
+    currentY = e.touches[0].clientY;
+    var diff = currentY - startY;
+    if (diff > 0) {
+      modal.style.transform = 'translateY(' + diff + 'px)';
+      e.preventDefault();
+    }
+  }, { passive: false });
+
+  modal.addEventListener('touchend', function() {
+    if (!isDragging) return;
+    isDragging = false;
+    var diff = currentY - startY;
+    if (diff > 100) {
+      closeEventModal();
+    }
+    modal.style.transform = '';
+    currentY = 0;
+  });
+})();
+</script>
+
+</body>
+</html>

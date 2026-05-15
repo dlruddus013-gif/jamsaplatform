@@ -179,8 +179,31 @@ function vDone(){
     (items?'<div class="card" style="text-align:left"><div style="font-size:11px;color:#888;margin-bottom:4px">구매 내역</div>'+items+
     '<div style="display:flex;justify-content:space-between;padding:6px 0 0;margin-top:4px;border-top:1px solid #252550;font-weight:800;font-size:14px"><span>합계</span><span style="color:#e91e7a">'+Number(r.totalAmount).toLocaleString()+'원</span></div></div>':'')+
     '<div class="done-guide"><b>📌 이용 안내</b><br>• 팔찌를 받으시면 <b>반드시 손목에 착용</b>해 주세요<br>• 박물관, 키즈카페, 에어바운스, 양떼정원, 사계절썰매장 자유 이용<br>• 팔찌 양도·환불·재발급 불가</div>'+
+    '<div id="kioskMap" class="card" style="text-align:left;padding:12px;margin-top:8px"><div style="font-size:13px;font-weight:800;margin-bottom:8px;color:#e91e7a">🗺️ 시설 안내도 · 실시간 혼잡도</div>'+
+    '<div style="position:relative;width:100%;height:200px;background:#0f0f28;border-radius:10px;overflow:hidden;border:1px solid #252550">'+
+    '<div style="position:absolute;top:8px;left:50%;transform:translateX(-50%);padding:3px 10px;background:#e91e7a22;border:1px solid #e91e7a44;border-radius:6px;font-size:9px;color:#e91e7a;font-weight:600;z-index:2">📍 현재위치: 매표소</div>'+
+    '<div id="zGate" style="position:absolute;bottom:10px;left:50%;transform:translateX(-50%);padding:4px 8px;background:#e91e7a33;border:1px solid #e91e7a;border-radius:6px;font-size:9px;font-weight:700;color:#fff;text-align:center;animation:pulse 2s infinite">🎫 매표소<br><span class="zc" data-z="gate"></span></div>'+
+    '<div id="zMain" style="position:absolute;top:40%;left:50%;transform:translate(-50%,-50%);width:80px;height:50px;background:#3b82f622;border:1px solid #3b82f6;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#3b82f6;text-align:center">🏛️ 본관<br><span class="zc" data-z="main"></span></div>'+
+    '<div id="zKids" style="position:absolute;top:15px;left:12px;padding:4px 6px;background:#10b98122;border:1px solid #10b981;border-radius:6px;font-size:8px;font-weight:700;color:#10b981;text-align:center">🎪 키즈카페<br><span class="zc" data-z="kids"></span></div>'+
+    '<div id="zSheep" style="position:absolute;top:15px;right:12px;padding:4px 6px;background:#f59e0b22;border:1px solid #f59e0b;border-radius:6px;font-size:8px;font-weight:700;color:#f59e0b;text-align:center">🐑 양떼정원<br><span class="zc" data-z="sheep"></span></div>'+
+    '<div id="zSled" style="position:absolute;bottom:40px;left:12px;padding:4px 6px;background:#8b5cf622;border:1px solid #8b5cf6;border-radius:6px;font-size:8px;font-weight:700;color:#8b5cf6;text-align:center">⛷️ 썰매장<br><span class="zc" data-z="sled"></span></div>'+
+    '<div id="zCabin" style="position:absolute;bottom:40px;right:12px;padding:4px 6px;background:#ec489922;border:1px solid #ec4899;border-radius:6px;font-size:8px;font-weight:700;color:#ec4899;text-align:center">🏕️ 오두막<br><span class="zc" data-z="cabin"></span></div>'+
+    '<div id="zFood" style="position:absolute;top:40%;left:8px;padding:4px 6px;background:#ef444422;border:1px solid #ef4444;border-radius:6px;font-size:8px;font-weight:700;color:#ef4444;text-align:center">🍜 식당<br><span class="zc" data-z="food"></span></div>'+
+    '</div>'+
+    '<div style="margin-top:8px;font-size:11px;font-weight:700;color:#aaa">🗺️ 추천 코스</div>'+
+    '<div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:4px;font-size:10px;color:#888">'+
+    '<span style="padding:3px 6px;background:#e91e7a22;border-radius:5px;color:#e91e7a;font-weight:600">① 매표소</span><span style="color:#333">→</span>'+
+    '<span style="padding:3px 6px;background:#3b82f622;border-radius:5px;color:#3b82f6;font-weight:600">② 본관 40분</span><span style="color:#333">→</span>'+
+    '<span style="padding:3px 6px;background:#10b98122;border-radius:5px;color:#10b981;font-weight:600">③ 키즈 30분</span><span style="color:#333">→</span>'+
+    '<span style="padding:3px 6px;background:#f59e0b22;border-radius:5px;color:#f59e0b;font-weight:600">④ 양떼 20분</span><span style="color:#333">→</span>'+
+    '<span style="padding:3px 6px;background:#8b5cf622;border-radius:5px;color:#8b5cf6;font-weight:600">⑤ 썰매 30분</span><span style="color:#333">→</span>'+
+    '<span style="padding:3px 6px;background:#ef444422;border-radius:5px;color:#ef4444;font-weight:600">⑥ 식당</span>'+
+    '</div>'+
+    '<div style="margin-top:6px;font-size:10px;color:#555">예상 소요시간: <b style="color:#e91e7a">약 2시간 30분</b></div>'+
+    '</div>'+
     '<button class="btn btn-pink" onclick="goStart()" style="font-size:18px">확인</button>'+
     '<div style="font-size:10px;color:#444;margin-top:8px">15초 후 자동으로 처음 화면으로 돌아갑니다</div></div>';
+  loadCrowdData();
 }
 
 // ═══ 액션 ═══
@@ -213,6 +236,23 @@ async function doVerify(){
   if(S.scr==='done')setTimeout(function(){if(S.scr==='done')goStart();},15000);
 }
 R();
+
+async function loadCrowdData(){
+  try{
+    var r=await fetch('/api/crowd');var d=await r.json();
+    if(d.ok&&d.zones){
+      document.querySelectorAll('.zc').forEach(function(el){
+        var z=el.dataset.z;
+        if(d.zones[z]){
+          var lv=d.zones[z].level;
+          var lb=lv==='low'?'여유':lv==='medium'?'보통':'혼잡';
+          var cl=lv==='low'?'#10b981':lv==='medium'?'#f59e0b':'#ef4444';
+          el.style.color=cl;el.textContent=lb+' '+d.zones[z].count+'명';
+        }
+      });
+    }
+  }catch(e){}
+}
 </script>
 </body>
 </html>

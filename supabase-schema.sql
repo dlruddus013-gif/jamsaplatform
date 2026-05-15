@@ -214,6 +214,132 @@ $$ LANGUAGE plpgsql;
 CREATE TRIGGER trg_tickets_updated BEFORE UPDATE ON tickets
   FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 
+-- ═══ 12. 식당 사전주문 ═══
+CREATE TABLE IF NOT EXISTS food_orders (
+  id TEXT PRIMARY KEY,
+  phone TEXT,
+  name TEXT,
+  items JSONB DEFAULT '[]',
+  total INTEGER DEFAULT 0,
+  order_date DATE,
+  order_time TEXT,
+  status TEXT DEFAULT 'pending',
+  cancel_deadline TIMESTAMPTZ,
+  ready_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_food_orders_date ON food_orders(order_date DESC);
+
+-- 13. 음식 후기
+CREATE TABLE IF NOT EXISTS food_reviews (
+  id TEXT PRIMARY KEY,
+  phone TEXT,
+  name TEXT,
+  rating INTEGER DEFAULT 5,
+  comment TEXT,
+  coupon_code TEXT,
+  coupon_used BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 14. 스팟 방문 (스탬프 랠리)
+CREATE TABLE IF NOT EXISTS spot_visits (
+  id BIGSERIAL PRIMARY KEY,
+  visitor_id TEXT NOT NULL,
+  spot_id TEXT NOT NULL,
+  visited_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(visitor_id, spot_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_spot_visits_visitor ON spot_visits(visitor_id);
+
+-- 15. 스탬프 랠리 보상
+CREATE TABLE IF NOT EXISTS stamp_rewards (
+  id TEXT PRIMARY KEY,
+  visitor_id TEXT NOT NULL,
+  coupon_code TEXT,
+  coupon_type TEXT DEFAULT 'juice',
+  used BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 16. 체험단 응모
+CREATE TABLE IF NOT EXISTS experience_apps (
+  id TEXT PRIMARY KEY,
+  name TEXT,
+  phone TEXT,
+  sns TEXT,
+  sns_account TEXT,
+  followers TEXT,
+  experience TEXT,
+  prefer_date TEXT,
+  intro TEXT,
+  status TEXT DEFAULT 'pending',
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 17. 이벤트 알림 구독
+CREATE TABLE IF NOT EXISTS event_subscribers (
+  id BIGSERIAL PRIMARY KEY,
+  phone TEXT UNIQUE,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 18. 상세 리뷰 (입장권 증정)
+CREATE TABLE IF NOT EXISTS detailed_reviews (
+  id TEXT PRIMARY KEY,
+  name TEXT,
+  phone TEXT,
+  platform TEXT,
+  review_url TEXT,
+  content TEXT,
+  rating INTEGER DEFAULT 5,
+  photos INTEGER DEFAULT 0,
+  ticket_code TEXT,
+  ticket_expiry DATE,
+  ticket_used BOOLEAN DEFAULT FALSE,
+  ticket_used_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_detailed_reviews_ticket ON detailed_reviews(ticket_code);
+
+-- 19. 오두막/평상 예약
+CREATE TABLE IF NOT EXISTS rental_bookings (
+  id TEXT PRIMARY KEY,
+  rental_id TEXT,
+  rental_name TEXT,
+  phone TEXT,
+  buyer TEXT,
+  booking_date DATE,
+  time_slot TEXT DEFAULT '종일',
+  price INTEGER DEFAULT 0,
+  status TEXT DEFAULT 'confirmed',
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_rental_bookings_date ON rental_bookings(booking_date);
+
+-- RLS 추가
+ALTER TABLE food_orders ENABLE ROW LEVEL SECURITY;
+ALTER TABLE food_reviews ENABLE ROW LEVEL SECURITY;
+ALTER TABLE spot_visits ENABLE ROW LEVEL SECURITY;
+ALTER TABLE stamp_rewards ENABLE ROW LEVEL SECURITY;
+ALTER TABLE experience_apps ENABLE ROW LEVEL SECURITY;
+ALTER TABLE event_subscribers ENABLE ROW LEVEL SECURITY;
+ALTER TABLE detailed_reviews ENABLE ROW LEVEL SECURITY;
+ALTER TABLE rental_bookings ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "service_all" ON food_orders FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "service_all" ON food_reviews FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "service_all" ON spot_visits FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "service_all" ON stamp_rewards FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "service_all" ON experience_apps FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "service_all" ON event_subscribers FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "service_all" ON detailed_reviews FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "service_all" ON rental_bookings FOR ALL USING (true) WITH CHECK (true);
+
 -- ═══ 오래된 로그 자동 삭제 (30일) ═══
 CREATE OR REPLACE FUNCTION cleanup_old_logs()
 RETURNS void AS $$

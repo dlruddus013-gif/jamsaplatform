@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>내 위치 · 스탬프 랠리 - 한국잠사박물관</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Noto Sans KR',sans-serif;background:#f7f5f0;color:#333;min-height:100vh;-webkit-tap-highlight-color:transparent}
+.container{max-width:480px;margin:0 auto;padding-bottom:80px}
+
+/* Header */
+.header{background:linear-gradient(135deg,#2e7d32,#43a047);color:#fff;padding:20px 16px 18px;text-align:center;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(46,125,50,.3)}
+.header h1{font-size:18px;font-weight:700;letter-spacing:-.3px}
+.header .sub{font-size:12px;opacity:.85;margin-top:4px;font-weight:400}
+
+/* Section */
+.section{padding:16px;margin:12px 12px 0;background:#fff;border-radius:14px;box-shadow:0 1px 6px rgba(0,0,0,.06)}
+.section-title{font-size:15px;font-weight:700;margin-bottom:12px;color:#222;display:flex;align-items:center;gap:6px}
+
+/* Museum Map */
+.map-wrap{position:relative;width:100%;aspect-ratio:4/3.5;background:#e8f5e9;border-radius:12px;overflow:hidden;border:1px solid #c8e6c9}
+.map-grid{position:absolute;inset:0;display:grid;grid-template-columns:1fr 1fr 1fr;grid-template-rows:1fr 1fr 1fr;gap:6px;padding:10px}
+.zone{border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:11px;font-weight:600;cursor:pointer;position:relative;transition:transform .2s,box-shadow .2s;padding:4px;text-align:center;border:2px solid transparent}
+.zone:active{transform:scale(.95)}
+.zone .emoji{font-size:20px;margin-bottom:2px}
+.zone .name{font-size:10px;font-weight:700;line-height:1.2}
+.zone .crowd-badge{position:absolute;top:3px;right:3px;font-size:8px;font-weight:700;padding:1px 5px;border-radius:6px;color:#fff;line-height:1.4}
+.crowd-green{background:#4caf50}
+.crowd-yellow{background:#ff9800}
+.crowd-red{background:#f44336}
+
+.z-main{background:rgba(255,243,224,.9);border-color:#ffe0b2;grid-column:2;grid-row:2}
+.z-kids{background:rgba(225,245,254,.9);border-color:#b3e5fc;grid-column:1;grid-row:1}
+.z-sheep{background:rgba(232,245,233,.9);border-color:#c8e6c9;grid-column:3;grid-row:1}
+.z-sled{background:rgba(243,229,245,.9);border-color:#e1bee7;grid-column:1;grid-row:3}
+.z-cabin{background:rgba(255,243,224,.9);border-color:#ffe0b2;grid-column:3;grid-row:3}
+.z-food{background:rgba(255,235,238,.9);border-color:#ffcdd2;grid-column:1;grid-row:2}
+.z-gate{background:rgba(236,239,241,.9);border-color:#cfd8dc;grid-column:2;grid-row:3}
+
+/* Paths (dashed lines) */
+.map-paths{position:absolute;inset:0;pointer-events:none;z-index:1}
+.map-paths svg{width:100%;height:100%}
+.map-paths line{stroke:#81c784;stroke-width:2;stroke-dasharray:6 4;opacity:.6}
+
+/* GPS dot */
+.gps-dot{position:absolute;width:16px;height:16px;border-radius:50%;background:rgba(25,118,210,.9);border:3px solid #fff;box-shadow:0 0 0 0 rgba(25,118,210,.4);z-index:50;transform:translate(-50%,-50%);transition:left .8s ease,top .8s ease;display:none}
+.gps-dot.active{display:block;animation:gpsPulse 2s infinite}
+@keyframes gpsPulse{0%{box-shadow:0 0 0 0 rgba(25,118,210,.5)}70%{box-shadow:0 0 0 14px rgba(25,118,210,0)}100%{box-shadow:0 0 0 0 rgba(25,118,210,0)}}
+.gps-accuracy{position:absolute;border-radius:50%;background:rgba(25,118,210,.1);border:1px solid rgba(25,118,210,.15);transform:translate(-50%,-50%);z-index:49;display:none;pointer-events:none}
+.gps-accuracy.active{display:block}
+.gps-status{font-size:11px;color:#666;text-align:center;margin-top:8px;display:flex;align-items:center;justify-content:center;gap:4px}
+.gps-status .dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+.gps-status .dot.on{background:#4caf50;animation:gpsPulse 2s infinite}
+.gps-status .dot.off{background:#ccc}
+
+/* Stamp Rally */
+.stamp-scroll{display:flex;gap:10px;overflow-x:auto;padding:8px 0 12px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.stamp-scroll::-webkit-scrollbar{display:none}
+.stamp-item{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:4px}
+.stamp-circle{width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;transition:all .3s;position:relative}
+.stamp-circle.unvisited{background:#e0e0e0;color:#999;border:2px dashed #bbb}
+.stamp-circle.visited{background:linear-gradient(135deg,#2e7d32,#66bb6a);color:#fff;border:2px solid #2e7d32;animation:stampIn .5s}
+.stamp-circle.visited::after{content:'✓';position:absolute;bottom:-2px;right:-2px;width:18px;height:18px;background:#e65100;color:#fff;border-radius:50%;font-size:10px;display:flex;align-items:center;justify-content:center;font-weight:700;border:2px solid #fff}
+.stamp-label{font-size:10px;font-weight:600;color:#555;white-space:nowrap}
+@keyframes stampIn{0%{transform:scale(0) rotate(-180deg)}60%{transform:scale(1.2) rotate(10deg)}100%{transform:scale(1) rotate(0)}}
+
+.progress-bar-wrap{background:#e8e8e8;border-radius:8px;height:10px;overflow:hidden;margin:8px 0}
+.progress-bar-fill{height:100%;border-radius:8px;background:linear-gradient(90deg,#2e7d32,#66bb6a);transition:width .6s ease}
+.progress-text{font-size:13px;font-weight:600;color:#2e7d32;text-align:center;margin-bottom:6px}
+
+.btn-qr{width:100%;padding:14px;border:none;border-radius:12px;background:linear-gradient(135deg,#e65100,#ff6d00);color:#fff;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .2s;box-shadow:0 3px 12px rgba(230,81,0,.25)}
+.btn-qr:active{transform:scale(.97)}
+.btn-qr:disabled{opacity:.6;cursor:not-allowed}
+
+#qr-reader{width:100%;margin-top:10px;border-radius:12px;overflow:hidden;display:none}
+#qr-reader video{border-radius:12px}
+
+/* Coupon */
+.coupon{display:none;background:linear-gradient(135deg,#fff3e0,#ffe0b2);border:2px dashed #e65100;border-radius:14px;padding:16px;text-align:center;margin-top:12px;position:relative;overflow:hidden}
+.coupon.show{display:block;animation:couponIn .6s}
+@keyframes couponIn{0%{opacity:0;transform:scale(.8) rotate(-5deg)}100%{opacity:1;transform:scale(1) rotate(0)}}
+.coupon h3{color:#e65100;font-size:16px;margin-bottom:6px}
+.coupon .code{background:#fff;border:1px solid #e65100;border-radius:8px;padding:10px;font-size:18px;font-weight:800;color:#e65100;letter-spacing:2px;margin:8px 0;font-family:monospace}
+.coupon .note{font-size:11px;color:#888;margin-top:4px}
+
+/* Celebration */
+.celebration{position:fixed;inset:0;pointer-events:none;z-index:999;display:none}
+.celebration.active{display:block}
+.confetti{position:absolute;width:10px;height:10px;border-radius:2px;animation:confettiFall 3s ease-out forwards}
+@keyframes confettiFall{0%{opacity:1;transform:translateY(-20px) rotate(0)}100%{opacity:0;transform:translateY(100vh) rotate(720deg)}}
+
+/* Crowd Panel */
+.crowd-list{display:flex;flex-direction:column;gap:8px}
+.crowd-row{display:flex;align-items:center;gap:10px;padding:10px;background:#fafaf7;border-radius:10px}
+.crowd-row .c-emoji{font-size:20px;flex:0 0 32px;text-align:center}
+.crowd-row .c-info{flex:1;min-width:0}
+.crowd-row .c-name{font-size:13px;font-weight:600}
+.crowd-row .c-count{font-size:11px;color:#888;margin-top:1px}
+.crowd-row .c-bar-wrap{flex:0 0 80px;height:8px;background:#e8e8e8;border-radius:4px;overflow:hidden}
+.crowd-row .c-bar{height:100%;border-radius:4px;transition:width .6s ease}
+.crowd-row .c-badge{flex:0 0 auto;font-size:10px;font-weight:700;padding:2px 8px;border-radius:6px;color:#fff}
+.crowd-note{font-size:10px;color:#999;margin-top:8px;text-align:center}
+
+/* Course */
+.course-steps{position:relative;padding-left:28px}
+.course-step{position:relative;padding:8px 0 8px 12px;border-left:3px solid #c8e6c9;font-size:13px;line-height:1.5}
+.course-step:last-child{border-left-color:transparent}
+.course-step::before{content:attr(data-num);position:absolute;left:-14px;top:8px;width:24px;height:24px;border-radius:50%;background:#2e7d32;color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.course-step .step-name{font-weight:700}
+.course-step .step-time{font-size:11px;color:#888;margin-left:4px}
+.course-step.recommended{background:rgba(46,125,50,.06);border-radius:8px;margin-left:-12px;padding-left:24px}
+.course-step.recommended::after{content:'여유';font-size:9px;background:#4caf50;color:#fff;padding:1px 5px;border-radius:4px;margin-left:6px;font-weight:600}
+.course-total{text-align:center;margin-top:12px;padding:10px;background:#e8f5e9;border-radius:10px;font-size:13px;font-weight:600;color:#2e7d32}
+
+/* Footer */
+.footer{text-align:center;padding:20px 16px;margin-top:12px}
+.footer a{color:#2e7d32;text-decoration:none;font-size:13px;font-weight:600;padding:10px 24px;border:2px solid #2e7d32;border-radius:10px;display:inline-block;transition:all .2s}
+.footer a:active{background:#2e7d32;color:#fff}
+
+/* Toast */
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#333;color:#fff;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:600;z-index:200;opacity:0;transition:opacity .3s;pointer-events:none;max-width:calc(100% - 40px);text-align:center}
+.toast.show{opacity:1}
+
+/* Responsive */
+@media(max-width:360px){
+  .zone .name{font-size:9px}
+  .zone .emoji{font-size:16px}
+  .stamp-circle{width:48px;height:48px;font-size:18px}
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <!-- Header -->
+  <div class="header">
+    <h1>📍 내 위치 · 스탬프 랠리</h1>
+    <div class="sub">한국잠사박물관</div>
+  </div>
+
+  <!-- Museum Map -->
+  <div class="section">
+    <div class="section-title">🗺️ 박물관 지도</div>
+    <div class="map-wrap" id="museumMap">
+      <svg class="map-paths" viewBox="0 0 400 350" preserveAspectRatio="none">
+        <!-- Paths between zones -->
+        <line x1="80" y1="80" x2="200" y2="175"/><!-- Kids to Main -->
+        <line x1="320" y1="80" x2="200" y2="175"/><!-- Sheep to Main -->
+        <line x1="55" y1="175" x2="135" y2="175"/><!-- Food to Main -->
+        <line x1="200" y1="175" x2="200" y2="290"/><!-- Main to Gate -->
+        <line x1="80" y1="290" x2="200" y2="290"/><!-- Sled to Gate -->
+        <line x1="320" y1="290" x2="200" y2="290"/><!-- Cabin to Gate -->
+        <line x1="80" y1="80" x2="55" y2="175"/><!-- Kids to Food -->
+        <line x1="80" y1="290" x2="55" y2="175"/><!-- Sled to Food -->
+        <line x1="320" y1="80" x2="320" y2="290"/><!-- Sheep to Cabin -->
+      </svg>
+      <div class="map-grid">
+        <div class="zone z-kids" data-zone="kids" onclick="selectZone('kids')">
+          <span class="crowd-badge crowd-green" id="badge-kids">여유</span>
+          <span class="emoji">🎪</span><span class="name">키즈카페</span>
+        </div>
+        <div style="grid-column:2;grid-row:1;display:flex;align-items:center;justify-content:center;font-size:10px;color:#66bb6a;font-weight:600">
+          🌳 산책로
+        </div>
+        <div class="zone z-sheep" data-zone="sheep" onclick="selectZone('sheep')">
+          <span class="crowd-badge crowd-green" id="badge-sheep">여유</span>
+          <span class="emoji">🐑</span><span class="name">양떼정원</span>
+        </div>
+        <div class="zone z-food" data-zone="food" onclick="selectZone('food')">
+          <span class="crowd-badge crowd-green" id="badge-food">여유</span>
+          <span class="emoji">🍜</span><span class="name">식당/매점</span>
+        </div>
+        <div class="zone z-main" data-zone="main" onclick="selectZone('main')">
+          <span class="crowd-badge crowd-green" id="badge-main">여유</span>
+          <span class="emoji">🏛️</span><span class="name">본관<br>(잠사박물관)</span>
+        </div>
+        <div style="grid-column:3;grid-row:2;display:flex;align-items:center;justify-content:center;font-size:10px;color:#66bb6a;font-weight:600">
+          🌳 산책로
+        </div>
+        <div class="zone z-sled" data-zone="sled" onclick="selectZone('sled')">
+          <span class="crowd-badge crowd-green" id="badge-sled">여유</span>
+          <span class="emoji">⛷️</span><span class="name">사계절<br>썰매장</span>
+        </div>
+        <div class="zone z-gate" data-zone="gate" onclick="selectZone('gate')">
+          <span class="crowd-badge crowd-green" id="badge-gate">여유</span>
+          <span class="emoji">🎫</span><span class="name">매표소/입구</span>
+        </div>
+        <div class="zone z-cabin" data-zone="cabin" onclick="selectZone('cabin')">
+          <span class="crowd-badge crowd-green" id="badge-cabin">여유</span>
+          <span class="emoji">🏕️</span><span class="name">오두막존</span>
+        </div>
+      </div>
+      <div class="gps-dot" id="gpsDot"></div>
+      <div class="gps-accuracy" id="gpsAccuracy"></div>
+    </div>
+    <div class="gps-status" id="gpsStatus">
+      <span class="dot off" id="gpsDotIndicator"></span>
+      <span id="gpsText">위치 확인 중...</span>
+    </div>
+  </div>
+
+  <!-- Stamp Rally -->
+  <div class="section">
+    <div class="section-title">🎮 스탬프 랠리 - 모든 스팟을 방문하세요!</div>
+    <div class="progress-text" id="progressText">0/7 스팟 완료</div>
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="progressBar" style="width:0%"></div>
+    </div>
+    <div class="stamp-scroll" id="stampScroll">
+      <!-- Stamps rendered by JS -->
+    </div>
+    <button class="btn-qr" id="btnQrScan" onclick="toggleQrScan()">
+      📷 QR 스캔으로 스탬프 찍기
+    </button>
+    <div id="qr-reader"></div>
+    <div class="coupon" id="couponArea">
+      <h3>🎉 축하합니다!</h3>
+      <p>모든 스팟을 방문하셨습니다!</p>
+      <div class="code" id="couponCode"></div>
+      <p style="font-size:13px;font-weight:600;color:#e65100;margin-top:6px">🧃 오디쥬스 이용권</p>
+      <p class="note">매점에서 이 화면을 보여주세요</p>
+    </div>
+  </div>
+
+  <!-- Crowd Density Panel -->
+  <div class="section">
+    <div class="section-title">👥 구역별 혼잡도</div>
+    <div class="crowd-list" id="crowdList">
+      <!-- Rendered by JS -->
+    </div>
+    <p class="crowd-note">* GPS 및 QR 체크인 기반 추정치입니다</p>
+  </div>
+
+  <!-- Recommended Course -->
+  <div class="section">
+    <div class="section-title">🗺️ 추천 코스</div>
+    <div class="course-steps" id="courseSteps">
+      <!-- Rendered by JS -->
+    </div>
+    <div class="course-total">⏱ 총 예상 소요시간: 약 2시간 30분</div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <a href="/portal">← 포털로 돌아가기</a>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- Celebration -->
+<div class="celebration" id="celebration"></div>
+
+<script>
+// ── Utilities ──
+function generateUUID() {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    var r = Math.random() * 16 | 0;
+    var v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+}
+
+function getVisitorId() {
+  var id = localStorage.getItem('jams_visitor_id');
+  if (!id) {
+    id = generateUUID();
+    localStorage.setItem('jams_visitor_id', id);
+  }
+  return id;
+}
+
+function showToast(msg, duration) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(function() { t.classList.remove('show'); }, duration || 2500);
+}
+
+// ── State ──
+var visitorId = getVisitorId();
+var qrScanning = false;
+var html5Qr = null;
+
+var SPOTS = [
+  { id: 'gate', name: '매표소', emoji: '🎫', zone: 'gate' },
+  { id: 'main', name: '본관', emoji: '🏛️', zone: 'main' },
+  { id: 'kids', name: '키즈카페', emoji: '🎪', zone: 'kids' },
+  { id: 'sheep', name: '양떼정원', emoji: '🐑', zone: 'sheep' },
+  { id: 'sled', name: '썰매장', emoji: '⛷️', zone: 'sled' },
+  { id: 'cabin', name: '오두막존', emoji: '🏕️', zone: 'cabin' },
+  { id: 'food', name: '식당', emoji: '🍜', zone: 'food' }
+];
+
+var COURSE = [
+  { spot: 'gate', name: '매표소', time: '' },
+  { spot: 'main', name: '본관 관람', time: '40분' },
+  { spot: 'kids', name: '키즈카페', time: '30분' },
+  { spot: 'sheep', name: '양떼정원', time: '20분' },
+  { spot: 'sled', name: '썰매장', time: '30분' },
+  { spot: 'cabin', name: '오두막 휴식', time: '자유' },
+  { spot: 'food', name: '식당 (점심/저녁)', time: '' }
+];
+
+var visited = new Set(JSON.parse(localStorage.getItem('jams_visited') || '[]'));
+var crowdData = {};
+
+// ── Zone GPS boundaries (relative to map: 0-1 range) ──
+var ZONE_POSITIONS = {
+  kids:  { x: 0.167, y: 0.167 },
+  sheep: { x: 0.833, y: 0.167 },
+  food:  { x: 0.167, y: 0.5 },
+  main:  { x: 0.5,   y: 0.5 },
+  sled:  { x: 0.167, y: 0.833 },
+  gate:  { x: 0.5,   y: 0.833 },
+  cabin: { x: 0.833, y: 0.833 }
+};
+
+// Museum approximate GPS bounds (example: 충주 잠사박물관 area)
+var MAP_BOUNDS = {
+  latMin: 36.9700, latMax: 36.9730,
+  lngMin: 127.9280, lngMax: 127.9320
+};
+
+// ── Render Stamps ──
+function renderStamps() {
+  var container = document.getElementById('stampScroll');
+  container.innerHTML = '';
+  var count = 0;
+  SPOTS.forEach(function(spot) {
+    var isVisited = visited.has(spot.id);
+    if (isVisited) count++;
+    var item = document.createElement('div');
+    item.className = 'stamp-item';
+    item.innerHTML =
+      '<div class="stamp-circle ' + (isVisited ? 'visited' : 'unvisited') + '">' +
+        (isVisited ? '✓' : spot.emoji) +
+      '</div>' +
+      '<span class="stamp-label">' + spot.name + '</span>';
+    container.appendChild(item);
+  });
+  document.getElementById('progressText').textContent = count + '/7 스팟 완료';
+  document.getElementById('progressBar').style.width = (count / 7 * 100) + '%';
+
+  if (count === 7) {
+    showCoupon();
+  }
+}
+
+// ── Stamp Check-in ──
+function checkinSpot(spotId) {
+  if (visited.has(spotId)) {
+    showToast('이미 방문한 스팟입니다');
+    return;
+  }
+  var spot = SPOTS.find(function(s) { return s.id === spotId; });
+  if (!spot) {
+    showToast('알 수 없는 스팟입니다');
+    return;
+  }
+
+  // POST to server
+  fetch('/api/spot/checkin', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ visitorId: visitorId, spotId: spotId })
+  }).catch(function() {});
+
+  visited.add(spotId);
+  localStorage.setItem('jams_visited', JSON.stringify(Array.from(visited)));
+  showToast(spot.emoji + ' ' + spot.name + ' 스탬프 획득!');
+  renderStamps();
+}
+
+// ── QR Scanning ──
+function toggleQrScan() {
+  var readerEl = document.getElementById('qr-reader');
+  var btn = document.getElementById('btnQrScan');
+
+  if (qrScanning) {
+    stopQrScan();
+    return;
+  }
+
+  readerEl.style.display = 'block';
+  btn.innerHTML = '⏹ 스캔 중지';
+  qrScanning = true;
+
+  html5Qr = new Html5Qrcode('qr-reader');
+  html5Qr.start(
+    { facingMode: 'environment' },
+    { fps: 10, qrbox: { width: 220, height: 220 } },
+    function(decoded) {
+      // Expected QR: "jams:spot:<spotId>"
+      if (decoded.startsWith('jams:spot:')) {
+        var spotId = decoded.split(':')[2];
+        checkinSpot(spotId);
+        stopQrScan();
+      } else {
+        showToast('유효하지 않은 QR코드입니다');
+      }
+    },
+    function() {} // ignore scan failures
+  ).catch(function(err) {
+    showToast('카메라 접근 오류: ' + err);
+    stopQrScan();
+  });
+}
+
+function stopQrScan() {
+  var readerEl = document.getElementById('qr-reader');
+  var btn = document.getElementById('btnQrScan');
+  qrScanning = false;
+  btn.innerHTML = '📷 QR 스캔으로 스탬프 찍기';
+  if (html5Qr) {
+    html5Qr.stop().then(function() {
+      html5Qr.clear();
+      readerEl.style.display = 'none';
+    }).catch(function() {
+      readerEl.style.display = 'none';
+    });
+  }
+}
+
+// ── Coupon & Celebration ──
+function showCoupon() {
+  var coupon = document.getElementById('couponArea');
+  if (coupon.classList.contains('show')) return;
+  var code = 'SILK-' + visitorId.substring(0, 8).toUpperCase();
+  document.getElementById('couponCode').textContent = code;
+  coupon.classList.add('show');
+  triggerCelebration();
+}
+
+function triggerCelebration() {
+  var el = document.getElementById('celebration');
+  el.classList.add('active');
+  var colors = ['#e65100', '#2e7d32', '#1976d2', '#f44336', '#ff9800', '#9c27b0', '#ffeb3b'];
+  for (var i = 0; i < 60; i++) {
+    var c = document.createElement('div');
+    c.className = 'confetti';
+    c.style.left = Math.random() * 100 + '%';
+    c.style.top = '-10px';
+    c.style.background = colors[Math.floor(Math.random() * colors.length)];
+    c.style.width = (6 + Math.random() * 8) + 'px';
+    c.style.height = (6 + Math.random() * 8) + 'px';
+    c.style.animationDelay = (Math.random() * 2) + 's';
+    c.style.animationDuration = (2 + Math.random() * 2) + 's';
+    c.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+    el.appendChild(c);
+  }
+  setTimeout(function() {
+    el.classList.remove('active');
+    el.innerHTML = '';
+  }, 5000);
+}
+
+// ── Crowd Data ──
+function getCrowdLabel(density) {
+  if (density < 0.4) return { text: '여유', cls: 'crowd-green', color: '#4caf50' };
+  if (density < 0.7) return { text: '보통', cls: 'crowd-yellow', color: '#ff9800' };
+  return { text: '혼잡', cls: 'crowd-red', color: '#f44336' };
+}
+
+function fetchCrowdData() {
+  fetch('/api/crowd').then(function(r) { return r.json(); }).then(function(data) {
+    crowdData = data;
+    renderCrowdBadges();
+    renderCrowdPanel();
+    renderCourse();
+  }).catch(function() {
+    // Use mock data if API unavailable
+    var zones = ['kids', 'sheep', 'food', 'main', 'sled', 'gate', 'cabin'];
+    zones.forEach(function(z) {
+      if (!crowdData[z]) {
+        crowdData[z] = { density: Math.random(), count: Math.floor(Math.random() * 40) };
+      }
+    });
+    renderCrowdBadges();
+    renderCrowdPanel();
+    renderCourse();
+  });
+}
+
+function renderCrowdBadges() {
+  Object.keys(crowdData).forEach(function(zone) {
+    var badge = document.getElementById('badge-' + zone);
+    if (!badge) return;
+    var info = getCrowdLabel(crowdData[zone].density);
+    badge.textContent = info.text;
+    badge.className = 'crowd-badge ' + info.cls;
+  });
+}
+
+function renderCrowdPanel() {
+  var container = document.getElementById('crowdList');
+  var zoneInfo = {
+    gate:  { emoji: '🎫', name: '매표소/입구' },
+    main:  { emoji: '🏛️', name: '본관 (잠사박물관)' },
+    kids:  { emoji: '🎪', name: '키즈카페' },
+    sheep: { emoji: '🐑', name: '양떼정원' },
+    food:  { emoji: '🍜', name: '식당/매점' },
+    sled:  { emoji: '⛷️', name: '사계절썰매장' },
+    cabin: { emoji: '🏕️', name: '오두막존' }
+  };
+  var html = '';
+  Object.keys(zoneInfo).forEach(function(z) {
+    var data = crowdData[z] || { density: 0, count: 0 };
+    var info = getCrowdLabel(data.density);
+    html += '<div class="crowd-row">' +
+      '<span class="c-emoji">' + zoneInfo[z].emoji + '</span>' +
+      '<div class="c-info"><div class="c-name">' + zoneInfo[z].name + '</div>' +
+      '<div class="c-count">약 ' + (data.count || 0) + '명</div></div>' +
+      '<div class="c-bar-wrap"><div class="c-bar" style="width:' + (data.density * 100) + '%;background:' + info.color + '"></div></div>' +
+      '<span class="c-badge" style="background:' + info.color + '">' + info.text + '</span>' +
+    '</div>';
+  });
+  container.innerHTML = html;
+}
+
+// ── Recommended Course ──
+function renderCourse() {
+  var container = document.getElementById('courseSteps');
+  // Sort course: put less crowded zones first (excluding gate which stays #1)
+  var sorted = COURSE.slice();
+  if (Object.keys(crowdData).length > 0) {
+    // Keep gate first, sort the rest by crowd density
+    var first = sorted.shift();
+    sorted.sort(function(a, b) {
+      var da = (crowdData[a.spot] || { density: 0.5 }).density;
+      var db = (crowdData[b.spot] || { density: 0.5 }).density;
+      return da - db;
+    });
+    sorted.unshift(first);
+  }
+
+  var html = '';
+  sorted.forEach(function(step, i) {
+    var density = crowdData[step.spot] ? crowdData[step.spot].density : 0.5;
+    var isLow = density < 0.4;
+    html += '<div class="course-step' + (isLow && i > 0 ? ' recommended' : '') + '" data-num="' + (i + 1) + '">' +
+      '<span class="step-name">' + step.name + '</span>' +
+      (step.time ? '<span class="step-time">(' + step.time + ')</span>' : '') +
+    '</div>';
+  });
+  container.innerHTML = html;
+}
+
+// ── GPS Tracking ──
+var watchId = null;
+function startGPS() {
+  if (!navigator.geolocation) {
+    document.getElementById('gpsText').textContent = '위치 서비스를 사용할 수 없습니다';
+    return;
+  }
+  watchId = navigator.geolocation.watchPosition(
+    function(pos) {
+      var lat = pos.coords.latitude;
+      var lng = pos.coords.longitude;
+      var acc = pos.coords.accuracy;
+
+      document.getElementById('gpsDotIndicator').className = 'dot on';
+      document.getElementById('gpsText').textContent = '위치 추적 중 (정확도: ' + Math.round(acc) + 'm)';
+
+      // Convert GPS to map position (0-1 range)
+      var x = (lng - MAP_BOUNDS.lngMin) / (MAP_BOUNDS.lngMax - MAP_BOUNDS.lngMin);
+      var y = 1 - (lat - MAP_BOUNDS.latMin) / (MAP_BOUNDS.latMax - MAP_BOUNDS.latMin);
+
+      // Clamp to map
+      x = Math.max(0.05, Math.min(0.95, x));
+      y = Math.max(0.05, Math.min(0.95, y));
+
+      var mapEl = document.getElementById('museumMap');
+      var dot = document.getElementById('gpsDot');
+      var accCircle = document.getElementById('gpsAccuracy');
+
+      dot.style.left = (x * 100) + '%';
+      dot.style.top = (y * 100) + '%';
+      dot.classList.add('active');
+
+      // Accuracy circle
+      var mapWidth = mapEl.offsetWidth;
+      var metersPerPixel = (MAP_BOUNDS.lngMax - MAP_BOUNDS.lngMin) * 111320 * Math.cos(lat * Math.PI / 180) / mapWidth;
+      var accRadius = Math.min(acc / metersPerPixel, mapWidth * 0.3);
+      accCircle.style.left = (x * 100) + '%';
+      accCircle.style.top = (y * 100) + '%';
+      accCircle.style.width = (accRadius * 2) + 'px';
+      accCircle.style.height = (accRadius * 2) + 'px';
+      accCircle.classList.add('active');
+    },
+    function(err) {
+      document.getElementById('gpsDotIndicator').className = 'dot off';
+      if (err.code === 1) {
+        document.getElementById('gpsText').textContent = '위치 권한이 필요합니다';
+      } else {
+        document.getElementById('gpsText').textContent = '위치를 확인할 수 없습니다';
+      }
+    },
+    { enableHighAccuracy: true, maximumAge: 5000, timeout: 15000 }
+  );
+}
+
+// ── Zone selection ──
+function selectZone(zone) {
+  var zoneInfo = {
+    gate: '매표소/입구', main: '본관 (잠사박물관)', kids: '키즈카페',
+    sheep: '양떼정원', food: '식당/매점', sled: '사계절썰매장', cabin: '오두막존'
+  };
+  var data = crowdData[zone] || { density: 0, count: 0 };
+  var info = getCrowdLabel(data.density);
+  showToast(zoneInfo[zone] + ' - ' + info.text + ' (약 ' + data.count + '명)');
+}
+
+// ── Fetch stamp progress from server ──
+function fetchStampProgress() {
+  fetch('/api/spot/progress/' + visitorId).then(function(r) {
+    return r.json();
+  }).then(function(data) {
+    if (data && data.visited && Array.isArray(data.visited)) {
+      data.visited.forEach(function(id) { visited.add(id); });
+      localStorage.setItem('jams_visited', JSON.stringify(Array.from(visited)));
+      renderStamps();
+    }
+  }).catch(function() {
+    // Use local data if API unavailable
+  });
+}
+
+// ── Init ──
+document.addEventListener('DOMContentLoaded', function() {
+  renderStamps();
+  fetchCrowdData();
+  fetchStampProgress();
+  startGPS();
+
+  // Refresh crowd data every 30 seconds
+  setInterval(fetchCrowdData, 30000);
+});
+</script>
+</body>
+</html>

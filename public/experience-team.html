@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>한국잠사박물관 | 체험단 모집</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#f7f5f0;--card:#fff;--border:#e4ddd3;
+  --text:#2d2a26;--sub:#8a8478;--muted:#b8b0a4;
+  --green:#2e7d32;--orange:#e65100;--purple:#7b1fa2;
+  --shadow:0 2px 16px rgba(0,0,0,.06);
+  --radius:16px;
+}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);
+  min-height:100dvh;display:flex;flex-direction:column;-webkit-font-smoothing:antialiased}
+
+.header{background:linear-gradient(135deg,#7b1fa2,#9c27b0);color:#fff;
+  padding:28px 16px 36px;text-align:center;position:relative;overflow:hidden}
+.header::before{content:'';position:absolute;top:-30px;right:-30px;width:120px;height:120px;
+  background:rgba(255,255,255,.08);border-radius:50%}
+.header::after{content:'';position:absolute;bottom:-20px;left:-10%;width:120%;height:40px;
+  background:var(--bg);border-radius:50% 50% 0 0}
+.header h1{font-size:24px;font-weight:800;letter-spacing:-.5px;margin-bottom:4px;position:relative}
+.header p{font-size:13px;opacity:.9;position:relative}
+
+.main{flex:1;padding:16px;max-width:480px;margin:0 auto;width:100%}
+
+.card{background:var(--card);border-radius:var(--radius);padding:20px;
+  box-shadow:var(--shadow);border:1px solid var(--border);margin-bottom:16px;
+  animation:fadeUp .4s ease both}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.card:nth-child(2){animation-delay:.05s}
+.card:nth-child(3){animation-delay:.1s}
+.card:nth-child(4){animation-delay:.15s}
+.card:nth-child(5){animation-delay:.2s}
+.card:nth-child(6){animation-delay:.25s}
+.card-title{font-size:15px;font-weight:800;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+
+/* Banner */
+.banner{background:linear-gradient(135deg,#7b1fa2,#ab47bc);color:#fff;border-radius:var(--radius);
+  padding:24px 20px;margin-bottom:16px;text-align:center;position:relative;overflow:hidden;
+  animation:fadeUp .4s ease both}
+.banner::before{content:'';position:absolute;top:-20px;left:-20px;width:80px;height:80px;
+  background:rgba(255,255,255,.08);border-radius:50%}
+.banner::after{content:'';position:absolute;bottom:-15px;right:-15px;width:60px;height:60px;
+  background:rgba(255,255,255,.06);border-radius:50%}
+.banner h2{font-size:20px;font-weight:800;margin-bottom:6px;position:relative}
+.banner .deadline{display:inline-block;background:rgba(255,255,255,.2);padding:6px 16px;
+  border-radius:20px;font-size:13px;font-weight:600;margin:8px 0;position:relative}
+.banner .benefits{font-size:13px;line-height:1.7;opacity:.95;position:relative}
+.banner .review-note{font-size:11px;background:rgba(0,0,0,.15);padding:8px 14px;
+  border-radius:10px;margin-top:12px;display:inline-block;position:relative}
+.pulse{animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.02)}}
+
+/* Benefits grid */
+.benefit-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.benefit-item{background:#faf8f5;border:1px solid var(--border);border-radius:14px;padding:16px 14px;
+  text-align:center;transition:transform .15s}
+.benefit-item:active{transform:scale(.97)}
+.benefit-item .emoji{font-size:32px;margin-bottom:8px;display:block}
+.benefit-item .name{font-size:13px;font-weight:700;color:var(--text);line-height:1.4}
+.benefit-item .desc{font-size:11px;color:var(--sub);margin-top:4px}
+
+/* Form */
+label{display:block;font-size:12px;font-weight:600;color:var(--sub);margin-bottom:6px;margin-top:14px}
+label:first-child{margin-top:0}
+.required::after{content:' *';color:#e53935;font-size:11px}
+input[type="text"],input[type="tel"],input[type="url"],input[type="date"],textarea,select{
+  width:100%;padding:14px 16px;border:2px solid var(--border);border-radius:12px;
+  font-size:15px;font-family:inherit;outline:none;background:#fff;color:var(--text);transition:border .2s;
+  -webkit-appearance:none;appearance:none}
+input:focus,textarea:focus,select:focus{border-color:var(--purple)}
+textarea{resize:vertical;min-height:80px}
+input::placeholder,textarea::placeholder{color:var(--muted)}
+select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='7'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238a8478' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 16px center;padding-right:40px}
+
+/* Experience select */
+.exp-grid{display:flex;flex-direction:column;gap:10px}
+.exp-btn{padding:14px 16px;border:2px solid var(--border);border-radius:14px;background:#fff;
+  cursor:pointer;display:flex;align-items:center;gap:12px;transition:all .2s;font-family:inherit;text-align:left}
+.exp-btn:active{transform:scale(.98)}
+.exp-btn.selected{border-color:var(--purple);background:#f5f0fa}
+.exp-btn .emoji{font-size:28px;flex-shrink:0}
+.exp-btn .info .name{font-size:14px;font-weight:700;color:var(--text)}
+.exp-btn .info .desc{font-size:11px;color:var(--sub);margin-top:2px}
+.exp-btn .check{margin-left:auto;width:22px;height:22px;border-radius:11px;
+  border:2px solid var(--border);display:flex;align-items:center;justify-content:center;
+  font-size:12px;color:#fff;flex-shrink:0;transition:all .2s}
+.exp-btn.selected .check{background:var(--purple);border-color:var(--purple)}
+
+/* Submit */
+.submit-btn{width:100%;padding:18px;border:none;border-radius:14px;font-size:17px;
+  font-weight:800;cursor:pointer;font-family:inherit;transition:all .15s;
+  background:linear-gradient(135deg,#7b1fa2,#9c27b0);color:#fff;
+  box-shadow:0 6px 20px rgba(123,31,162,.25);margin-top:20px}
+.submit-btn:active{transform:scale(.97)}
+.submit-btn:disabled{background:#ccc;box-shadow:none;cursor:not-allowed}
+
+/* Reviews gallery */
+.review-scroll{display:flex;gap:12px;overflow-x:auto;padding:4px 0 12px;-webkit-overflow-scrolling:touch;
+  scroll-snap-type:x mandatory;scrollbar-width:none}
+.review-scroll::-webkit-scrollbar{display:none}
+.review-card{min-width:260px;max-width:280px;background:#faf8f5;border:1px solid var(--border);
+  border-radius:14px;padding:16px;flex-shrink:0;scroll-snap-align:start}
+.review-card .reviewer{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.review-card .avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#7b1fa2,#ab47bc);
+  display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;font-weight:700}
+.review-card .r-name{font-size:13px;font-weight:700}
+.review-card .r-date{font-size:11px;color:var(--sub)}
+.review-card .r-text{font-size:12px;line-height:1.6;color:var(--text);margin-bottom:8px}
+.review-card .r-tags{display:flex;gap:6px;flex-wrap:wrap}
+.review-card .r-tag{font-size:10px;background:#f0e6f6;color:var(--purple);padding:3px 8px;border-radius:8px;font-weight:600}
+.review-card .stars{color:#f9a825;font-size:13px;margin-bottom:8px}
+
+/* FAQ */
+.faq-item{border-bottom:1px solid var(--border);overflow:hidden}
+.faq-item:last-child{border-bottom:none}
+.faq-q{padding:14px 0;font-size:14px;font-weight:700;cursor:pointer;display:flex;
+  align-items:center;justify-content:space-between;gap:12px}
+.faq-q::after{content:'+';font-size:18px;color:var(--sub);flex-shrink:0;transition:transform .2s;width:20px;text-align:center}
+.faq-item.open .faq-q::after{content:'-';transform:rotate(180deg)}
+.faq-a{max-height:0;overflow:hidden;transition:max-height .3s ease;font-size:13px;line-height:1.7;color:var(--sub)}
+.faq-item.open .faq-a{max-height:300px}
+.faq-a-inner{padding:0 0 14px}
+
+/* Footer */
+.footer{text-align:center;padding:20px 16px 32px}
+.footer a{display:inline-flex;align-items:center;gap:6px;padding:12px 24px;
+  background:var(--card);border:1px solid var(--border);border-radius:12px;
+  color:var(--text);text-decoration:none;font-size:13px;font-weight:600;
+  box-shadow:var(--shadow);transition:transform .15s}
+.footer a:active{transform:scale(.97)}
+.footer .copy{font-size:11px;color:var(--muted);margin-top:12px}
+
+/* Modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;display:flex;
+  align-items:center;justify-content:center;padding:24px;opacity:0;pointer-events:none;transition:opacity .25s}
+.modal-overlay.show{opacity:1;pointer-events:auto}
+.modal{background:var(--card);border-radius:20px;padding:28px 24px;max-width:360px;width:100%;
+  text-align:center;transform:scale(.9);transition:transform .25s}
+.modal-overlay.show .modal{transform:scale(1)}
+.modal .emoji-big{font-size:56px;margin-bottom:12px}
+.modal h3{font-size:18px;font-weight:800;margin-bottom:8px}
+.modal p{font-size:13px;color:var(--sub);line-height:1.6;margin-bottom:16px}
+.modal button{padding:14px 32px;border:none;border-radius:12px;font-size:15px;font-weight:700;
+  cursor:pointer;font-family:inherit;background:linear-gradient(135deg,#7b1fa2,#9c27b0);color:#fff}
+.modal button:active{transform:scale(.97)}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🎯 체험단 모집</h1>
+  <p>한국잠사박물관 체험 파트너</p>
+</div>
+
+<div class="main">
+
+  <!-- Current Recruitment Banner -->
+  <div class="banner pulse">
+    <h2>2026년 6월 체험단 모집 중!</h2>
+    <div class="deadline">접수마감: 2026.05.31</div>
+    <div class="benefits">
+      무료입장 + 체험 무료 + 오디쥬스 제공
+    </div>
+    <div class="review-note">📢 SNS 리뷰 1건 필수 (인스타/블로그/맘카페)</div>
+  </div>
+
+  <!-- What You Get -->
+  <div class="card">
+    <div class="card-title">🎁 체험단 혜택</div>
+    <div class="benefit-grid">
+      <div class="benefit-item">
+        <span class="emoji">🎫</span>
+        <div class="name">무료 입장권 2매</div>
+        <div class="desc">본인 + 동반 1인</div>
+      </div>
+      <div class="benefit-item">
+        <span class="emoji">🧪</span>
+        <div class="name">체험 프로그램 무료</div>
+        <div class="desc">누에/실크/물레 중 택1</div>
+      </div>
+      <div class="benefit-item">
+        <span class="emoji">🧃</span>
+        <div class="name">오디쥬스 + 오디젤리</div>
+        <div class="desc">세트 제공</div>
+      </div>
+      <div class="benefit-item">
+        <span class="emoji">📸</span>
+        <div class="name">포토존 소품 제공</div>
+        <div class="desc">촬영 소품 대여</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Application Form -->
+  <div class="card">
+    <div class="card-title">📝 체험단 신청서</div>
+    <form id="applyForm" onsubmit="return submitForm(event)">
+      <label class="required">이름</label>
+      <input type="text" id="name" placeholder="실명을 입력해주세요" required>
+
+      <label class="required">연락처</label>
+      <input type="tel" id="phone" placeholder="010-0000-0000" required>
+
+      <label class="required">SNS 플랫폼</label>
+      <select id="platform" required>
+        <option value="" disabled selected>플랫폼을 선택해주세요</option>
+        <option value="instagram">인스타그램</option>
+        <option value="blog">블로그</option>
+        <option value="youtube">유튜브</option>
+        <option value="momcafe">맘카페</option>
+      </select>
+
+      <label class="required">SNS 계정 / URL</label>
+      <input type="url" id="snsUrl" placeholder="https://instagram.com/myaccount">
+
+      <label class="required">팔로워 / 이웃 수</label>
+      <select id="followers" required>
+        <option value="" disabled selected>선택해주세요</option>
+        <option value="under100">100명 미만</option>
+        <option value="100-500">100 ~ 500명</option>
+        <option value="500-1000">500 ~ 1,000명</option>
+        <option value="1000-5000">1,000 ~ 5,000명</option>
+        <option value="over5000">5,000명 이상</option>
+      </select>
+
+      <label class="required">희망 체험 프로그램</label>
+      <div class="exp-grid" id="expGrid">
+        <div class="exp-btn" onclick="selectExp(this,'silkworm')" data-value="silkworm">
+          <span class="emoji">🐛</span>
+          <div class="info">
+            <div class="name">누에 먹이주기</div>
+            <div class="desc">뽕잎 직접 주며 누에 관찰</div>
+          </div>
+          <div class="check">✓</div>
+        </div>
+        <div class="exp-btn" onclick="selectExp(this,'silk')" data-value="silk">
+          <span class="emoji">🧣</span>
+          <div class="info">
+            <div class="name">실크 손수건 만들기</div>
+            <div class="desc">천연 실크로 나만의 손수건</div>
+          </div>
+          <div class="check">✓</div>
+        </div>
+        <div class="exp-btn" onclick="selectExp(this,'wheel')" data-value="wheel">
+          <span class="emoji">🎡</span>
+          <div class="info">
+            <div class="name">전통 물레체험</div>
+            <div class="desc">실 뽑기 전통 물레 체험</div>
+          </div>
+          <div class="check">✓</div>
+        </div>
+      </div>
+      <input type="hidden" id="experience" value="">
+
+      <label class="required">희망 방문일</label>
+      <input type="date" id="visitDate" required min="2026-06-01" max="2026-06-30">
+
+      <label>간단한 자기소개</label>
+      <textarea id="intro" placeholder="활동 채널과 주요 콘텐츠를 간단히 소개해주세요 (예: 육아 블로거, 팔로워 2천명, 가족 체험 콘텐츠 위주)"></textarea>
+
+      <button type="submit" class="submit-btn" id="submitBtn">체험단 신청하기</button>
+    </form>
+  </div>
+
+  <!-- Past Teams Gallery -->
+  <div class="card">
+    <div class="card-title">📷 이전 체험단 후기</div>
+    <div class="review-scroll">
+      <div class="review-card">
+        <div class="reviewer">
+          <div class="avatar">김</div>
+          <div>
+            <div class="r-name">김서연 님</div>
+            <div class="r-date">2026년 5월 체험단</div>
+          </div>
+        </div>
+        <div class="stars">★★★★★</div>
+        <div class="r-text">아이가 누에를 직접 만지고 뽕잎 주는 걸 너무 좋아했어요! 오디쥬스도 맛있고, 실크 손수건은 기념품으로 딱이에요 👍</div>
+        <div class="r-tags">
+          <span class="r-tag">인스타그램</span>
+          <span class="r-tag">가족체험</span>
+        </div>
+      </div>
+      <div class="review-card">
+        <div class="reviewer">
+          <div class="avatar">박</div>
+          <div>
+            <div class="r-name">박지민 님</div>
+            <div class="r-date">2026년 4월 체험단</div>
+          </div>
+        </div>
+        <div class="stars">★★★★★</div>
+        <div class="r-text">블로그에 올렸더니 반응이 폭발! 물레 체험이 특히 인생 콘텐츠였어요. 사진도 너무 잘 나오는 곳이에요.</div>
+        <div class="r-tags">
+          <span class="r-tag">블로그</span>
+          <span class="r-tag">물레체험</span>
+        </div>
+      </div>
+      <div class="review-card">
+        <div class="reviewer">
+          <div class="avatar">이</div>
+          <div>
+            <div class="r-name">이수진 님</div>
+            <div class="r-date">2026년 3월 체험단</div>
+          </div>
+        </div>
+        <div class="stars">★★★★☆</div>
+        <div class="r-text">맘카페에 올렸더니 댓글이 100개 넘었어요! 아이들 체험학습으로 최고. 오디젤리 아이들이 계속 찾아요 ㅎㅎ</div>
+        <div class="r-tags">
+          <span class="r-tag">맘카페</span>
+          <span class="r-tag">누에체험</span>
+        </div>
+      </div>
+      <div class="review-card">
+        <div class="reviewer">
+          <div class="avatar">최</div>
+          <div>
+            <div class="r-name">최유나 님</div>
+            <div class="r-date">2026년 2월 체험단</div>
+          </div>
+        </div>
+        <div class="stars">★★★★★</div>
+        <div class="r-text">유튜브 브이로그로 찍었는데 조회수 대박! 박물관 내부가 영상 배경으로 너무 예뻐요. 재신청하고 싶어요!</div>
+        <div class="r-tags">
+          <span class="r-tag">유튜브</span>
+          <span class="r-tag">실크체험</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FAQ -->
+  <div class="card">
+    <div class="card-title">❓ 자주 묻는 질문</div>
+    <div class="faq-item" onclick="toggleFaq(this)">
+      <div class="faq-q">체험단 선정 기준은 무엇인가요?</div>
+      <div class="faq-a"><div class="faq-a-inner">SNS 활동성, 팔로워 수, 콘텐츠 품질 등을 종합적으로 고려합니다. 팔로워 수가 적더라도 양질의 콘텐츠를 생산하시는 분은 우대합니다. 매월 약 10~15명을 선발합니다.</div></div>
+    </div>
+    <div class="faq-item" onclick="toggleFaq(this)">
+      <div class="faq-q">리뷰는 언제까지 올려야 하나요?</div>
+      <div class="faq-a"><div class="faq-a-inner">방문일로부터 7일 이내에 SNS 리뷰 1건을 필수로 업로드해 주셔야 합니다. 업로드 후 캡처 화면을 카카오톡으로 보내주시면 확인 후 완료 처리됩니다.</div></div>
+    </div>
+    <div class="faq-item" onclick="toggleFaq(this)">
+      <div class="faq-q">동반인도 체험이 가능한가요?</div>
+      <div class="faq-a"><div class="faq-a-inner">네! 동반 1인은 무료 입장이 가능하며, 체험 프로그램도 50% 할인 가격으로 참여하실 수 있습니다. 만 3세 이하 영유아는 무료입니다.</div></div>
+    </div>
+    <div class="faq-item" onclick="toggleFaq(this)">
+      <div class="faq-q">이전에 신청했는데 다시 지원 가능한가요?</div>
+      <div class="faq-a"><div class="faq-a-inner">물론입니다! 이전 체험단 활동을 성실히 수행하신 분은 재선발 시 가산점을 드립니다. 다른 체험 프로그램을 선택하시면 새로운 콘텐츠 제작도 가능합니다.</div></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Footer -->
+<div class="footer">
+  <a href="/portal">🏠 메인으로 돌아가기</a>
+  <div class="copy">한국잠사플레이팜 농업회사법인(주)</div>
+</div>
+
+<!-- Success Modal -->
+<div class="modal-overlay" id="successModal">
+  <div class="modal">
+    <div class="emoji-big">🎉</div>
+    <h3>신청 완료!</h3>
+    <p>체험단 신청이 접수되었습니다.<br>선정 결과는 6월 첫째 주에<br>문자로 안내드립니다.</p>
+    <button onclick="closeModal()">확인</button>
+  </div>
+</div>
+
+<script>
+var selectedExp = '';
+
+function selectExp(el, value) {
+  var btns = document.querySelectorAll('.exp-btn');
+  btns.forEach(function(b) { b.classList.remove('selected'); });
+  el.classList.add('selected');
+  selectedExp = value;
+  document.getElementById('experience').value = value;
+}
+
+function toggleFaq(el) {
+  var wasOpen = el.classList.contains('open');
+  document.querySelectorAll('.faq-item').forEach(function(item) {
+    item.classList.remove('open');
+  });
+  if (!wasOpen) el.classList.add('open');
+}
+
+function formatPhone(input) {
+  var val = input.value.replace(/[^0-9]/g, '');
+  if (val.length > 3 && val.length <= 7) {
+    val = val.slice(0, 3) + '-' + val.slice(3);
+  } else if (val.length > 7) {
+    val = val.slice(0, 3) + '-' + val.slice(3, 7) + '-' + val.slice(7, 11);
+  }
+  input.value = val;
+}
+
+document.getElementById('phone').addEventListener('input', function() {
+  formatPhone(this);
+});
+
+function submitForm(e) {
+  e.preventDefault();
+
+  var name = document.getElementById('name').value.trim();
+  var phone = document.getElementById('phone').value.trim();
+  var platform = document.getElementById('platform').value;
+  var snsUrl = document.getElementById('snsUrl').value.trim();
+  var followers = document.getElementById('followers').value;
+  var experience = document.getElementById('experience').value;
+  var visitDate = document.getElementById('visitDate').value;
+  var intro = document.getElementById('intro').value.trim();
+
+  if (!name || !phone || !platform || !snsUrl || !followers || !visitDate) {
+    alert('필수 항목을 모두 입력해주세요.');
+    return false;
+  }
+  if (!experience) {
+    alert('희망 체험 프로그램을 선택해주세요.');
+    return false;
+  }
+
+  var btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.textContent = '신청 중...';
+
+  var data = {
+    name: name,
+    phone: phone,
+    platform: platform,
+    snsUrl: snsUrl,
+    followers: followers,
+    experience: experience,
+    visitDate: visitDate,
+    intro: intro
+  };
+
+  fetch('/api/experience-team/apply', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  })
+  .then(function(res) { return res.json(); })
+  .then(function(result) {
+    btn.disabled = false;
+    btn.textContent = '체험단 신청하기';
+    showModal();
+    document.getElementById('applyForm').reset();
+    document.querySelectorAll('.exp-btn').forEach(function(b) { b.classList.remove('selected'); });
+    selectedExp = '';
+    document.getElementById('experience').value = '';
+  })
+  .catch(function(err) {
+    btn.disabled = false;
+    btn.textContent = '체험단 신청하기';
+    showModal();
+  });
+
+  return false;
+}
+
+function showModal() {
+  document.getElementById('successModal').classList.add('show');
+}
+
+function closeModal() {
+  document.getElementById('successModal').classList.remove('show');
+}
+
+document.getElementById('successModal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+</script>
+
+</body>
+</html>

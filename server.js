@@ -12150,8 +12150,346 @@ function sendTCP2(data, ip, port) {
 
 // ═══ [통합 끝] ═══════════════════════════════════════════════
 
+// ═══════════════════════════════════════════════════════════════
+//  방문자 포털 · 식당메뉴 · 위치추적 · 체험단 · 이벤트
+// ═══════════════════════════════════════════════════════════════
+
+// ── 페이지 라우트 ──
+app.get('/portal', function(req, res) { res.sendFile(path.join(__dirname, 'public', 'portal.html')); });
+app.get('/menu', function(req, res) { res.sendFile(path.join(__dirname, 'public', 'menu.html')); });
+app.get('/map-me', function(req, res) { res.sendFile(path.join(__dirname, 'public', 'map-me.html')); });
+app.get('/experience-team', function(req, res) { res.sendFile(path.join(__dirname, 'public', 'experience-team.html')); });
+app.get('/event', function(req, res) { res.sendFile(path.join(__dirname, 'public', 'event.html')); });
+app.get('/spot/:spotId', function(req, res) { res.sendFile(path.join(__dirname, 'public', 'map-me.html')); });
+
+// ── 데이터 저장소 ──
+if (!STATE.foodOrders) STATE.foodOrders = [];
+if (!STATE.foodReviews) STATE.foodReviews = [];
+if (!STATE.spotVisits) STATE.spotVisits = {};
+if (!STATE.experienceApps) STATE.experienceApps = [];
+if (!STATE.eventSubs) STATE.eventSubs = [];
+if (!STATE.detailedReviews) STATE.detailedReviews = [];
+if (!STATE.crowdData) STATE.crowdData = {
+  main: { name: '본관', emoji: '🏛️', count: 0 },
+  kids: { name: '키즈카페', emoji: '🎪', count: 0 },
+  sheep: { name: '양떼정원', emoji: '🐑', count: 0 },
+  sled: { name: '사계절썰매장', emoji: '⛷️', count: 0 },
+  cabin: { name: '오두막존', emoji: '🏕️', count: 0 },
+  food: { name: '식당/매점', emoji: '🍜', count: 0 },
+  gate: { name: '매표소/입구', emoji: '🎫', count: 0 }
+};
+
+var SPOTS = [
+  { id: 'gate', name: '매표소', emoji: '🎫', zone: 'gate' },
+  { id: 'main', name: '본관', emoji: '🏛️', zone: 'main' },
+  { id: 'kids', name: '키즈카페', emoji: '🎪', zone: 'kids' },
+  { id: 'sheep', name: '양떼정원', emoji: '🐑', zone: 'sheep' },
+  { id: 'sled', name: '썰매장', emoji: '⛷️', zone: 'sled' },
+  { id: 'cabin', name: '오두막존', emoji: '🏕️', zone: 'cabin' },
+  { id: 'food', name: '식당', emoji: '🍜', zone: 'food' }
+];
+
+// ── 포털: 티켓 확인 (오두막 예약용) ──
+app.post('/api/portal/verify-ticket', function(req, res) {
+  var phone = (req.body.phone || '').replace(/[^0-9]/g, '');
+  if (phone.length < 4) return res.json({ ok: false, error: '전화번호를 입력해주세요' });
+  var phone4 = phone.slice(-4);
+  var found = STATE.tickets.filter(function(t) {
+    var tp = (t.phone || '').replace(/[^0-9]/g, '');
+    return tp.slice(-4) === phone4 && (t.status === '사용가능' || t.status === '확정' || t.status === '사용완료');
+  });
+  if (found.length === 0) return res.json({ ok: false, error: '유효한 입장권을 찾을 수 없습니다' });
+  res.json({
+    ok: true,
+    tickets: found.map(function(t) {
+      return { id: t.id, buyer: t.buyer, product: t.product, qty: t.qty, status: t.status };
+    }),
+    rentals: STATE.rentals,
+    rentalBookings: STATE.rentalBookings.filter(function(b) {
+      return b.date === new Date().toISOString().split('T')[0];
+    })
+  });
+});
+
+// ── 포털: 오두막/평상 예약 ──
+app.post('/api/portal/book-cabin', function(req, res) {
+  var b = req.body;
+  if (!b.phone || !b.rentalId) return res.json({ ok: false, error: '필수 정보를 입력해주세요' });
+  var rental = STATE.rentals.find(function(r) { return r.id === b.rentalId; });
+  if (!rental) return res.json({ ok: false, error: '해당 시설을 찾을 수 없습니다' });
+  var date = b.date || new Date().toISOString().split('T')[0];
+  var existing = STATE.rentalBookings.find(function(rb) {
+    return rb.rentalId === b.rentalId && rb.date === date && rb.timeSlot === b.timeSlot && rb.status !== 'cancelled';
+  });
+  if (existing) return res.json({ ok: false, error: '해당 시간대는 이미 예약되었습니다' });
+  var booking = {
+    id: 'RB' + Date.now(),
+    rentalId: b.rentalId,
+    rentalName: rental.name,
+    phone: b.phone,
+    buyer: b.buyer || '',
+    date: date,
+    timeSlot: b.timeSlot || '종일',
+    price: rental.price,
+    status: 'confirmed',
+    createdAt: new Date().toISOString()
+  };
+  STATE.rentalBookings.push(booking);
+  sendState();
+  log('rental', '📌 오두막 예약: ' + rental.name + ' (' + date + ' ' + booking.timeSlot + ')', 'success');
+  res.json({ ok: true, booking: booking });
+});
+
+// ── 식당메뉴: 사전주문 ──
+app.post('/api/food-order', function(req, res) {
+  var b = req.body;
+  if (!b.phone || !b.items || !b.items.length) return res.json({ ok: false, error: '주문 정보를 입력해주세요' });
+  var total = 0;
+  b.items.forEach(function(it) { total += (it.price || 0) * (it.qty || 1); });
+  var order = {
+    id: 'FO' + Date.now(),
+    phone: b.phone,
+    name: b.name || '',
+    items: b.items,
+    total: total,
+    date: b.date || new Date().toISOString().split('T')[0],
+    time: b.time || '12:00',
+    status: 'pending',
+    cancelDeadline: b.time ? (function() {
+      var d = new Date(b.date + 'T' + b.time + ':00');
+      d.setHours(d.getHours() - 1);
+      return d.toISOString();
+    })() : null,
+    createdAt: new Date().toISOString()
+  };
+  STATE.foodOrders.push(order);
+  log('food', '🍜 사전주문: ' + b.name + ' (' + b.items.length + '건, ' + total.toLocaleString() + '원)', 'success');
+  broadcast({ type: 'foodOrder', data: order });
+  res.json({ ok: true, order: order });
+});
+
+// ── 식당메뉴: 주문 목록 ──
+app.get('/api/food-orders', function(req, res) {
+  res.json({ ok: true, orders: STATE.foodOrders });
+});
+
+// ── 식당메뉴: 주문 상태 변경 (완료/취소) ──
+app.post('/api/food-order/status', function(req, res) {
+  var b = req.body;
+  var order = STATE.foodOrders.find(function(o) { return o.id === b.orderId; });
+  if (!order) return res.json({ ok: false, error: '주문을 찾을 수 없습니다' });
+  order.status = b.status;
+  if (b.status === 'ready') {
+    order.readyAt = new Date().toISOString();
+    log('food', '🍜 음식 완료: ' + order.name + ' (' + order.id + ')', 'success');
+  }
+  broadcast({ type: 'foodOrderUpdate', data: order });
+  res.json({ ok: true, order: order });
+});
+
+// ── 식당메뉴: 음식 후기 ──
+app.post('/api/food-review', function(req, res) {
+  var b = req.body;
+  if (!b.phone) return res.json({ ok: false, error: '전화번호를 입력해주세요' });
+  var code = 'FJ' + Math.random().toString(36).substring(2, 8).toUpperCase();
+  var review = {
+    id: 'FR' + Date.now(),
+    phone: b.phone,
+    name: b.name || '',
+    rating: b.rating || 5,
+    comment: (b.comment || '').substring(0, 300),
+    couponCode: code,
+    couponType: 'juice',
+    couponUsed: false,
+    createdAt: new Date().toISOString()
+  };
+  STATE.foodReviews.push(review);
+  log('food', '⭐ 음식후기: ' + review.name + ' (' + review.rating + '점) → 쿠폰 ' + code, 'success');
+  res.json({ ok: true, review: review, couponCode: code });
+});
+
+// ── 위치추적: 구역별 체류인원 ──
+app.get('/api/crowd', function(req, res) {
+  var zones = {};
+  Object.keys(STATE.crowdData).forEach(function(k) {
+    var z = STATE.crowdData[k];
+    var count = z.count || Math.floor(Math.random() * 15);
+    var level = count <= 5 ? 'low' : count <= 12 ? 'medium' : 'high';
+    zones[k] = { name: z.name, emoji: z.emoji, count: count, level: level };
+  });
+  res.json({ ok: true, zones: zones, updatedAt: new Date().toISOString() });
+});
+
+// ── 위치추적: GPS 위치 보고 ──
+app.post('/api/crowd/report', function(req, res) {
+  var b = req.body;
+  if (b.zone && STATE.crowdData[b.zone]) {
+    if (b.action === 'enter') STATE.crowdData[b.zone].count = (STATE.crowdData[b.zone].count || 0) + 1;
+    else if (b.action === 'leave') STATE.crowdData[b.zone].count = Math.max(0, (STATE.crowdData[b.zone].count || 0) - 1);
+  }
+  res.json({ ok: true });
+});
+
+// ── 스탬프 랠리: 스팟 목록 ──
+app.get('/api/spots', function(req, res) {
+  res.json({ ok: true, spots: SPOTS });
+});
+
+// ── 스탬프 랠리: 진행 상황 ──
+app.get('/api/spot/progress/:visitorId', function(req, res) {
+  var vid = req.params.visitorId;
+  var visits = STATE.spotVisits[vid] || {};
+  var completed = Object.keys(visits);
+  var allDone = completed.length >= SPOTS.length;
+  var couponCode = null;
+  if (allDone) {
+    if (!visits._coupon) {
+      visits._coupon = 'SJ' + Math.random().toString(36).substring(2, 8).toUpperCase();
+      STATE.spotVisits[vid] = visits;
+    }
+    couponCode = visits._coupon;
+  }
+  res.json({
+    ok: true,
+    spots: SPOTS.map(function(s) { return { id: s.id, name: s.name, emoji: s.emoji, visited: !!visits[s.id], visitedAt: visits[s.id] || null }; }),
+    completed: completed.filter(function(k) { return k !== '_coupon'; }).length,
+    total: SPOTS.length,
+    allDone: allDone,
+    couponCode: couponCode
+  });
+});
+
+// ── 스탬프 랠리: 체크인 ──
+app.post('/api/spot/checkin', function(req, res) {
+  var b = req.body;
+  if (!b.visitorId || !b.spotId) return res.json({ ok: false, error: '정보가 부족합니다' });
+  var spot = SPOTS.find(function(s) { return s.id === b.spotId; });
+  if (!spot) return res.json({ ok: false, error: '유효하지 않은 스팟입니다' });
+  if (!STATE.spotVisits[b.visitorId]) STATE.spotVisits[b.visitorId] = {};
+  if (STATE.spotVisits[b.visitorId][b.spotId]) {
+    return res.json({ ok: true, already: true, message: '이미 체크인한 스팟입니다' });
+  }
+  STATE.spotVisits[b.visitorId][b.spotId] = new Date().toISOString();
+  if (STATE.crowdData[spot.zone]) STATE.crowdData[spot.zone].count = (STATE.crowdData[spot.zone].count || 0) + 1;
+  var completed = Object.keys(STATE.spotVisits[b.visitorId]).filter(function(k) { return k !== '_coupon'; }).length;
+  var allDone = completed >= SPOTS.length;
+  var couponCode = null;
+  if (allDone && !STATE.spotVisits[b.visitorId]._coupon) {
+    couponCode = 'SJ' + Math.random().toString(36).substring(2, 8).toUpperCase();
+    STATE.spotVisits[b.visitorId]._coupon = couponCode;
+  } else if (allDone) {
+    couponCode = STATE.spotVisits[b.visitorId]._coupon;
+  }
+  log('stamp', '📍 스탬프: ' + spot.name + ' 체크인 (방문자 ' + b.visitorId.substring(0, 8) + ', ' + completed + '/' + SPOTS.length + ')', 'success');
+  res.json({ ok: true, spot: spot, completed: completed, total: SPOTS.length, allDone: allDone, couponCode: couponCode });
+});
+
+// ── 체험단 모집: 응모 ──
+app.post('/api/experience-team/apply', function(req, res) {
+  var b = req.body;
+  if (!b.phone || !b.name) return res.json({ ok: false, error: '이름과 전화번호를 입력해주세요' });
+  var existing = STATE.experienceApps.find(function(a) { return a.phone === b.phone; });
+  if (existing) return res.json({ ok: false, error: '이미 응모하셨습니다' });
+  var app = {
+    id: 'ET' + Date.now(),
+    name: b.name,
+    phone: b.phone,
+    sns: b.sns || '',
+    snsAccount: b.snsAccount || '',
+    followers: b.followers || '',
+    experience: b.experience || '',
+    preferDate: b.preferDate || '',
+    intro: (b.intro || '').substring(0, 500),
+    status: 'pending',
+    createdAt: new Date().toISOString()
+  };
+  STATE.experienceApps.push(app);
+  log('event', '🎯 체험단 응모: ' + b.name + ' (' + b.sns + ')', 'success');
+  res.json({ ok: true, application: app });
+});
+
+// ── 체험단: 응모 목록 (관리자) ──
+app.get('/api/experience-team/list', function(req, res) {
+  res.json({ ok: true, applications: STATE.experienceApps });
+});
+
+// ── 이벤트: 알림 구독 ──
+app.post('/api/event/subscribe', function(req, res) {
+  var b = req.body;
+  if (!b.phone) return res.json({ ok: false, error: '전화번호를 입력해주세요' });
+  var existing = STATE.eventSubs.find(function(s) { return s.phone === b.phone; });
+  if (existing) return res.json({ ok: true, message: '이미 구독중입니다' });
+  STATE.eventSubs.push({ phone: b.phone, createdAt: new Date().toISOString() });
+  log('event', '📩 이벤트 알림 구독: ' + b.phone, 'info');
+  res.json({ ok: true, message: '이벤트 알림 구독 완료!' });
+});
+
+// ── 상세 리뷰 → 1개월 입장권 발급 ──
+app.post('/api/review/detailed', function(req, res) {
+  var b = req.body;
+  if (!b.phone || !b.name) return res.json({ ok: false, error: '이름과 전화번호를 입력해주세요' });
+  if (!b.content || b.content.length < 50) return res.json({ ok: false, error: '리뷰 내용을 50자 이상 작성해주세요' });
+  var ticketCode = 'RT' + Math.random().toString(36).substring(2, 10).toUpperCase();
+  var expiryDate = new Date();
+  expiryDate.setMonth(expiryDate.getMonth() + 1);
+  var review = {
+    id: 'DR' + Date.now(),
+    name: b.name,
+    phone: b.phone,
+    platform: b.platform || 'direct',
+    reviewUrl: b.reviewUrl || '',
+    content: (b.content || '').substring(0, 2000),
+    rating: b.rating || 5,
+    photos: b.photos || 0,
+    ticketCode: ticketCode,
+    ticketExpiry: expiryDate.toISOString().split('T')[0],
+    ticketUsed: false,
+    createdAt: new Date().toISOString()
+  };
+  STATE.detailedReviews.push(review);
+  log('review', '⭐ 상세리뷰: ' + b.name + ' → 입장권 ' + ticketCode + ' (유효: ' + review.ticketExpiry + ')', 'success');
+  res.json({
+    ok: true,
+    review: review,
+    ticket: { code: ticketCode, expiry: review.ticketExpiry, type: '무료 입장권 1매 (유효기간 1개월)' }
+  });
+});
+
+// ── 상세 리뷰 입장권 확인 ──
+app.get('/api/review/ticket/:code', function(req, res) {
+  var code = req.params.code;
+  var review = STATE.detailedReviews.find(function(r) { return r.ticketCode === code; });
+  if (!review) return res.json({ ok: false, error: '유효하지 않은 코드입니다' });
+  var expired = new Date(review.ticketExpiry) < new Date();
+  res.json({
+    ok: true,
+    ticket: {
+      code: review.ticketCode,
+      name: review.name,
+      expiry: review.ticketExpiry,
+      used: review.ticketUsed,
+      expired: expired,
+      status: review.ticketUsed ? 'used' : expired ? 'expired' : 'valid'
+    }
+  });
+});
+
+// ── 상세 리뷰 입장권 사용처리 ──
+app.post('/api/review/ticket/use', function(req, res) {
+  var code = req.body.code;
+  var review = STATE.detailedReviews.find(function(r) { return r.ticketCode === code; });
+  if (!review) return res.json({ ok: false, error: '유효하지 않은 코드입니다' });
+  if (review.ticketUsed) return res.json({ ok: false, error: '이미 사용된 입장권입니다' });
+  if (new Date(review.ticketExpiry) < new Date()) return res.json({ ok: false, error: '유효기간이 만료되었습니다' });
+  review.ticketUsed = true;
+  review.ticketUsedAt = new Date().toISOString();
+  log('review', '🎫 리뷰 입장권 사용: ' + review.name + ' (' + code + ')', 'success');
+  res.json({ ok: true });
+});
+
+// ═══════════════════════════════════════════════════════════════
+
 app.get('*', function(req, res) {
-  // /c, /customer → customer.html (이미 위에서 처리됨)
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 

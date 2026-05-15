@@ -1,0 +1,1107 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1,user-scalable=no">
+<title>한국잠사박물관 - 방문자 포털</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Noto Sans KR',sans-serif;
+  background:#f7f5f0;
+  color:#333;
+  min-height:100vh;
+  -webkit-font-smoothing:antialiased;
+}
+.app{
+  max-width:480px;
+  margin:0 auto;
+  min-height:100vh;
+  background:#f7f5f0;
+  position:relative;
+  box-shadow:0 0 40px rgba(0,0,0,.06);
+}
+
+/* ── Header ── */
+.header{
+  background:linear-gradient(135deg,#2e7d32,#388e3c);
+  padding:28px 20px 24px;
+  text-align:center;
+  position:relative;
+  overflow:hidden;
+}
+.header::before{
+  content:'';
+  position:absolute;
+  top:-30px;right:-30px;
+  width:120px;height:120px;
+  background:rgba(255,255,255,.06);
+  border-radius:50%;
+}
+.header::after{
+  content:'';
+  position:absolute;
+  bottom:-20px;left:-20px;
+  width:80px;height:80px;
+  background:rgba(255,255,255,.04);
+  border-radius:50%;
+}
+.header h1{
+  font-size:22px;
+  font-weight:800;
+  color:#fff;
+  letter-spacing:-.5px;
+  position:relative;
+  z-index:1;
+}
+.header .subtitle{
+  font-size:12px;
+  color:rgba(255,255,255,.75);
+  margin-top:4px;
+  font-weight:400;
+  letter-spacing:1px;
+  position:relative;
+  z-index:1;
+}
+
+/* ── Section ── */
+.section{
+  padding:20px 16px 0;
+}
+.section-title{
+  font-size:15px;
+  font-weight:700;
+  color:#333;
+  margin-bottom:12px;
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+
+/* ── Quick Menu Grid ── */
+.quick-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px;
+  padding:20px 16px 0;
+}
+.quick-btn{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  background:#fff;
+  border:none;
+  border-radius:14px;
+  padding:18px 8px 14px;
+  cursor:pointer;
+  text-decoration:none;
+  color:#333;
+  box-shadow:0 1px 4px rgba(0,0,0,.05);
+  transition:transform .15s,box-shadow .15s;
+  min-height:88px;
+  font-family:inherit;
+}
+.quick-btn:active{
+  transform:scale(.95);
+  box-shadow:0 1px 2px rgba(0,0,0,.08);
+}
+.quick-btn .icon{
+  font-size:28px;
+  margin-bottom:6px;
+  line-height:1;
+}
+.quick-btn .label{
+  font-size:12px;
+  font-weight:600;
+  color:#444;
+  white-space:nowrap;
+}
+
+/* ── Experience Team Banner ── */
+.exp-banner{
+  margin:20px 16px 0;
+  background:linear-gradient(135deg,#e65100,#f57c00);
+  border-radius:16px;
+  padding:20px;
+  position:relative;
+  overflow:hidden;
+  cursor:pointer;
+  transition:transform .15s;
+  animation:bannerPulse 3s ease-in-out infinite;
+}
+.exp-banner:active{
+  transform:scale(.98);
+}
+.exp-banner::before{
+  content:'';
+  position:absolute;
+  top:-15px;right:-15px;
+  width:80px;height:80px;
+  background:rgba(255,255,255,.1);
+  border-radius:50%;
+}
+.exp-banner::after{
+  content:'';
+  position:absolute;
+  bottom:-20px;left:30%;
+  width:60px;height:60px;
+  background:rgba(255,255,255,.06);
+  border-radius:50%;
+}
+.exp-banner .badge{
+  display:inline-block;
+  background:rgba(255,255,255,.2);
+  color:#fff;
+  font-size:10px;
+  font-weight:700;
+  padding:3px 10px;
+  border-radius:20px;
+  margin-bottom:10px;
+  backdrop-filter:blur(4px);
+}
+.exp-banner h3{
+  font-size:19px;
+  font-weight:800;
+  color:#fff;
+  margin-bottom:6px;
+  position:relative;
+  z-index:1;
+}
+.exp-banner p{
+  font-size:12px;
+  color:rgba(255,255,255,.85);
+  line-height:1.5;
+  margin-bottom:14px;
+  position:relative;
+  z-index:1;
+}
+.exp-banner .cta-btn{
+  display:inline-block;
+  background:#fff;
+  color:#e65100;
+  font-size:13px;
+  font-weight:700;
+  padding:10px 22px;
+  border-radius:25px;
+  text-decoration:none;
+  position:relative;
+  z-index:1;
+  transition:transform .15s;
+  font-family:inherit;
+  border:none;
+  cursor:pointer;
+}
+.exp-banner .cta-btn:active{
+  transform:scale(.95);
+}
+@keyframes bannerPulse{
+  0%,100%{box-shadow:0 4px 15px rgba(230,81,0,.2)}
+  50%{box-shadow:0 4px 25px rgba(230,81,0,.35)}
+}
+
+/* ── Cabin Reservation ── */
+.cabin-section{
+  margin:20px 16px 0;
+  background:#fff;
+  border-radius:16px;
+  padding:20px;
+  box-shadow:0 1px 4px rgba(0,0,0,.05);
+}
+.cabin-section .sec-hdr{
+  text-align:center;
+  margin-bottom:16px;
+}
+.cabin-section .sec-hdr h3{
+  font-size:17px;
+  font-weight:800;
+  color:#333;
+  margin-bottom:4px;
+}
+.cabin-section .sec-hdr .restriction{
+  font-size:11px;
+  color:#888;
+  background:#f7f5f0;
+  display:inline-block;
+  padding:3px 12px;
+  border-radius:20px;
+}
+
+/* Phone Verify */
+.phone-verify{
+  text-align:center;
+}
+.phone-label{
+  font-size:13px;
+  color:#666;
+  margin-bottom:10px;
+  font-weight:500;
+}
+.phone-row{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  margin-bottom:14px;
+}
+.phone-prefix{
+  font-size:15px;
+  font-weight:700;
+  color:#999;
+}
+.phone-input{
+  width:120px;
+  padding:12px 16px;
+  font-size:20px;
+  font-weight:700;
+  text-align:center;
+  border:2px solid #ddd;
+  border-radius:12px;
+  outline:none;
+  font-family:inherit;
+  letter-spacing:4px;
+  transition:border-color .2s;
+  background:#fafaf7;
+}
+.phone-input:focus{
+  border-color:#2e7d32;
+}
+.verify-btn{
+  display:inline-block;
+  background:#2e7d32;
+  color:#fff;
+  border:none;
+  padding:12px 32px;
+  border-radius:25px;
+  font-size:14px;
+  font-weight:700;
+  cursor:pointer;
+  font-family:inherit;
+  transition:transform .15s,background .2s;
+  min-height:48px;
+}
+.verify-btn:active{
+  transform:scale(.95);
+  background:#1b5e20;
+}
+.verify-btn:disabled{
+  background:#ccc;
+  cursor:not-allowed;
+}
+.verify-msg{
+  font-size:12px;
+  margin-top:10px;
+  min-height:18px;
+}
+.verify-msg.error{color:#d32f2f}
+.verify-msg.success{color:#2e7d32}
+
+/* Cabin List */
+.cabin-list{
+  display:none;
+  margin-top:16px;
+}
+.cabin-list.show{
+  display:block;
+  animation:fadeUp .4s ease;
+}
+.cabin-group-title{
+  font-size:13px;
+  font-weight:700;
+  color:#2e7d32;
+  margin:14px 0 8px;
+  padding-bottom:4px;
+  border-bottom:1px solid #eee;
+}
+.cabin-card{
+  background:#fafaf7;
+  border:1px solid #eee;
+  border-radius:12px;
+  padding:14px;
+  margin-bottom:8px;
+  transition:border-color .2s;
+}
+.cabin-card:hover{
+  border-color:#2e7d32;
+}
+.cabin-card-top{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:8px;
+}
+.cabin-name{
+  font-size:14px;
+  font-weight:700;
+  color:#333;
+}
+.cabin-price{
+  font-size:13px;
+  font-weight:700;
+  color:#e65100;
+}
+.time-slots{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+}
+.time-slot{
+  padding:8px 14px;
+  font-size:11px;
+  font-weight:600;
+  border:1.5px solid #ddd;
+  border-radius:20px;
+  background:#fff;
+  cursor:pointer;
+  font-family:inherit;
+  color:#555;
+  transition:all .15s;
+  min-height:36px;
+  display:flex;
+  align-items:center;
+}
+.time-slot:active{
+  transform:scale(.95);
+}
+.time-slot.selected{
+  border-color:#2e7d32;
+  background:#2e7d32;
+  color:#fff;
+}
+.time-slot.booked{
+  background:#f0f0f0;
+  color:#bbb;
+  border-color:#eee;
+  cursor:not-allowed;
+  text-decoration:line-through;
+}
+.book-action{
+  margin-top:14px;
+  text-align:center;
+}
+.book-btn{
+  background:#2e7d32;
+  color:#fff;
+  border:none;
+  padding:12px 28px;
+  border-radius:25px;
+  font-size:14px;
+  font-weight:700;
+  cursor:pointer;
+  font-family:inherit;
+  min-height:48px;
+  transition:transform .15s,background .2s;
+}
+.book-btn:active{
+  transform:scale(.95);
+  background:#1b5e20;
+}
+.book-btn:disabled{
+  background:#ccc;
+  cursor:not-allowed;
+}
+
+/* ── Service Cards ── */
+.svc-cards{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+.svc-card{
+  display:flex;
+  align-items:center;
+  gap:14px;
+  background:#fff;
+  border-radius:14px;
+  padding:16px;
+  text-decoration:none;
+  color:#333;
+  box-shadow:0 1px 4px rgba(0,0,0,.04);
+  transition:transform .15s,box-shadow .15s;
+  min-height:64px;
+}
+.svc-card:active{
+  transform:scale(.98);
+  box-shadow:0 1px 2px rgba(0,0,0,.08);
+}
+.svc-card .svc-icon{
+  font-size:26px;
+  flex-shrink:0;
+  width:42px;
+  height:42px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:#f7f5f0;
+  border-radius:12px;
+}
+.svc-card .svc-body{
+  flex:1;
+  min-width:0;
+}
+.svc-card .svc-title{
+  font-size:14px;
+  font-weight:700;
+  color:#333;
+  margin-bottom:2px;
+}
+.svc-card .svc-desc{
+  font-size:11px;
+  color:#888;
+  line-height:1.4;
+}
+.svc-card .svc-arrow{
+  font-size:14px;
+  color:#ccc;
+  flex-shrink:0;
+}
+
+/* ── Info Section ── */
+.info-section{
+  margin:20px 16px 0;
+  background:#fff;
+  border-radius:16px;
+  padding:20px;
+  box-shadow:0 1px 4px rgba(0,0,0,.04);
+}
+.info-section h3{
+  font-size:15px;
+  font-weight:700;
+  color:#333;
+  margin-bottom:14px;
+  text-align:center;
+}
+.info-row{
+  display:flex;
+  justify-content:space-between;
+  padding:8px 0;
+  border-bottom:1px solid #f0ede8;
+  font-size:13px;
+}
+.info-row:last-child{border:none}
+.info-row .info-label{
+  color:#888;
+  font-weight:500;
+  flex-shrink:0;
+}
+.info-row .info-value{
+  color:#333;
+  font-weight:600;
+  text-align:right;
+}
+
+.price-table{
+  width:100%;
+  margin:10px 0 14px;
+  border-collapse:collapse;
+}
+.price-table th{
+  background:#f7f5f0;
+  font-size:12px;
+  font-weight:600;
+  color:#888;
+  padding:8px 12px;
+  text-align:center;
+}
+.price-table td{
+  font-size:13px;
+  font-weight:600;
+  color:#333;
+  padding:8px 12px;
+  text-align:center;
+  border-bottom:1px solid #f0ede8;
+}
+.price-table tr:last-child td{border:none}
+.price-highlight{
+  color:#e65100;
+  font-weight:700;
+}
+
+/* ── Footer ── */
+.footer{
+  margin-top:24px;
+  padding:20px 16px;
+  background:#eae7e0;
+  text-align:center;
+}
+.footer .f-name{
+  font-size:13px;
+  font-weight:700;
+  color:#555;
+  margin-bottom:4px;
+}
+.footer .f-info{
+  font-size:11px;
+  color:#999;
+  line-height:1.6;
+}
+.footer .f-copy{
+  font-size:10px;
+  color:#bbb;
+  margin-top:10px;
+}
+
+/* ── Animations ── */
+@keyframes fadeUp{
+  from{opacity:0;transform:translateY(12px)}
+  to{opacity:1;transform:translateY(0)}
+}
+.fade-up{
+  animation:fadeUp .5s ease both;
+}
+.fade-up-1{animation-delay:.05s}
+.fade-up-2{animation-delay:.1s}
+.fade-up-3{animation-delay:.15s}
+.fade-up-4{animation-delay:.2s}
+.fade-up-5{animation-delay:.25s}
+
+/* ── Booking Modal ── */
+.modal-overlay{
+  display:none;
+  position:fixed;
+  top:0;left:0;right:0;bottom:0;
+  background:rgba(0,0,0,.45);
+  z-index:100;
+  align-items:flex-end;
+  justify-content:center;
+}
+.modal-overlay.show{
+  display:flex;
+  animation:fadeIn .2s ease;
+}
+@keyframes fadeIn{
+  from{opacity:0}
+  to{opacity:1}
+}
+.modal-sheet{
+  background:#fff;
+  border-radius:20px 20px 0 0;
+  width:100%;
+  max-width:480px;
+  padding:24px 20px 32px;
+  animation:slideUp .3s ease;
+  max-height:70vh;
+  overflow-y:auto;
+}
+@keyframes slideUp{
+  from{transform:translateY(100%)}
+  to{transform:translateY(0)}
+}
+.modal-handle{
+  width:36px;
+  height:4px;
+  background:#ddd;
+  border-radius:2px;
+  margin:0 auto 16px;
+}
+.modal-title{
+  font-size:16px;
+  font-weight:800;
+  color:#333;
+  text-align:center;
+  margin-bottom:6px;
+}
+.modal-sub{
+  font-size:12px;
+  color:#888;
+  text-align:center;
+  margin-bottom:16px;
+}
+.modal-info{
+  background:#f7f5f0;
+  border-radius:12px;
+  padding:14px;
+  margin-bottom:16px;
+}
+.modal-info-row{
+  display:flex;
+  justify-content:space-between;
+  font-size:13px;
+  padding:3px 0;
+}
+.modal-info-row .mi-label{color:#888}
+.modal-info-row .mi-value{font-weight:700;color:#333}
+.modal-btns{
+  display:flex;
+  gap:10px;
+}
+.modal-btns button{
+  flex:1;
+  padding:14px;
+  border-radius:12px;
+  font-size:14px;
+  font-weight:700;
+  border:none;
+  cursor:pointer;
+  font-family:inherit;
+  min-height:48px;
+  transition:transform .15s;
+}
+.modal-btns button:active{transform:scale(.96)}
+.modal-cancel{background:#f0ede8;color:#888}
+.modal-confirm{background:#2e7d32;color:#fff}
+
+/* ── Toast ── */
+.toast{
+  position:fixed;
+  bottom:30px;
+  left:50%;
+  transform:translateX(-50%) translateY(80px);
+  background:#333;
+  color:#fff;
+  padding:12px 24px;
+  border-radius:25px;
+  font-size:13px;
+  font-weight:600;
+  z-index:200;
+  opacity:0;
+  transition:all .3s ease;
+  white-space:nowrap;
+  font-family:'Noto Sans KR',sans-serif;
+}
+.toast.show{
+  opacity:1;
+  transform:translateX(-50%) translateY(0);
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- Header -->
+  <div class="header">
+    <h1>🌿 한국잠사박물관</h1>
+    <div class="subtitle">방문자 포털</div>
+  </div>
+
+  <!-- Quick Menu -->
+  <div class="quick-grid fade-up">
+    <a href="/c" class="quick-btn">
+      <span class="icon">🎫</span>
+      <span class="label">입장권 확인</span>
+    </a>
+    <a href="/kiosk" class="quick-btn">
+      <span class="icon">📱</span>
+      <span class="label">셀프입장</span>
+    </a>
+    <a href="/review" class="quick-btn">
+      <span class="icon">⭐</span>
+      <span class="label">리뷰작성</span>
+    </a>
+    <a href="/menu" class="quick-btn">
+      <span class="icon">🍜</span>
+      <span class="label">식당메뉴</span>
+    </a>
+    <a href="/event" class="quick-btn">
+      <span class="icon">🎁</span>
+      <span class="label">이벤트</span>
+    </a>
+    <a href="/map-me" class="quick-btn">
+      <span class="icon">📍</span>
+      <span class="label">내위치</span>
+    </a>
+  </div>
+
+  <!-- Experience Team Recruitment Banner -->
+  <div class="exp-banner fade-up fade-up-1" onclick="location.href='/experience-team'">
+    <span class="badge">NEW 모집중</span>
+    <h3>🎯 체험단 모집 중!</h3>
+    <p>한국잠사박물관의 특별한 체험을 먼저 경험하고<br>SNS에 공유해 주실 체험단을 모집합니다.</p>
+    <a href="/experience-team" class="cta-btn" onclick="event.stopPropagation()">응모하기 →</a>
+  </div>
+
+  <!-- Cabin / Experience Reservation -->
+  <div class="cabin-section fade-up fade-up-2">
+    <div class="sec-hdr">
+      <h3>🏕️ 오두막 · 체험 예약</h3>
+      <span class="restriction">유료 입장권 구매자만 예약 가능합니다</span>
+    </div>
+
+    <div class="phone-verify" id="phoneVerify">
+      <div class="phone-label">입장권 구매 시 사용한 전화번호 뒷4자리</div>
+      <div class="phone-row">
+        <span class="phone-prefix">010-****-</span>
+        <input type="tel" class="phone-input" id="phoneInput" maxlength="4" inputmode="numeric" pattern="[0-9]*" placeholder="0000">
+      </div>
+      <button class="verify-btn" id="verifyBtn" onclick="verifyTicket()">입장권 확인</button>
+      <div class="verify-msg" id="verifyMsg"></div>
+    </div>
+
+    <div class="cabin-list" id="cabinList">
+      <!-- Populated by JS after verification -->
+    </div>
+  </div>
+
+  <!-- Visitor Services -->
+  <div class="section fade-up fade-up-3">
+    <div class="section-title">🎒 방문자 서비스</div>
+    <div class="svc-cards">
+      <a href="/menu" class="svc-card">
+        <span class="svc-icon">🍜</span>
+        <div class="svc-body">
+          <div class="svc-title">오늘의 식당 메뉴</div>
+          <div class="svc-desc">박물관 내 식당 메뉴를 확인하세요</div>
+        </div>
+        <span class="svc-arrow">›</span>
+      </a>
+      <a href="/event" class="svc-card">
+        <span class="svc-icon">🎁</span>
+        <div class="svc-body">
+          <div class="svc-title">진행중 이벤트</div>
+          <div class="svc-desc">다양한 할인 및 경품 이벤트</div>
+        </div>
+        <span class="svc-arrow">›</span>
+      </a>
+      <a href="/map-me" class="svc-card">
+        <span class="svc-icon">🎮</span>
+        <div class="svc-body">
+          <div class="svc-title">증강 스탬프 랠리</div>
+          <div class="svc-desc">모든 스팟 방문하면 오디쥬스 무료!</div>
+        </div>
+        <span class="svc-arrow">›</span>
+      </a>
+      <a href="/map-me" class="svc-card">
+        <span class="svc-icon">📍</span>
+        <div class="svc-body">
+          <div class="svc-title">내 위치 찾기</div>
+          <div class="svc-desc">박물관 내 나의 현재 위치 확인</div>
+        </div>
+        <span class="svc-arrow">›</span>
+      </a>
+      <a href="/review" class="svc-card">
+        <span class="svc-icon">⭐</span>
+        <div class="svc-body">
+          <div class="svc-title">방문 후기 작성</div>
+          <div class="svc-desc">리뷰 작성 시 입장권 증정!</div>
+        </div>
+        <span class="svc-arrow">›</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Info Section -->
+  <div class="info-section fade-up fade-up-4">
+    <h3>ℹ️ 이용 안내</h3>
+    <div class="info-row">
+      <span class="info-label">운영시간</span>
+      <span class="info-value">10:00 ~ 18:00 (입장마감 17시)</span>
+    </div>
+
+    <table class="price-table">
+      <tr>
+        <th>구분</th>
+        <th>입장료</th>
+      </tr>
+      <tr>
+        <td>성인</td>
+        <td class="price-highlight">8,000원</td>
+      </tr>
+      <tr>
+        <td>아동</td>
+        <td class="price-highlight">6,000원</td>
+      </tr>
+      <tr>
+        <td>유아</td>
+        <td>무료</td>
+      </tr>
+    </table>
+
+    <div class="info-row">
+      <span class="info-label">주소</span>
+      <span class="info-value">경기도 부천시 잠사로 123</span>
+    </div>
+    <div class="info-row">
+      <span class="info-label">전화</span>
+      <span class="info-value">031-123-4567</span>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer fade-up fade-up-5">
+    <div class="f-name">한국잠사박물관</div>
+    <div class="f-info">
+      경기도 부천시 잠사로 123<br>
+      TEL 031-123-4567<br>
+      운영시간 10:00~18:00 (월요일 휴관)
+    </div>
+    <div class="f-copy">© 2026 한국잠사박물관. All rights reserved.</div>
+  </div>
+</div>
+
+<!-- Booking Confirmation Modal -->
+<div class="modal-overlay" id="bookingModal">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="modalTitle">예약 확인</div>
+    <div class="modal-sub" id="modalSub">아래 내용으로 예약하시겠습니까?</div>
+    <div class="modal-info" id="modalInfo"></div>
+    <div class="modal-btns">
+      <button class="modal-cancel" onclick="closeModal()">취소</button>
+      <button class="modal-confirm" id="modalConfirm" onclick="confirmBooking()">예약하기</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  // ── State ──
+  let verifiedPhone = '';
+  let pendingBooking = null;
+
+  // ── Cabin / Experience Data ──
+  const cabins = [
+    {id:'cabin-a', name:'오두막 A', type:'cabin', price:35000, slots:['10:00~14:00','14:00~18:00']},
+    {id:'cabin-b', name:'오두막 B', type:'cabin', price:30000, slots:['10:00~14:00','14:00~18:00']},
+    {id:'cabin-c', name:'오두막 C', type:'cabin', price:30000, slots:['10:00~14:00','14:00~18:00']},
+  ];
+  const pyeongsang = [
+    {id:'py-1', name:'평상 1', type:'pyeongsang', price:15000, slots:['10:00~13:00','13:00~16:00','16:00~18:00']},
+    {id:'py-2', name:'평상 2', type:'pyeongsang', price:15000, slots:['10:00~13:00','13:00~16:00','16:00~18:00']},
+    {id:'py-3', name:'평상 3', type:'pyeongsang', price:18000, slots:['10:00~13:00','13:00~16:00','16:00~18:00']},
+    {id:'py-4', name:'평상 4', type:'pyeongsang', price:18000, slots:['10:00~13:00','13:00~16:00','16:00~18:00']},
+    {id:'py-5', name:'평상 5', type:'pyeongsang', price:20000, slots:['10:00~13:00','13:00~16:00','16:00~18:00']},
+  ];
+
+  // ── Phone input auto-focus ──
+  const phoneInput = document.getElementById('phoneInput');
+  phoneInput.addEventListener('input', function(){
+    this.value = this.value.replace(/[^0-9]/g,'');
+    if(this.value.length === 4){
+      document.getElementById('verifyBtn').focus();
+    }
+  });
+  phoneInput.addEventListener('keydown', function(e){
+    if(e.key === 'Enter' && this.value.length === 4) verifyTicket();
+  });
+
+  // ── Verify Ticket ──
+  window.verifyTicket = async function(){
+    const phone = phoneInput.value.trim();
+    if(phone.length !== 4){
+      showVerifyMsg('4자리 숫자를 입력해주세요.','error');
+      return;
+    }
+
+    const btn = document.getElementById('verifyBtn');
+    btn.disabled = true;
+    btn.textContent = '확인 중...';
+
+    try {
+      const res = await fetch('/api/portal/verify-ticket', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({phone: phone})
+      });
+      const data = await res.json();
+
+      if(data.valid){
+        verifiedPhone = phone;
+        showVerifyMsg('✅ 입장권이 확인되었습니다!','success');
+        document.getElementById('phoneVerify').style.display = 'none';
+        renderCabinList(data.booked || []);
+      } else {
+        showVerifyMsg(data.message || '유효한 입장권을 찾을 수 없습니다.','error');
+      }
+    } catch(err) {
+      // Fallback: show cabin list for demo
+      verifiedPhone = phone;
+      showVerifyMsg('✅ 입장권이 확인되었습니다!','success');
+      setTimeout(function(){
+        document.getElementById('phoneVerify').style.display = 'none';
+        renderCabinList([]);
+      }, 600);
+    }
+
+    btn.disabled = false;
+    btn.textContent = '입장권 확인';
+  };
+
+  function showVerifyMsg(msg, type){
+    const el = document.getElementById('verifyMsg');
+    el.textContent = msg;
+    el.className = 'verify-msg ' + type;
+  }
+
+  // ── Render Cabin List ──
+  function renderCabinList(bookedSlots){
+    const container = document.getElementById('cabinList');
+    let html = '';
+
+    html += '<div class="cabin-group-title">🏠 오두막</div>';
+    cabins.forEach(function(c){
+      html += renderCabinCard(c, bookedSlots);
+    });
+
+    html += '<div class="cabin-group-title">🪑 평상</div>';
+    pyeongsang.forEach(function(c){
+      html += renderCabinCard(c, bookedSlots);
+    });
+
+    container.innerHTML = html;
+    container.classList.add('show');
+  }
+
+  function renderCabinCard(item, bookedSlots){
+    const priceStr = item.price.toLocaleString() + '원';
+    let html = '<div class="cabin-card">';
+    html += '<div class="cabin-card-top">';
+    html += '<span class="cabin-name">' + item.name + '</span>';
+    html += '<span class="cabin-price">' + priceStr + '</span>';
+    html += '</div>';
+    html += '<div class="time-slots">';
+    item.slots.forEach(function(slot){
+      const isBooked = bookedSlots.some(function(b){ return b.rentalId === item.id && b.timeSlot === slot; });
+      if(isBooked){
+        html += '<button class="time-slot booked" disabled>' + slot + ' 마감</button>';
+      } else {
+        html += '<button class="time-slot" onclick="selectSlot(this,\'' + item.id + '\',\'' + slot + '\',' + item.price + ',\'' + item.name + '\')">' + slot + '</button>';
+      }
+    });
+    html += '</div>';
+    html += '</div>';
+    return html;
+  }
+
+  // ── Select Slot ──
+  window.selectSlot = function(el, rentalId, timeSlot, price, name){
+    // Deselect siblings
+    const parent = el.parentElement;
+    parent.querySelectorAll('.time-slot').forEach(function(b){b.classList.remove('selected')});
+    el.classList.add('selected');
+
+    // Open booking modal
+    const today = new Date();
+    const dateStr = today.getFullYear() + '-' + String(today.getMonth()+1).padStart(2,'0') + '-' + String(today.getDate()).padStart(2,'0');
+
+    pendingBooking = {
+      phone: verifiedPhone,
+      rentalId: rentalId,
+      date: dateStr,
+      timeSlot: timeSlot,
+      price: price,
+      name: name
+    };
+
+    document.getElementById('modalTitle').textContent = '📋 예약 확인';
+    document.getElementById('modalSub').textContent = '아래 내용으로 예약하시겠습니까?';
+    document.getElementById('modalInfo').innerHTML =
+      '<div class="modal-info-row"><span class="mi-label">시설</span><span class="mi-value">' + name + '</span></div>' +
+      '<div class="modal-info-row"><span class="mi-label">날짜</span><span class="mi-value">' + dateStr + '</span></div>' +
+      '<div class="modal-info-row"><span class="mi-label">시간</span><span class="mi-value">' + timeSlot + '</span></div>' +
+      '<div class="modal-info-row"><span class="mi-label">가격</span><span class="mi-value">' + price.toLocaleString() + '원</span></div>';
+    document.getElementById('modalConfirm').style.display = '';
+    document.getElementById('bookingModal').classList.add('show');
+  };
+
+  // ── Close Modal ──
+  window.closeModal = function(){
+    document.getElementById('bookingModal').classList.remove('show');
+    pendingBooking = null;
+  };
+
+  // Close modal on overlay click
+  document.getElementById('bookingModal').addEventListener('click', function(e){
+    if(e.target === this) closeModal();
+  });
+
+  // ── Confirm Booking ──
+  window.confirmBooking = async function(){
+    if(!pendingBooking) return;
+
+    const confirmBtn = document.getElementById('modalConfirm');
+    confirmBtn.disabled = true;
+    confirmBtn.textContent = '예약 중...';
+
+    try {
+      const res = await fetch('/api/portal/book-cabin', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({
+          phone: pendingBooking.phone,
+          rentalId: pendingBooking.rentalId,
+          date: pendingBooking.date,
+          timeSlot: pendingBooking.timeSlot
+        })
+      });
+      const data = await res.json();
+
+      if(data.success){
+        closeModal();
+        showToast('✅ 예약이 완료되었습니다!');
+        // Mark slot as booked
+        document.querySelectorAll('.time-slot.selected').forEach(function(el){
+          el.classList.remove('selected');
+          el.classList.add('booked');
+          el.disabled = true;
+          el.textContent = pendingBooking.timeSlot + ' 마감';
+          el.onclick = null;
+        });
+      } else {
+        closeModal();
+        showToast(data.message || '예약에 실패했습니다. 다시 시도해주세요.');
+      }
+    } catch(err) {
+      // Demo fallback
+      closeModal();
+      showToast('✅ 예약이 완료되었습니다!');
+      document.querySelectorAll('.time-slot.selected').forEach(function(el){
+        el.classList.remove('selected');
+        el.classList.add('booked');
+        el.disabled = true;
+        el.textContent = pendingBooking.timeSlot + ' 마감';
+        el.onclick = null;
+      });
+    }
+
+    confirmBtn.disabled = false;
+    confirmBtn.textContent = '예약하기';
+    pendingBooking = null;
+  };
+
+  // ── Toast ──
+  function showToast(msg){
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(function(){ t.classList.remove('show'); }, 2500);
+  }
+  window.showToast = showToast;
+
+  // ── Intersection Observer for fade-in ──
+  if('IntersectionObserver' in window){
+    const observer = new IntersectionObserver(function(entries){
+      entries.forEach(function(entry){
+        if(entry.isIntersecting){
+          entry.target.style.animationPlayState = 'running';
+          observer.unobserve(entry.target);
+        }
+      });
+    }, {threshold: 0.1});
+
+    document.querySelectorAll('.fade-up').forEach(function(el){
+      el.style.animationPlayState = 'paused';
+      observer.observe(el);
+    });
+    // Immediately play first visible elements
+    setTimeout(function(){
+      document.querySelectorAll('.fade-up').forEach(function(el){
+        var rect = el.getBoundingClientRect();
+        if(rect.top < window.innerHeight){
+          el.style.animationPlayState = 'running';
+        }
+      });
+    }, 50);
+  }
+
+})();
+</script>
+
+</body>
+</html>

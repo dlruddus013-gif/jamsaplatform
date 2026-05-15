@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>식당·매점 메뉴 | 한국잠사박물관</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#f7f5f0;--card:#fff;--border:#e8e2d9;
+  --text:#2d2a26;--sub:#8a8478;
+  --orange:#e65100;--orange-light:#fff3e0;
+  --green:#2e7d32;--green-light:#e8f5e9;
+  --danger:#d32f2f;
+  --shadow:0 2px 12px rgba(0,0,0,.06);
+  --radius:14px;
+}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);
+  min-height:100dvh;-webkit-font-smoothing:antialiased;padding-bottom:80px}
+a{text-decoration:none;color:inherit}
+
+/* 헤더 */
+.header{background:linear-gradient(135deg,#e65100,#ff8f00);color:#fff;
+  padding:24px 16px 28px;text-align:center;position:relative;overflow:hidden}
+.header::after{content:'';position:absolute;bottom:-18px;left:-10%;width:120%;height:36px;
+  background:var(--bg);border-radius:50% 50% 0 0}
+.header h1{font-size:22px;font-weight:800;letter-spacing:-0.5px;margin-bottom:4px}
+.header p{font-size:12px;opacity:.85;font-weight:400}
+.header .deco{position:absolute;font-size:48px;opacity:.12;top:6px;right:14px}
+
+/* 카트 배지 */
+.cart-float{position:fixed;bottom:20px;right:20px;z-index:900;
+  background:var(--orange);color:#fff;width:56px;height:56px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;font-size:24px;
+  box-shadow:0 4px 16px rgba(230,81,0,.35);cursor:pointer;
+  transition:transform .2s;border:none}
+.cart-float:active{transform:scale(.92)}
+.cart-float .badge{position:absolute;top:-2px;right:-2px;background:var(--danger);
+  color:#fff;font-size:11px;font-weight:700;min-width:20px;height:20px;
+  border-radius:10px;display:flex;align-items:center;justify-content:center;
+  padding:0 5px;border:2px solid #fff}
+.cart-float.hidden{display:none}
+
+/* 탭 */
+.tab-bar{display:flex;gap:0;margin:18px 16px 0;background:var(--card);
+  border-radius:12px;overflow:hidden;box-shadow:var(--shadow);border:1px solid var(--border)}
+.tab-btn{flex:1;padding:12px 0;text-align:center;font-size:14px;font-weight:600;
+  background:transparent;border:none;color:var(--sub);cursor:pointer;
+  transition:all .25s;position:relative;font-family:inherit}
+.tab-btn.active{color:#fff;background:var(--orange)}
+.tab-btn:not(.active):active{background:#f0ede6}
+
+/* 메뉴 그리드 */
+.menu-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;
+  padding:16px;max-width:480px;margin:0 auto}
+.menu-card{background:var(--card);border-radius:var(--radius);overflow:hidden;
+  box-shadow:var(--shadow);border:1px solid var(--border);
+  transition:transform .2s,box-shadow .2s;animation:cardIn .35s ease both}
+.menu-card:active{transform:scale(.97)}
+@keyframes cardIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.menu-card .photo{height:110px;display:flex;align-items:center;justify-content:center;
+  font-size:48px;position:relative}
+.menu-card .photo .price-tag{position:absolute;top:8px;right:8px;
+  background:rgba(0,0,0,.65);color:#fff;font-size:11px;font-weight:700;
+  padding:3px 8px;border-radius:8px;backdrop-filter:blur(4px)}
+.menu-card .info{padding:10px 12px 12px}
+.menu-card .info .name{font-size:14px;font-weight:700;margin-bottom:2px}
+.menu-card .info .desc{font-size:11px;color:var(--sub);line-height:1.4;margin-bottom:8px;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.menu-card .info .price{font-size:15px;font-weight:800;color:var(--orange);margin-bottom:8px}
+.order-btn{width:100%;padding:8px 0;border:none;border-radius:8px;
+  background:var(--orange);color:#fff;font-size:12px;font-weight:700;
+  cursor:pointer;font-family:inherit;transition:all .2s}
+.order-btn:active{background:#bf360c;transform:scale(.96)}
+
+/* 모달 오버레이 */
+.modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;z-index:1000;
+  background:rgba(0,0,0,.45);display:flex;align-items:flex-end;justify-content:center;
+  opacity:0;pointer-events:none;transition:opacity .3s}
+.modal-overlay.show{opacity:1;pointer-events:all}
+.modal-sheet{background:var(--bg);width:100%;max-width:480px;max-height:90dvh;
+  border-radius:20px 20px 0 0;padding:0;overflow-y:auto;
+  transform:translateY(100%);transition:transform .35s cubic-bezier(.22,1,.36,1)}
+.modal-overlay.show .modal-sheet{transform:translateY(0)}
+.modal-handle{width:36px;height:4px;background:#ccc;border-radius:2px;
+  margin:10px auto 0}
+.modal-header{padding:16px 20px 12px;display:flex;justify-content:space-between;align-items:center;
+  border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--bg);z-index:2}
+.modal-header h2{font-size:17px;font-weight:800}
+.modal-close{background:none;border:none;font-size:22px;color:var(--sub);
+  cursor:pointer;padding:4px 8px;font-family:inherit}
+.modal-body{padding:16px 20px 24px}
+
+/* 주문 아이템 */
+.order-item{display:flex;align-items:center;gap:12px;padding:12px 0;
+  border-bottom:1px solid var(--border)}
+.order-item .oi-emoji{font-size:32px;flex-shrink:0}
+.order-item .oi-info{flex:1}
+.order-item .oi-name{font-size:14px;font-weight:600}
+.order-item .oi-price{font-size:12px;color:var(--orange);font-weight:700}
+.qty-ctrl{display:flex;align-items:center;gap:0;background:var(--card);
+  border-radius:8px;border:1px solid var(--border);overflow:hidden}
+.qty-btn{width:32px;height:32px;border:none;background:transparent;
+  font-size:16px;font-weight:700;cursor:pointer;color:var(--orange);font-family:inherit}
+.qty-btn:active{background:var(--orange-light)}
+.qty-val{width:28px;text-align:center;font-size:14px;font-weight:700}
+.oi-remove{background:none;border:none;color:var(--danger);font-size:18px;
+  cursor:pointer;padding:4px;margin-left:4px}
+
+/* 폼 */
+.form-group{margin-bottom:14px}
+.form-group label{display:block;font-size:12px;font-weight:600;color:var(--sub);
+  margin-bottom:6px}
+.form-input{width:100%;padding:10px 12px;border:1px solid var(--border);
+  border-radius:10px;font-size:14px;background:var(--card);color:var(--text);
+  font-family:inherit;appearance:none;-webkit-appearance:none}
+.form-input:focus{outline:none;border-color:var(--orange);box-shadow:0 0 0 3px rgba(230,81,0,.1)}
+select.form-input{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24'%3E%3Cpath fill='%238a8478' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 12px center;padding-right:32px}
+
+/* 날짜 선택 */
+.date-pills{display:flex;gap:8px}
+.date-pill{flex:1;padding:10px 0;text-align:center;border:1px solid var(--border);
+  border-radius:10px;background:var(--card);font-size:13px;font-weight:600;
+  cursor:pointer;transition:all .2s;font-family:inherit}
+.date-pill.active{background:var(--orange);color:#fff;border-color:var(--orange)}
+.date-pill:not(.active):active{background:#f0ede6}
+.date-pill .day{font-size:10px;color:var(--sub);margin-top:2px}
+.date-pill.active .day{color:rgba(255,255,255,.8)}
+
+/* 경고 */
+.warning-box{background:#fff8e1;border:1px solid #ffe082;border-radius:10px;
+  padding:12px 14px;font-size:12px;line-height:1.5;color:#e65100;margin:14px 0}
+
+/* 합계 */
+.order-total{display:flex;justify-content:space-between;align-items:center;
+  padding:14px 0;margin:10px 0;border-top:2px solid var(--text)}
+.order-total .label{font-size:15px;font-weight:700}
+.order-total .amount{font-size:20px;font-weight:800;color:var(--orange)}
+
+/* 제출 버튼 */
+.submit-btn{width:100%;padding:14px 0;border:none;border-radius:12px;
+  background:var(--orange);color:#fff;font-size:15px;font-weight:700;
+  cursor:pointer;font-family:inherit;transition:all .2s;
+  box-shadow:0 4px 12px rgba(230,81,0,.3)}
+.submit-btn:active{transform:scale(.97);background:#bf360c}
+.submit-btn:disabled{background:#ccc;box-shadow:none;cursor:not-allowed}
+
+/* 확인 카드 */
+.confirm-card{background:var(--green-light);border:1px solid #a5d6a7;
+  border-radius:var(--radius);padding:20px;text-align:center;margin:16px 0}
+.confirm-card .check{font-size:48px;margin-bottom:8px}
+.confirm-card h3{font-size:16px;font-weight:800;color:var(--green);margin-bottom:4px}
+.confirm-card .order-num{font-size:28px;font-weight:800;color:var(--green);
+  letter-spacing:2px;margin:8px 0}
+.confirm-card .detail{font-size:12px;color:var(--sub);line-height:1.6}
+.confirm-card .note{font-size:11px;color:var(--green);margin-top:12px;
+  padding:10px;background:rgba(46,125,50,.08);border-radius:8px}
+
+/* 리뷰 섹션 */
+.review-section{max-width:480px;margin:24px auto 0;padding:0 16px}
+.review-card{background:var(--card);border-radius:var(--radius);padding:20px;
+  box-shadow:var(--shadow);border:1px solid var(--border);text-align:center}
+.review-card h3{font-size:16px;font-weight:800;margin-bottom:4px}
+.review-card .sub{font-size:12px;color:var(--sub);margin-bottom:16px}
+.stars{display:flex;justify-content:center;gap:8px;margin-bottom:16px}
+.star{font-size:32px;cursor:pointer;transition:transform .15s;filter:grayscale(1);opacity:.35}
+.star.active{filter:none;opacity:1;animation:starPop .3s}
+.star:active{transform:scale(.85)}
+@keyframes starPop{0%{transform:scale(.5)}50%{transform:scale(1.2)}100%{transform:scale(1)}}
+.review-textarea{width:100%;padding:12px;border:1px solid var(--border);
+  border-radius:10px;font-size:13px;min-height:80px;resize:none;
+  font-family:inherit;background:var(--bg);color:var(--text)}
+.review-textarea:focus{outline:none;border-color:var(--green);box-shadow:0 0 0 3px rgba(46,125,50,.1)}
+.review-btn{width:100%;padding:12px 0;border:none;border-radius:10px;
+  background:var(--green);color:#fff;font-size:14px;font-weight:700;
+  cursor:pointer;font-family:inherit;margin-top:12px;transition:all .2s}
+.review-btn:active{background:#1b5e20;transform:scale(.97)}
+
+/* 쿠폰 */
+.coupon-card{background:linear-gradient(135deg,#e8f5e9,#c8e6c9);
+  border:2px dashed var(--green);border-radius:var(--radius);padding:20px;
+  text-align:center;margin-top:12px;animation:cardIn .4s}
+.coupon-card .coupon-icon{font-size:40px;margin-bottom:6px}
+.coupon-card h4{font-size:14px;font-weight:700;color:var(--green)}
+.coupon-card .code{font-size:22px;font-weight:800;letter-spacing:3px;
+  color:var(--green);margin:8px 0;font-family:monospace}
+.coupon-card .exp{font-size:11px;color:var(--sub)}
+
+/* 푸터 */
+.footer{max-width:480px;margin:24px auto;padding:0 16px;text-align:center}
+.footer a{display:inline-flex;align-items:center;gap:6px;color:var(--sub);
+  font-size:13px;font-weight:600;padding:10px 20px;border-radius:10px;
+  background:var(--card);border:1px solid var(--border);transition:all .2s}
+.footer a:active{background:#f0ede6}
+
+/* 카트 모달 아이템 없을때 */
+.empty-cart{text-align:center;padding:32px 0;color:var(--sub)}
+.empty-cart .icon{font-size:48px;margin-bottom:8px;opacity:.5}
+.empty-cart p{font-size:14px}
+
+/* 컨테이너 */
+.container{max-width:480px;margin:0 auto}
+
+/* 토스트 */
+.toast{position:fixed;top:20px;left:50%;transform:translateX(-50%) translateY(-80px);
+  background:#333;color:#fff;padding:10px 20px;border-radius:10px;font-size:13px;
+  font-weight:600;z-index:9999;transition:transform .3s;white-space:nowrap}
+.toast.show{transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+
+<!-- 헤더 -->
+<div class="header">
+  <span class="deco">🍜</span>
+  <h1>🍜 식당 · 매점 메뉴</h1>
+  <p>한국잠사박물관</p>
+</div>
+
+<!-- 탭 -->
+<div class="container">
+  <div class="tab-bar">
+    <button class="tab-btn active" data-tab="restaurant" onclick="switchTab('restaurant')">🍲 식당</button>
+    <button class="tab-btn" data-tab="shop" onclick="switchTab('shop')">🧃 매점</button>
+    <button class="tab-btn" data-tab="cafe" onclick="switchTab('cafe')">☕ 카페</button>
+  </div>
+</div>
+
+<!-- 메뉴 그리드 -->
+<div class="menu-grid" id="menuGrid"></div>
+
+<!-- 카트 플로팅 버튼 -->
+<button class="cart-float hidden" id="cartFloat" onclick="openCart()">
+  🛒
+  <span class="badge" id="cartBadge">0</span>
+</button>
+
+<!-- 주문 모달 -->
+<div class="modal-overlay" id="orderModal">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <h2>🛒 사전주문</h2>
+      <button class="modal-close" onclick="closeModal('orderModal')">&times;</button>
+    </div>
+    <div class="modal-body" id="orderBody"></div>
+  </div>
+</div>
+
+<!-- 확인 모달 -->
+<div class="modal-overlay" id="confirmModal">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <h2>✅ 주문 완료</h2>
+      <button class="modal-close" onclick="closeModal('confirmModal');resetCart()">&times;</button>
+    </div>
+    <div class="modal-body" id="confirmBody"></div>
+  </div>
+</div>
+
+<!-- 리뷰 섹션 -->
+<div class="review-section">
+  <div class="review-card" id="reviewCard">
+    <h3>🍽️ 음식이 맛있으셨나요?</h3>
+    <p class="sub">후기를 남겨주시면 오디쥬스 쿠폰을 드려요!</p>
+    <div class="stars" id="stars">
+      <span class="star" data-v="1" onclick="setRating(1)">⭐</span>
+      <span class="star" data-v="2" onclick="setRating(2)">⭐</span>
+      <span class="star" data-v="3" onclick="setRating(3)">⭐</span>
+      <span class="star" data-v="4" onclick="setRating(4)">⭐</span>
+      <span class="star" data-v="5" onclick="setRating(5)">⭐</span>
+    </div>
+    <textarea class="review-textarea" id="reviewText" placeholder="음식 후기를 자유롭게 작성해주세요..."></textarea>
+    <button class="review-btn" onclick="submitReview()">후기 남기고 오디쥬스 쿠폰 받기 🧃</button>
+    <div id="couponArea"></div>
+  </div>
+</div>
+
+<!-- 푸터 -->
+<div class="footer">
+  <a href="/customer.html">← 메인으로 돌아가기</a>
+</div>
+
+<!-- 토스트 -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ===== 메뉴 데이터 =====
+const MENUS = {
+  restaurant: [
+    { id:'r1', name:'비빔밥', price:8000, emoji:'🍲', desc:'신선한 야채와 고추장으로 비벼먹는 건강한 한 그릇', gradient:'linear-gradient(135deg,#ffccbc,#ffab91)' },
+    { id:'r2', name:'된장찌개', price:7000, emoji:'🍜', desc:'구수한 된장과 두부, 애호박이 어우러진 전통 찌개', gradient:'linear-gradient(135deg,#d7ccc8,#bcaaa4)' },
+    { id:'r3', name:'돈까스', price:9000, emoji:'🍱', desc:'바삭하게 튀겨낸 등심 돈까스와 특제 소스', gradient:'linear-gradient(135deg,#ffe0b2,#ffcc80)' },
+    { id:'r4', name:'냉면', price:8500, emoji:'🍜', desc:'시원한 육수에 쫄깃한 면발, 여름 별미', gradient:'linear-gradient(135deg,#b3e5fc,#81d4fa)' },
+    { id:'r5', name:'김치볶음밥', price:7500, emoji:'🍲', desc:'잘 익은 김치와 고슬고슬한 밥의 환상 조합', gradient:'linear-gradient(135deg,#ffcdd2,#ef9a9a)' },
+    { id:'r6', name:'불고기정식', price:12000, emoji:'🍱', desc:'달콤한 양념 불고기와 반찬이 가득한 정식', gradient:'linear-gradient(135deg,#f8bbd0,#f48fb1)' }
+  ],
+  shop: [
+    { id:'s1', name:'오디쥬스', price:3000, emoji:'🧃', desc:'박물관 특산 오디로 만든 신선한 주스', gradient:'linear-gradient(135deg,#e1bee7,#ce93d8)' },
+    { id:'s2', name:'아이스크림', price:2000, emoji:'🍦', desc:'시원하고 달콤한 다양한 맛 아이스크림', gradient:'linear-gradient(135deg,#f8bbd0,#f48fb1)' },
+    { id:'s3', name:'오디젤리', price:5000, emoji:'🍬', desc:'오디 과즙이 그대로 담긴 쫀득한 젤리 세트', gradient:'linear-gradient(135deg,#d1c4e9,#b39ddb)' },
+    { id:'s4', name:'음료', price:1500, emoji:'🧃', desc:'생수, 이온음료, 탄산음료 등', gradient:'linear-gradient(135deg,#b2ebf2,#80deea)' },
+    { id:'s5', name:'과자세트', price:3000, emoji:'🍬', desc:'다양한 과자를 한 세트로 즐기세요', gradient:'linear-gradient(135deg,#fff9c4,#fff59d)' }
+  ],
+  cafe: [
+    { id:'c1', name:'아메리카노', price:3500, emoji:'☕', desc:'깊고 진한 풍미의 에스프레소 아메리카노', gradient:'linear-gradient(135deg,#d7ccc8,#a1887f)' },
+    { id:'c2', name:'카페라떼', price:4000, emoji:'☕', desc:'부드러운 우유와 에스프레소의 조화', gradient:'linear-gradient(135deg,#fff3e0,#ffe0b2)' },
+    { id:'c3', name:'오디스무디', price:4500, emoji:'🧃', desc:'박물관 특산 오디로 만든 시원한 스무디', gradient:'linear-gradient(135deg,#f3e5f5,#e1bee7)' },
+    { id:'c4', name:'아이스티', price:3000, emoji:'🍹', desc:'상큼한 복숭아 아이스티', gradient:'linear-gradient(135deg,#fff8e1,#ffecb3)' }
+  ]
+};
+
+let currentTab = 'restaurant';
+let cart = {}; // { id: { item, qty } }
+let reviewRating = 0;
+
+// ===== 탭 전환 =====
+function switchTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.tab-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.tab === tab);
+  });
+  renderMenu();
+}
+
+// ===== 메뉴 렌더링 =====
+function renderMenu() {
+  const grid = document.getElementById('menuGrid');
+  const items = MENUS[currentTab];
+  grid.innerHTML = '';
+  items.forEach((item, i) => {
+    const card = document.createElement('div');
+    card.className = 'menu-card';
+    card.style.animationDelay = (i * 0.06) + 's';
+    card.innerHTML = `
+      <div class="photo" style="background:${item.gradient}">
+        <span style="font-size:48px;filter:drop-shadow(0 2px 4px rgba(0,0,0,.15))">${item.emoji}</span>
+        <span class="price-tag">${item.price.toLocaleString()}원</span>
+      </div>
+      <div class="info">
+        <div class="name">${item.name}</div>
+        <div class="desc">${item.desc}</div>
+        <div class="price">${item.price.toLocaleString()}원</div>
+        <button class="order-btn" onclick="addToCart('${item.id}')">주문하기</button>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+// ===== 카트 =====
+function findItem(id) {
+  for (const cat of Object.values(MENUS)) {
+    const found = cat.find(m => m.id === id);
+    if (found) return found;
+  }
+  return null;
+}
+
+function addToCart(id) {
+  const item = findItem(id);
+  if (!item) return;
+  if (cart[id]) {
+    cart[id].qty++;
+  } else {
+    cart[id] = { item, qty: 1 };
+  }
+  updateCartBadge();
+  showToast(`${item.emoji} ${item.name} 추가됨`);
+}
+
+function updateCartBadge() {
+  const total = Object.values(cart).reduce((s, c) => s + c.qty, 0);
+  const btn = document.getElementById('cartFloat');
+  const badge = document.getElementById('cartBadge');
+  if (total > 0) {
+    btn.classList.remove('hidden');
+    badge.textContent = total;
+  } else {
+    btn.classList.add('hidden');
+  }
+}
+
+function getCartTotal() {
+  return Object.values(cart).reduce((s, c) => s + c.item.price * c.qty, 0);
+}
+
+function resetCart() {
+  cart = {};
+  updateCartBadge();
+}
+
+// ===== 주문 모달 =====
+function openCart() {
+  renderOrderModal();
+  openModal('orderModal');
+}
+
+function renderOrderModal() {
+  const body = document.getElementById('orderBody');
+  const entries = Object.entries(cart);
+
+  if (entries.length === 0) {
+    body.innerHTML = `<div class="empty-cart"><div class="icon">🛒</div><p>장바구니가 비어있습니다</p></div>`;
+    return;
+  }
+
+  // 날짜 옵션
+  const today = new Date();
+  const dates = [0, 1, 2].map(d => {
+    const dt = new Date(today);
+    dt.setDate(dt.getDate() + d);
+    const label = ['오늘', '내일', '모레'][d];
+    const weekdays = ['일','월','화','수','목','금','토'];
+    const dayStr = `${dt.getMonth()+1}/${dt.getDate()} (${weekdays[dt.getDay()]})`;
+    return { label, dayStr, value: dt.toISOString().split('T')[0] };
+  });
+
+  let html = '';
+
+  // 주문 아이템 목록
+  entries.forEach(([id, { item, qty }]) => {
+    html += `
+      <div class="order-item">
+        <span class="oi-emoji">${item.emoji}</span>
+        <div class="oi-info">
+          <div class="oi-name">${item.name}</div>
+          <div class="oi-price">${(item.price * qty).toLocaleString()}원</div>
+        </div>
+        <div class="qty-ctrl">
+          <button class="qty-btn" onclick="changeQty('${id}',-1)">−</button>
+          <span class="qty-val">${qty}</span>
+          <button class="qty-btn" onclick="changeQty('${id}',1)">+</button>
+        </div>
+        <button class="oi-remove" onclick="removeItem('${id}')" title="삭제">✕</button>
+      </div>
+    `;
+  });
+
+  // 날짜 선택
+  html += `
+    <div class="form-group" style="margin-top:16px">
+      <label>📅 수령 날짜</label>
+      <div class="date-pills" id="datePills">
+        ${dates.map((d, i) => `
+          <div class="date-pill${i===0?' active':''}" data-val="${d.value}" onclick="selectDate(this)">
+            ${d.label}
+            <div class="day">${d.dayStr}</div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+
+  // 시간 선택
+  const lunchSlots = [];
+  for (let h = 11; h <= 13; h++) {
+    for (let m = 0; m < 60; m += 30) {
+      if (h === 13 && m > 30) break;
+      lunchSlots.push(`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`);
+    }
+  }
+  lunchSlots.push('14:00');
+  const dinnerSlots = ['17:00','17:30','18:00','18:30'];
+  const allSlots = [...lunchSlots.map(s => ({t:s,g:'점심'})), ...dinnerSlots.map(s => ({t:s,g:'저녁'}))];
+
+  html += `
+    <div class="form-group">
+      <label>⏰ 수령 시간</label>
+      <select class="form-input" id="pickupTime">
+        <optgroup label="🍳 점심 (11:00~14:00)">
+          ${lunchSlots.map(s => `<option value="${s}">${s}</option>`).join('')}
+        </optgroup>
+        <optgroup label="🌙 저녁 (17:00~18:30)">
+          ${dinnerSlots.map(s => `<option value="${s}">${s}</option>`).join('')}
+        </optgroup>
+      </select>
+    </div>
+  `;
+
+  // 전화번호
+  html += `
+    <div class="form-group">
+      <label>📱 알림 받을 전화번호</label>
+      <input type="tel" class="form-input" id="phoneInput" placeholder="010-0000-0000"
+        maxlength="13" oninput="formatPhone(this)">
+    </div>
+  `;
+
+  // 위약 안내
+  html += `
+    <div class="warning-box">
+      ⚠️ <strong>위약 안내:</strong> 예약 시간 1시간 전까지 무료 취소 가능. 이후 취소 시 음식 금액의 30% 위약금이 부과됩니다.
+    </div>
+  `;
+
+  // 합계
+  html += `
+    <div class="order-total">
+      <span class="label">총 주문금액</span>
+      <span class="amount">${getCartTotal().toLocaleString()}원</span>
+    </div>
+    <p style="font-size:11px;color:var(--sub);text-align:center;margin-bottom:14px">
+      💳 현장결제입니다
+    </p>
+    <button class="submit-btn" id="submitOrder" onclick="submitOrder()">주문 예약하기</button>
+  `;
+
+  body.innerHTML = html;
+}
+
+function changeQty(id, delta) {
+  if (!cart[id]) return;
+  cart[id].qty += delta;
+  if (cart[id].qty <= 0) {
+    delete cart[id];
+  }
+  updateCartBadge();
+  if (Object.keys(cart).length === 0) {
+    closeModal('orderModal');
+  } else {
+    renderOrderModal();
+  }
+}
+
+function removeItem(id) {
+  delete cart[id];
+  updateCartBadge();
+  if (Object.keys(cart).length === 0) {
+    closeModal('orderModal');
+  } else {
+    renderOrderModal();
+  }
+}
+
+function selectDate(el) {
+  el.parentElement.querySelectorAll('.date-pill').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function formatPhone(input) {
+  let v = input.value.replace(/[^0-9]/g, '');
+  if (v.length > 3 && v.length <= 7) {
+    v = v.slice(0,3) + '-' + v.slice(3);
+  } else if (v.length > 7) {
+    v = v.slice(0,3) + '-' + v.slice(3,7) + '-' + v.slice(7,11);
+  }
+  input.value = v;
+}
+
+// ===== 주문 제출 =====
+async function submitOrder() {
+  const phone = document.getElementById('phoneInput').value.replace(/[^0-9]/g, '');
+  if (phone.length < 10) {
+    showToast('📱 전화번호를 입력해주세요');
+    document.getElementById('phoneInput').focus();
+    return;
+  }
+
+  const dateEl = document.querySelector('.date-pill.active');
+  const date = dateEl ? dateEl.dataset.val : '';
+  const time = document.getElementById('pickupTime').value;
+
+  const items = Object.values(cart).map(c => ({
+    id: c.item.id,
+    name: c.item.name,
+    price: c.item.price,
+    qty: c.qty
+  }));
+
+  const payload = {
+    items,
+    date,
+    time,
+    phone: document.getElementById('phoneInput').value,
+    totalAmount: getCartTotal()
+  };
+
+  const btn = document.getElementById('submitOrder');
+  btn.disabled = true;
+  btn.textContent = '주문 처리 중...';
+
+  try {
+    const res = await fetch('/api/food-order', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    showConfirmation(data, payload);
+  } catch (e) {
+    // 오프라인/데모: 가상 주문 확인
+    const fakeOrder = {
+      orderNumber: 'F' + Date.now().toString().slice(-6),
+      estimatedTime: time
+    };
+    showConfirmation(fakeOrder, payload);
+  }
+}
+
+function showConfirmation(data, payload) {
+  closeModal('orderModal');
+
+  const orderNum = data.orderNumber || 'F' + Math.random().toString(36).slice(2,8).toUpperCase();
+  const itemList = Object.values(cart).map(c => `${c.item.name} x${c.qty}`).join(', ');
+
+  const body = document.getElementById('confirmBody');
+  body.innerHTML = `
+    <div class="confirm-card">
+      <div class="check">✅</div>
+      <h3>주문이 예약되었습니다!</h3>
+      <div class="order-num">${orderNum}</div>
+      <div class="detail">
+        <p>📋 ${itemList}</p>
+        <p>📅 ${payload.date} ${payload.time}</p>
+        <p>💰 ${payload.totalAmount.toLocaleString()}원 (현장결제)</p>
+        <p>📱 ${payload.phone}</p>
+      </div>
+      <div class="note">
+        📩 음식 완료 시 문자로 안내드립니다. 현장결제입니다.
+      </div>
+    </div>
+    <button class="submit-btn" style="background:var(--green)" onclick="closeModal('confirmModal');resetCart()">확인</button>
+  `;
+
+  setTimeout(() => openModal('confirmModal'), 200);
+}
+
+// ===== 모달 열기/닫기 =====
+function openModal(id) {
+  document.getElementById(id).classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('show');
+  document.body.style.overflow = '';
+}
+
+// 오버레이 클릭시 닫기
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', e => {
+    if (e.target === overlay) {
+      overlay.classList.remove('show');
+      document.body.style.overflow = '';
+    }
+  });
+});
+
+// ===== 리뷰 =====
+function setRating(v) {
+  reviewRating = v;
+  document.querySelectorAll('.star').forEach(s => {
+    s.classList.toggle('active', parseInt(s.dataset.v) <= v);
+  });
+}
+
+async function submitReview() {
+  if (reviewRating === 0) {
+    showToast('⭐ 별점을 선택해주세요');
+    return;
+  }
+
+  const comment = document.getElementById('reviewText').value;
+  const payload = { rating: reviewRating, comment };
+
+  try {
+    const res = await fetch('/api/food-review', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    showCoupon(data.couponCode);
+  } catch (e) {
+    // 오프라인/데모: 가상 쿠폰
+    const code = 'ODIJUICE-' + Math.random().toString(36).slice(2,6).toUpperCase();
+    showCoupon(code);
+  }
+}
+
+function showCoupon(code) {
+  const area = document.getElementById('couponArea');
+  area.innerHTML = `
+    <div class="coupon-card">
+      <div class="coupon-icon">🧃</div>
+      <h4>오디쥬스 무료 쿠폰</h4>
+      <div class="code">${code}</div>
+      <div class="exp">매점에서 제시해주세요 · 당일 유효</div>
+    </div>
+  `;
+
+  // 리뷰 폼 숨기기
+  document.querySelector('.stars').style.display = 'none';
+  document.querySelector('.review-textarea').style.display = 'none';
+  document.querySelector('.review-btn').style.display = 'none';
+  document.querySelector('.review-card .sub').textContent = '후기를 남겨주셔서 감사합니다!';
+
+  showToast('🎉 쿠폰이 발급되었습니다!');
+}
+
+// ===== 토스트 =====
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+// ===== 초기화 =====
+renderMenu();
+</script>
+</body>
+</html>

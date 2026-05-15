@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>잠사박물관 시설 배치도</title>
+<script src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=YOUR_NCP_KEY_ID&submodules=geocoder"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Malgun Gothic',sans-serif;background:#080815;color:#eef;overflow:hidden;height:100vh}
+.topbar{background:#111128;padding:8px 14px;display:flex;align-items:center;gap:10px;border-bottom:1px solid #252550;z-index:100;position:relative}
+.topbar h1{font-size:14px;font-weight:800;color:#10b981}
+.topbar .cnt{font-size:10px;color:#888}
+.topbar a{color:#888;font-size:10px;text-decoration:none;margin-left:auto}
+.map-wrap{position:relative;width:100%;height:calc(100vh - 42px)}
+#map{width:100%;height:100%}
+
+/* 좌측 패널 */
+.panel{position:absolute;top:10px;left:10px;width:220px;background:#111128ee;border:1px solid #252550;border-radius:10px;z-index:50;backdrop-filter:blur(8px);max-height:calc(100vh - 80px);overflow-y:auto}
+.panel-head{padding:10px 12px;border-bottom:1px solid #252550;display:flex;align-items:center;gap:6px}
+.panel-head h2{font-size:12px;font-weight:700;flex:1}
+.panel-body{padding:8px 10px}
+
+/* 시설 카드 */
+.spot{padding:8px;border-radius:6px;margin-bottom:4px;cursor:pointer;border:1px solid transparent;transition:all .15s}
+.spot:hover{background:#1a1a3a}
+.spot.active{border-color:#10b981;background:#10b98108}
+.spot .nm{font-size:11px;font-weight:700}
+.spot .info{font-size:8px;color:#888;margin-top:2px}
+.spot .status{font-size:8px;font-weight:600;padding:1px 5px;border-radius:3px;display:inline-block;margin-top:2px}
+
+/* 우측 상세 */
+.detail{position:absolute;top:10px;right:10px;width:260px;background:#111128ee;border:1px solid #252550;border-radius:10px;z-index:50;backdrop-filter:blur(8px);display:none}
+.detail.show{display:block}
+
+/* 하단 타임슬롯 */
+.bottom-bar{position:absolute;bottom:0;left:0;right:0;background:#111128ee;border-top:1px solid #252550;z-index:50;padding:8px 14px;backdrop-filter:blur(8px)}
+
+/* 버튼 */
+.btn{padding:5px 10px;border:none;border-radius:5px;cursor:pointer;font-size:10px;font-weight:600}
+.btn-primary{background:#10b981;color:#fff}
+.btn-edit{background:#f59e0b18;color:#f59e0b;border:1px solid #f59e0b33}
+.btn-naver{background:#03C75A;color:#fff}
+
+/* 맵 컨트롤 */
+.map-controls{position:absolute;top:10px;left:50%;transform:translateX(-50%);display:flex;gap:4px;z-index:50}
+.map-ctrl{padding:5px 12px;background:#111128ee;border:1px solid #252550;border-radius:6px;font-size:10px;color:#888;cursor:pointer;backdrop-filter:blur(4px)}
+.map-ctrl.on{background:#10b98118;color:#10b981;border-color:#10b98144}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <h1>🗺️ 시설 배치도</h1>
+  <span class="cnt" id="spotCount">0개 스팟</span>
+  <div style="display:flex;gap:4px">
+    <button class="btn btn-edit" id="editBtn" onclick="toggleEdit()">✏️ 스팟 편집</button>
+    <button class="btn btn-primary" onclick="saveSpots()">💾 저장</button>
+  </div>
+  <a href="/">← 대시보드</a>
+</div>
+
+<div class="map-wrap">
+  <div id="map"></div>
+
+  <!-- 상단 지도 모드 -->
+  <div class="map-controls">
+    <div class="map-ctrl" onclick="setMapType('normal')">🗺️ 지도</div>
+    <div class="map-ctrl on" onclick="setMapType('satellite')">🛰️ 위성</div>
+    <div class="map-ctrl" onclick="setMapType('hybrid')">🔀 하이브리드</div>
+    <div class="map-ctrl" onclick="setMapType('terrain')">⛰️ 지형</div>
+  </div>
+
+  <!-- 좌측 패널 -->
+  <div class="panel">
+    <div class="panel-head">
+      <h2>📍 시설 목록</h2>
+      <span style="font-size:9px;color:#10b981" id="onlineCnt">0명 접속</span>
+    </div>
+    <div style="padding:6px 10px;border-bottom:1px solid #252550;display:flex;gap:3px">
+      <span class="map-ctrl on" onclick="filterSpots('all',this)" data-f="all">전체</span>
+      <span class="map-ctrl" onclick="filterSpots('오두막',this)" data-f="오두막">🏠 오두막</span>
+      <span class="map-ctrl" onclick="filterSpots('평상',this)" data-f="평상">🪑 평상</span>
+    </div>
+    <div class="panel-body" id="spotList"></div>
+    <div style="padding:6px 10px;border-top:1px solid #252550">
+      <button class="btn btn-primary" style="width:100%" onclick="addSpot('오두막')">+ 오두막 추가</button>
+      <button class="btn" style="width:100%;margin-top:4px;background:#3b82f618;color:#3b82f6;border:1px solid #3b82f633" onclick="addSpot('평상')">+ 평상 추가</button>
+    </div>
+  </div>
+
+  <!-- 우측 상세 패널 -->
+  <div class="detail" id="detailPanel">
+    <div class="panel-head">
+      <h2 id="detailTitle">시설 상세</h2>
+      <span onclick="closeDetail()" style="cursor:pointer;color:#666;font-size:14px">✕</span>
+    </div>
+    <div class="panel-body" id="detailBody"></div>
+  </div>
+
+  <!-- 하단: 오늘 예약 현황 -->
+  <div class="bottom-bar">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+      <span style="font-size:11px;font-weight:700">📅 오늘 예약 현황</span>
+      <input type="date" id="dateSelect" style="padding:3px 6px;background:#1a1a3a;border:1px solid #333;border-radius:4px;color:#fff;font-size:10px">
+      <span style="margin-left:auto;font-size:9px;color:#888" id="bookSummary">0건</span>
+    </div>
+    <div id="timeSlots" style="display:flex;gap:3px;overflow-x:auto;padding-bottom:4px"></div>
+  </div>
+</div>
+
+<script>
+// ═══ 데이터 ═══
+var SPOTS = [
+  { id:'cabin-A', type:'오두막', name:'오두막 A', price:30000, lat:36.56920, lng:127.45310, color:'#f59e0b', bookings:[] },
+  { id:'cabin-B', type:'오두막', name:'오두막 B', price:30000, lat:36.56925, lng:127.45340, color:'#f59e0b', bookings:[] },
+  { id:'cabin-C', type:'오두막', name:'오두막 C', price:35000, lat:36.56930, lng:127.45370, color:'#f59e0b', bookings:[{slot:'09:00-12:00',name:'이미화',phone:'2121'}] },
+  { id:'bench-1', type:'평상', name:'평상 1', price:15000, lat:36.56900, lng:127.45320, color:'#3b82f6', bookings:[] },
+  { id:'bench-2', type:'평상', name:'평상 2', price:15000, lat:36.56895, lng:127.45350, color:'#3b82f6', bookings:[{slot:'09:00-18:00',name:'문송희',phone:'6310'}] },
+  { id:'bench-3', type:'평상', name:'평상 3', price:15000, lat:36.56905, lng:127.45380, color:'#3b82f6', bookings:[] },
+  { id:'bench-4', type:'평상', name:'평상 4', price:15000, lat:36.56890, lng:127.45330, color:'#3b82f6', bookings:[] },
+  { id:'bench-5', type:'평상', name:'평상 5', price:20000, lat:36.56885, lng:127.45360, color:'#3b82f6', bookings:[{slot:'12:00-15:00',name:'남경란',phone:'8901'}] },
+];
+
+var map, markers = {}, editMode = false, selectedSpot = null, currentFilter = 'all';
+
+// ═══ 지도 초기화 ═══
+function initMap() {
+  var center = new naver.maps.LatLng(36.56905, 127.45345);
+  map = new naver.maps.Map('map', {
+    center: center,
+    zoom: 19,
+    mapTypeId: naver.maps.MapTypeId.SATELLITE,
+    zoomControl: true,
+    zoomControlOptions: { position: naver.maps.Position.RIGHT_CENTER }
+  });
+
+  // 지도 클릭 → 편집 모드에서 스팟 이동
+  naver.maps.Event.addListener(map, 'click', function(e) {
+    if (editMode && selectedSpot) {
+      var s = SPOTS.find(function(s) { return s.id === selectedSpot; });
+      if (s) {
+        s.lat = e.coord.lat();
+        s.lng = e.coord.lng();
+        updateMarker(s);
+        renderList();
+        showDetail(s.id);
+      }
+    }
+  });
+
+  // 마커 생성
+  SPOTS.forEach(function(s) { createMarker(s); });
+  renderList();
+  renderTimeSlots();
+  document.getElementById('spotCount').textContent = SPOTS.length + '개 스팟';
+  document.getElementById('dateSelect').value = new Date().toISOString().substring(0, 10);
+}
+
+// ═══ 마커 생성 ═══
+function createMarker(spot) {
+  var isBooked = spot.bookings.length > 0;
+  var icon = spot.type === '오두막' ? '🏠' : '🪑';
+  var bgColor = isBooked ? '#ef4444' : spot.color;
+
+  var marker = new naver.maps.Marker({
+    position: new naver.maps.LatLng(spot.lat, spot.lng),
+    map: map,
+    icon: {
+      content: '<div style="background:' + bgColor + ';border:2px solid #fff;border-radius:' + (spot.type === '오두막' ? '6px' : '50%') + ';width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-size:14px;box-shadow:0 2px 8px rgba(0,0,0,.4);cursor:pointer">' + icon + '</div>'
+        + '<div style="background:#111128ee;color:#fff;font-size:9px;padding:1px 4px;border-radius:3px;text-align:center;margin-top:2px;font-weight:700;white-space:nowrap">' + spot.name + '</div>',
+      anchor: new naver.maps.Point(16, 16)
+    },
+    draggable: editMode
+  });
+
+  naver.maps.Event.addListener(marker, 'click', function() {
+    selectedSpot = spot.id;
+    showDetail(spot.id);
+    renderList();
+  });
+
+  naver.maps.Event.addListener(marker, 'dragend', function(e) {
+    spot.lat = e.coord.lat();
+    spot.lng = e.coord.lng();
+    showDetail(spot.id);
+  });
+
+  markers[spot.id] = marker;
+}
+
+function updateMarker(spot) {
+  if (markers[spot.id]) {
+    markers[spot.id].setMap(null);
+    delete markers[spot.id];
+  }
+  createMarker(spot);
+}
+
+// ═══ 지도 타입 ═══
+function setMapType(type) {
+  var types = { normal: naver.maps.MapTypeId.NORMAL, satellite: naver.maps.MapTypeId.SATELLITE, hybrid: naver.maps.MapTypeId.HYBRID, terrain: naver.maps.MapTypeId.TERRAIN };
+  map.setMapTypeId(types[type] || naver.maps.MapTypeId.SATELLITE);
+  document.querySelectorAll('.map-controls .map-ctrl').forEach(function(el) { el.classList.remove('on'); });
+  event.target.classList.add('on');
+}
+
+// ═══ 좌측 목록 ═══
+function renderList() {
+  var filtered = SPOTS.filter(function(s) { return currentFilter === 'all' || s.type === currentFilter; });
+  var html = filtered.map(function(s) {
+    var isBooked = s.bookings.length > 0;
+    var active = selectedSpot === s.id ? 'active' : '';
+    return '<div class="spot ' + active + '" onclick="selectSpot(\'' + s.id + '\')">'
+      + '<div class="nm">' + (s.type === '오두막' ? '🏠' : '🪑') + ' ' + s.name + '</div>'
+      + '<div class="info">' + s.price.toLocaleString() + '원 · (' + s.lat.toFixed(5) + ', ' + s.lng.toFixed(5) + ')</div>'
+      + '<span class="status" style="background:' + (isBooked ? '#ef444418' : '#10b98118') + ';color:' + (isBooked ? '#ef4444' : '#10b981') + '">' + (isBooked ? '예약 ' + s.bookings.length + '건' : '비어있음') + '</span>'
+      + '</div>';
+  }).join('');
+  document.getElementById('spotList').innerHTML = html;
+}
+
+function selectSpot(id) {
+  selectedSpot = id;
+  var s = SPOTS.find(function(s) { return s.id === id; });
+  if (s) {
+    map.panTo(new naver.maps.LatLng(s.lat, s.lng));
+    showDetail(id);
+  }
+  renderList();
+}
+
+// ═══ 필터 ═══
+function filterSpots(type, el) {
+  currentFilter = type;
+  document.querySelectorAll('[data-f]').forEach(function(e) { e.classList.remove('on'); });
+  if (el) el.classList.add('on');
+  
+  SPOTS.forEach(function(s) {
+    var show = type === 'all' || s.type === type;
+    if (markers[s.id]) markers[s.id].setMap(show ? map : null);
+  });
+  renderList();
+}
+
+// ═══ 상세 패널 ═══
+function showDetail(id) {
+  var s = SPOTS.find(function(s) { return s.id === id; });
+  if (!s) return;
+  var panel = document.getElementById('detailPanel');
+  panel.classList.add('show');
+  document.getElementById('detailTitle').textContent = s.name;
+
+  var isBooked = s.bookings.length > 0;
+  var html = '<div style="margin-bottom:8px">'
+    + '<div style="display:flex;gap:6px;margin-bottom:6px">'
+    + '<div style="flex:1;background:#0a0a18;padding:6px;border-radius:6px;text-align:center"><div style="font-size:8px;color:#888">가격</div><div style="font-size:14px;font-weight:800;color:' + s.color + '">' + s.price.toLocaleString() + '</div></div>'
+    + '<div style="flex:1;background:#0a0a18;padding:6px;border-radius:6px;text-align:center"><div style="font-size:8px;color:#888">상태</div><div style="font-size:14px;font-weight:800;color:' + (isBooked ? '#ef4444' : '#10b981') + '">' + (isBooked ? '예약됨' : '비어있음') + '</div></div>'
+    + '</div>';
+
+  // 좌표
+  html += '<div style="font-size:9px;color:#888;margin-bottom:6px">📍 ' + s.lat.toFixed(6) + ', ' + s.lng.toFixed(6) + '</div>';
+
+  // 예약 현황
+  html += '<div style="font-size:10px;font-weight:700;color:#888;margin-bottom:4px">📅 예약 현황</div>';
+  var slots = ['09:00-12:00', '12:00-15:00', '15:00-18:00', '09:00-18:00(종일)'];
+  slots.forEach(function(slot) {
+    var booking = s.bookings.find(function(b) { return b.slot === slot.split('(')[0]; });
+    html += '<div style="display:flex;align-items:center;padding:4px 0;border-bottom:1px solid #1a1a3a">'
+      + '<span style="flex:1;font-size:10px;color:#ccc">' + slot + '</span>';
+    if (booking) {
+      html += '<span style="font-size:9px;color:#ef4444;font-weight:600">' + booking.name + ' (' + booking.phone + ')</span>';
+    } else {
+      html += '<span onclick="bookSlot(\'' + s.id + '\',\'' + slot.split('(')[0] + '\')" style="padding:2px 8px;background:#10b98118;color:#10b981;border-radius:3px;font-size:8px;cursor:pointer;font-weight:600">예약</span>';
+    }
+    html += '</div>';
+  });
+
+  // 편집 모드 정보
+  if (editMode) {
+    html += '<div style="margin-top:8px;padding:8px;background:#f59e0b08;border:1px solid #f59e0b22;border-radius:6px">'
+      + '<div style="font-size:9px;color:#f59e0b;font-weight:700">✏️ 편집 모드</div>'
+      + '<div style="font-size:8px;color:#888;margin-top:2px">지도를 클릭하여 위치를 이동하세요</div>'
+      + '<div style="margin-top:4px;display:grid;grid-template-columns:1fr 1fr;gap:4px">'
+      + '<div><label style="font-size:8px;color:#666">이름</label><input value="' + s.name + '" onchange="updateSpot(\'' + s.id + '\',\'name\',this.value)" style="width:100%;padding:3px;font-size:10px;background:#1a1a3a;border:1px solid #333;border-radius:3px;color:#fff"></div>'
+      + '<div><label style="font-size:8px;color:#666">가격</label><input type="number" value="' + s.price + '" onchange="updateSpot(\'' + s.id + '\',\'price\',parseInt(this.value))" style="width:100%;padding:3px;font-size:10px;background:#1a1a3a;border:1px solid #333;border-radius:3px;color:#fff"></div>'
+      + '</div>'
+      + '<button onclick="deleteSpot(\'' + s.id + '\')" style="margin-top:4px;width:100%;padding:4px;background:#ef444418;color:#ef4444;border:1px solid #ef444433;border-radius:4px;font-size:9px;cursor:pointer">🗑️ 삭제</button>'
+      + '</div>';
+  }
+
+  html += '</div>';
+  document.getElementById('detailBody').innerHTML = html;
+}
+
+function closeDetail() {
+  document.getElementById('detailPanel').classList.remove('show');
+  selectedSpot = null;
+  renderList();
+}
+
+// ═══ 편집 모드 ═══
+function toggleEdit() {
+  editMode = !editMode;
+  document.getElementById('editBtn').textContent = editMode ? '✅ 편집 완료' : '✏️ 스팟 편집';
+  document.getElementById('editBtn').style.background = editMode ? '#10b98118' : '#f59e0b18';
+  document.getElementById('editBtn').style.color = editMode ? '#10b981' : '#f59e0b';
+
+  // 마커 드래그 가능/불가
+  SPOTS.forEach(function(s) {
+    if (markers[s.id]) markers[s.id].setDraggable(editMode);
+  });
+  if (selectedSpot) showDetail(selectedSpot);
+}
+
+function updateSpot(id, field, value) {
+  var s = SPOTS.find(function(s) { return s.id === id; });
+  if (s) { s[field] = value; updateMarker(s); renderList(); }
+}
+
+function deleteSpot(id) {
+  if (!confirm('삭제하시겠습니까?')) return;
+  if (markers[id]) { markers[id].setMap(null); delete markers[id]; }
+  SPOTS = SPOTS.filter(function(s) { return s.id !== id; });
+  closeDetail();
+  renderList();
+  document.getElementById('spotCount').textContent = SPOTS.length + '개 스팟';
+}
+
+function addSpot(type) {
+  var center = map.getCenter();
+  var count = SPOTS.filter(function(s) { return s.type === type; }).length;
+  var id = type === '오두막' ? 'cabin-' + String.fromCharCode(65 + count) : 'bench-' + (count + 1);
+  var name = type === '오두막' ? '오두막 ' + String.fromCharCode(65 + count) : '평상 ' + (count + 1);
+  var spot = { id: id, type: type, name: name, price: type === '오두막' ? 30000 : 15000, lat: center.lat(), lng: center.lng(), color: type === '오두막' ? '#f59e0b' : '#3b82f6', bookings: [] };
+  SPOTS.push(spot);
+  createMarker(spot);
+  renderList();
+  selectSpot(spot.id);
+  document.getElementById('spotCount').textContent = SPOTS.length + '개 스팟';
+}
+
+// ═══ 예약 ═══
+function bookSlot(spotId, slot) {
+  var name = prompt('예약자 이름:');
+  if (!name) return;
+  var phone = prompt('전화번호 뒤4자리:');
+  var s = SPOTS.find(function(s) { return s.id === spotId; });
+  if (s) {
+    s.bookings.push({ slot: slot, name: name, phone: phone || '' });
+    updateMarker(s);
+    showDetail(spotId);
+    renderList();
+    renderTimeSlots();
+  }
+}
+
+// ═══ 저장 ═══
+function saveSpots() {
+  var data = SPOTS.map(function(s) {
+    return { id: s.id, type: s.type, name: s.name, price: s.price, lat: s.lat, lng: s.lng };
+  });
+  fetch('/api/rental/spots', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ spots: data })
+  }).then(function(r) { return r.json(); }).then(function(d) {
+    alert(d.ok ? '저장 완료!' : '저장 실패: ' + (d.error || ''));
+  }).catch(function() {
+    // 로컬 저장 (서버 없을 때)
+    localStorage.setItem('jamsa_spots', JSON.stringify(data));
+    alert('로컬 저장 완료 (서버 미연결)');
+  });
+}
+
+// ═══ 하단 타임슬롯 ═══
+function renderTimeSlots() {
+  var all = [];
+  SPOTS.forEach(function(s) {
+    s.bookings.forEach(function(b) {
+      all.push({ spot: s.name, slot: b.slot, name: b.name, phone: b.phone, color: s.color, type: s.type });
+    });
+  });
+  
+  var html = all.length === 0 
+    ? '<div style="text-align:center;color:#555;font-size:10px;padding:4px">예약 없음</div>'
+    : all.map(function(b) {
+      return '<div style="flex-shrink:0;padding:6px 10px;background:' + b.color + '18;border:1px solid ' + b.color + '33;border-radius:6px;min-width:140px">'
+        + '<div style="font-size:10px;font-weight:700;color:' + b.color + '">' + (b.type === '오두막' ? '🏠' : '🪑') + ' ' + b.spot + '</div>'
+        + '<div style="font-size:9px;color:#ccc">' + b.slot + ' · ' + b.name + '</div>'
+        + '</div>';
+    }).join('');
+  
+  document.getElementById('timeSlots').innerHTML = html;
+  document.getElementById('bookSummary').textContent = all.length + '건 예약';
+}
+
+// ═══ 초기화 ═══
+if (typeof naver !== 'undefined' && naver.maps) {
+  naver.maps.onJSContentLoaded = initMap;
+} else {
+  // 네이버 Maps API 없을 때 안내
+  document.getElementById('map').innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:10px">'
+    + '<div style="font-size:40px">🗺️</div>'
+    + '<div style="font-size:16px;font-weight:800;color:#10b981">네이버 Maps API 키 필요</div>'
+    + '<div style="font-size:11px;color:#888;text-align:center;max-width:300px;line-height:1.6">'
+    + '1. <a href="https://console.ncloud.com/naver-service/application" target="_blank" style="color:#03C75A">네이버 클라우드 콘솔</a> 접속<br>'
+    + '2. Application 등록 → Maps Web Dynamic Map 사용 설정<br>'
+    + '3. 발급받은 Client ID를 아래 입력<br>'
+    + '<input id="apiKeyInput" placeholder="NCP Client ID" style="margin-top:6px;padding:8px;width:200px;background:#1a1a3a;border:1px solid #333;border-radius:6px;color:#fff;text-align:center;font-size:12px">'
+    + '<br><button onclick="applyApiKey()" style="margin-top:6px;padding:6px 20px;background:#03C75A;color:#fff;border:none;border-radius:6px;font-weight:700;cursor:pointer">적용</button>'
+    + '</div></div>';
+  
+  // 패널 렌더링은 지도 없이도 실행
+  renderList();
+  renderTimeSlots();
+  document.getElementById('spotCount').textContent = SPOTS.length + '개 스팟';
+  document.getElementById('dateSelect').value = new Date().toISOString().substring(0, 10);
+}
+
+function applyApiKey() {
+  var key = document.getElementById('apiKeyInput').value.trim();
+  if (!key) { alert('API 키를 입력하세요'); return; }
+  var script = document.createElement('script');
+  script.src = 'https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=' + key + '&submodules=geocoder';
+  script.onload = function() { initMap(); };
+  document.head.appendChild(script);
+}
+</script>
+</body>
+</html>

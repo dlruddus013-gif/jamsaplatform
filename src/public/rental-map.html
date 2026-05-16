@@ -124,21 +124,25 @@ body{font-family:'Malgun Gothic',sans-serif;background:#080815;color:#eef;overfl
 <script>
 // ═══ 데이터 ═══
 var SPOTS = [
-  { id:'cabin-A', type:'오두막', name:'오두막 A', price:30000, lat:36.56920, lng:127.45310, color:'#f59e0b', bookings:[] },
-  { id:'cabin-B', type:'오두막', name:'오두막 B', price:30000, lat:36.56925, lng:127.45340, color:'#f59e0b', bookings:[] },
-  { id:'cabin-C', type:'오두막', name:'오두막 C', price:35000, lat:36.56930, lng:127.45370, color:'#f59e0b', bookings:[{slot:'09:00-12:00',name:'이미화',phone:'2121'}] },
-  { id:'bench-1', type:'평상', name:'평상 1', price:15000, lat:36.56900, lng:127.45320, color:'#3b82f6', bookings:[] },
-  { id:'bench-2', type:'평상', name:'평상 2', price:15000, lat:36.56895, lng:127.45350, color:'#3b82f6', bookings:[{slot:'09:00-18:00',name:'문송희',phone:'6310'}] },
-  { id:'bench-3', type:'평상', name:'평상 3', price:15000, lat:36.56905, lng:127.45380, color:'#3b82f6', bookings:[] },
-  { id:'bench-4', type:'평상', name:'평상 4', price:15000, lat:36.56890, lng:127.45330, color:'#3b82f6', bookings:[] },
-  { id:'bench-5', type:'평상', name:'평상 5', price:20000, lat:36.56885, lng:127.45360, color:'#3b82f6', bookings:[{slot:'12:00-15:00',name:'남경란',phone:'8901'}] },
+  { id:'cabin-1', type:'오두막', name:'오두막 A', price:70000, lat:36.63920, lng:127.38160, color:'#ef4444', bookings:[] },
+  { id:'cabin-2', type:'오두막', name:'오두막 B', price:70000, lat:36.63925, lng:127.38175, color:'#dc2626', bookings:[] },
+  { id:'bench-back-1', type:'평상', name:'등받이평상 A', price:50000, lat:36.63870, lng:127.38140, color:'#10b981', bookings:[] },
+  { id:'bench-back-2', type:'평상', name:'등받이평상 B', price:50000, lat:36.63873, lng:127.38152, color:'#059669', bookings:[] },
+  { id:'bench-normal-1', type:'평상', name:'일반평상 A', price:40000, lat:36.63860, lng:127.38170, color:'#3b82f6', bookings:[] },
+  { id:'bench-normal-2', type:'평상', name:'일반평상 B', price:40000, lat:36.63863, lng:127.38182, color:'#2563eb', bookings:[] },
+  { id:'bench-deck-1', type:'평상', name:'데크평상 A', price:40000, lat:36.63910, lng:127.38230, color:'#6366f1', bookings:[] },
+  { id:'bench-deck-2', type:'평상', name:'데크평상 B', price:40000, lat:36.63913, lng:127.38242, color:'#4f46e5', bookings:[] },
+  { id:'bench-vip-1', type:'평상', name:'VIP평상 A', price:50000, lat:36.63865, lng:127.38120, color:'#f59e0b', bookings:[] },
+  { id:'bench-vip-2', type:'평상', name:'VIP평상 B', price:50000, lat:36.63868, lng:127.38132, color:'#d97706', bookings:[] },
+  { id:'camping-1', type:'캠핑테이블', name:'캠핑테이블 A', price:40000, lat:36.63855, lng:127.38150, color:'#8b5cf6', bookings:[] },
+  { id:'camping-2', type:'캠핑테이블', name:'캠핑테이블 B', price:40000, lat:36.63858, lng:127.38162, color:'#7c3aed', bookings:[] },
 ];
 
 var map, markers = {}, editMode = false, selectedSpot = null, currentFilter = 'all';
 
 // ═══ 지도 초기화 ═══
 function initMap() {
-  var center = new naver.maps.LatLng(36.56905, 127.45345);
+  var center = new naver.maps.LatLng(36.63890, 127.38180);
   map = new naver.maps.Map('map', {
     center: center,
     zoom: 19,

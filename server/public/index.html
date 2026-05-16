@@ -251,7 +251,7 @@ function render(){
   var avail=S.tickets.filter(isU).length;
   var todayExpCnt=(S.expBookings||[]).filter(function(b){return b.date===new Date().toISOString().split('T')[0]}).length;
   var todayRenCnt=(S.rentalBookings||[]).filter(function(b){return b.date===new Date().toISOString().split('T')[0]}).length;
-  var TABS=[{id:'scan',l:'📷 스캔',n:avail},{id:'issue',l:'🎫 발권'},{id:'experience',l:'🎯 체험',n:todayExpCnt},{id:'rental',l:'🏕️ 대여',n:todayRenCnt},{id:'tickets',l:'📋 티켓',n:S.tickets.length},{id:'useLog',l:'📊 사용이력',n:(S.useHistory||[]).length},{id:'pos',l:'₩ 매출'},{id:'posTime',l:'⏰ 시간대'},{id:'daily',l:'📋 마감일지'},{id:'msg',l:'📱 메시지'},{id:'crawl',l:'🔄 크롤링'},{id:'ai',l:'🤖 AI진단',n:S.aiAlerts||0},{id:'add',l:'➕ 수동'},{id:'settings',l:'🔗 설정'},{id:'logs',l:'📋 로그'}];
+  var TABS=[{id:'scan',l:'📷 스캔',n:avail},{id:'issue',l:'🎫 발권'},{id:'experience',l:'🎯 체험',n:todayExpCnt},{id:'rental',l:'🏕️ 대여',n:todayRenCnt},{id:'tickets',l:'📋 티켓',n:S.tickets.length},{id:'useLog',l:'📊 사용이력',n:(S.useHistory||[]).length},{id:'pos',l:'₩ 매출'},{id:'posTime',l:'⏰ 시간대'},{id:'daily',l:'📋 마감일지'},{id:'msg',l:'📱 메시지'},{id:'portal',l:'🗺️ 포털관리'},{id:'crawl',l:'🔄 크롤링'},{id:'ai',l:'🤖 AI진단',n:S.aiAlerts||0},{id:'add',l:'➕ 수동'},{id:'settings',l:'🔗 설정'},{id:'logs',l:'📋 로그'}];
   $('tabBar').innerHTML=TABS.map(function(t){return '<button onclick="switchTab(\''+t.id+'\')" style="padding:6px 10px;border-radius:5px;border:none;background:'+(tab===t.id?'rgba(16,185,129,.12)':'transparent')+';color:'+(tab===t.id?'#10b981':'#555')+';cursor:pointer;font-size:11px;font-weight:'+(tab===t.id?700:500)+';white-space:nowrap;font-family:inherit;display:flex;align-items:center;gap:3px">'+t.l+(t.n>0?'<span style="background:'+(tab===t.id?'#10b981':'#333')+';color:'+(tab===t.id?'#fff':'#888')+';font-size:8px;font-weight:700;padding:1px 4px;border-radius:8px;min-width:14px;text-align:center">'+t.n+'</span>':'')+'</button>'}).join('');
   var el=$('content');
   dbg('tabBar set, content el='+(el?'OK':'NULL'));
@@ -266,6 +266,7 @@ function render(){
   else if(tab==='posTime')html=renderPosTime();
   else if(tab==='daily')html=renderDailyReport();
   else if(tab==='msg')html=renderMsg();
+  else if(tab==='portal')html=renderPortal();
   else if(tab==='crawl')html=renderCrawl();
   else if(tab==='ai')html=renderAI();
   else if(tab==='add')html=renderAdd();
@@ -4912,6 +4913,105 @@ function renderRentalCalendar(filteredRentals,RENTAL_TIMES){
   return calHtml;
 }
 
+// ═══ 포털 종합관리 ═══
+var PORTAL_SPOTS=[
+  {id:'SPOT-gate',name:'입구/매표소',cat:'입장',icon:'🎫',color:'#10b981',lat:36.63840,lng:127.38100},
+  {id:'SPOT-museum',name:'잠사박물관',cat:'관람',icon:'🏛️',color:'#3b82f6',lat:36.63890,lng:127.38180},
+  {id:'SPOT-kids',name:'키즈/놀이존',cat:'놀이',icon:'🧒',color:'#f59e0b',lat:36.63870,lng:127.38230},
+  {id:'SPOT-sheep',name:'양떼정원',cat:'동물',icon:'🐑',color:'#8b5cf6',lat:36.63920,lng:127.38220},
+  {id:'SPOT-cabin',name:'오두막/불멍존',cat:'휴식',icon:'🏕️',color:'#ef4444',lat:36.63930,lng:127.38160},
+  {id:'SPOT-restaurant',name:'식당/매점',cat:'식음',icon:'🍽️',color:'#f97316',lat:36.63850,lng:127.38060},
+  {id:'SPOT-pool',name:'물놀이장',cat:'놀이',icon:'💧',color:'#06b6d4',lat:36.63860,lng:127.38140},
+  {id:'SPOT-sled',name:'사계절썰매장',cat:'놀이',icon:'🛷',color:'#14b8a6',lat:36.63910,lng:127.38250},
+  {id:'SPOT-exp',name:'체험장',cat:'체험',icon:'🧪',color:'#ec4899',lat:36.63900,lng:127.38120}
+];
+function getSpotScans(spotId){return(S.spotScans||{})[spotId]||0}
+function renderPortal(){
+  var h='<div style="max-width:1100px;margin:0 auto;animation:fadeIn .3s">';
+
+  // 상단 통계
+  var todayStr=new Date().toISOString().split('T')[0];
+  var todayTk=S.tickets.filter(function(t){return t.bookDate===todayStr||t.createdAt&&t.createdAt.startsWith(todayStr)}).length;
+  var todayExp=(S.expBookings||[]).filter(function(b){return b.date===todayStr}).length;
+  var todayRen=(S.rentalBookings||[]).filter(function(b){return b.date===todayStr}).length;
+  var totalScans=PORTAL_SPOTS.reduce(function(s,p){return s+getSpotScans(p.id)},0);
+  var stats=[
+    {l:'오늘 티켓',v:todayTk,c:'#10b981'},{l:'체험예약',v:todayExp,c:'#f59e0b'},
+    {l:'오두막/평상',v:todayRen,c:'#ef4444'},{l:'스팟스캔',v:totalScans,c:'#3b82f6'},
+    {l:'방문후기',v:(S.reviews||[]).length,c:'#8b5cf6'}
+  ];
+  h+='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;margin-bottom:16px">';
+  stats.forEach(function(s){
+    h+='<div class="card" style="padding:10px 14px;border-left:3px solid '+s.c+'">'
+      +'<div style="font-size:10px;color:#888">'+s.l+'</div>'
+      +'<div style="font-size:22px;font-weight:800;color:'+s.c+'">'+s.v+'</div></div>';
+  });
+  h+='</div>';
+
+  // 네이버 지도
+  var savedKey=typeof localStorage!=='undefined'?localStorage.getItem('__naver_map_key')||'':'';
+  h+='<div class="card" style="margin-bottom:16px;padding:0;overflow:hidden">'
+    +'<div style="padding:10px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #252540">'
+    +'<span style="font-size:13px;font-weight:700;color:#10b981">🗺️ 위치/QR 스팟 실시간 네이버지도</span>'
+    +'<span style="font-size:9px;color:#666">최근 30분 기준</span></div>';
+
+  if(!savedKey){
+    h+='<div style="padding:40px;text-align:center">'
+      +'<div style="font-size:14px;font-weight:700;color:#f59e0b;margin-bottom:8px">🛰️ 네이버 Maps API 키 필요</div>'
+      +'<div style="display:flex;gap:6px;align-items:center;max-width:400px;margin:12px auto">'
+      +'<input id="portalMapKey" placeholder="NCP Client ID" style="flex:1;padding:8px;background:#1a1a3a;border:2px solid #333;border-radius:8px;color:#fff;text-align:center">'
+      +'<button class="btn" onclick="var k=document.getElementById(\'portalMapKey\').value.trim();if(!k)return;localStorage.setItem(\'__naver_map_key\',k);render()" style="padding:8px 16px;background:#03C75A;color:#fff;border-radius:8px">저장</button>'
+      +'</div></div>';
+  } else {
+    h+='<div style="padding:6px 14px;display:flex;align-items:center;gap:6px;background:#0a0a20">'
+      +'<input value="'+savedKey+'" readonly style="flex:1;padding:4px 8px;background:#151528;border:1px solid #252540;border-radius:4px;color:#888;font-size:11px;font-family:monospace">'
+      +'<button class="btn" onclick="var k=prompt(\'새 Client ID:\',localStorage.getItem(\'__naver_map_key\')||\'\');if(k!==null){localStorage.setItem(\'__naver_map_key\',k.trim());render()}" style="padding:4px 10px;background:#03C75A;color:#fff;font-size:10px;border-radius:4px">지도키 저장</button>'
+      +'<a href="https://console.ncloud.com/naver-service/application" target="_blank" style="font-size:10px;color:#03C75A">네이버 콘솔</a>'
+      +'<span style="font-size:9px;color:#555">등록 URL: '+location.origin+'</span></div>'
+      +'<div id="portalMap" style="width:100%;height:420px;background:#0a0a25"></div>';
+  }
+  h+='</div>';
+
+  // 스팟 카드
+  h+='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-bottom:16px">';
+  PORTAL_SPOTS.forEach(function(sp){
+    var cnt=getSpotScans(sp.id);
+    h+='<div class="card" style="padding:10px;border-top:3px solid '+sp.color+';cursor:pointer" onclick="if(typeof _portalMapObj!==\'undefined\'&&_portalMapObj)_portalMapObj.panTo(new naver.maps.LatLng('+sp.lat+','+sp.lng+'))">'
+      +'<div style="font-size:13px;font-weight:700;color:#fff">'+sp.icon+' '+sp.name+'</div>'
+      +'<div style="font-size:9px;color:#888">'+sp.cat+' · '+sp.id+'</div>'
+      +'<div style="font-size:20px;font-weight:800;color:'+sp.color+';margin-top:4px">'+cnt+'<span style="font-size:11px;color:#888;font-weight:400">명</span></div>'
+      +'<div style="font-size:9px;color:#3b82f6;cursor:pointer" onclick="event.stopPropagation();prompt(\'QR URL:\',location.origin+\'/qr/\'+\''+sp.id+'\')">QR URL</div></div>';
+  });
+  h+='</div>';
+  h+='</div>';
+
+  // 지도 초기화
+  if(savedKey){
+    setTimeout(function(){
+      loadNaverMapScript(function(){
+        if(typeof naver==='undefined'||!naver.maps)return;
+        var el=document.getElementById('portalMap');
+        if(!el||el.childNodes.length>0)return;
+        try{
+          var center=new naver.maps.LatLng(36.63890,127.38180);
+          var m=new naver.maps.Map('portalMap',{center:center,zoom:18,mapTypeId:naver.maps.MapTypeId.SATELLITE,zoomControl:true,zoomControlOptions:{position:naver.maps.Position.RIGHT_CENTER}});
+          window._portalMapObj=m;
+          PORTAL_SPOTS.forEach(function(sp){
+            var cnt=getSpotScans(sp.id);
+            var mk=new naver.maps.Marker({position:new naver.maps.LatLng(sp.lat,sp.lng),map:m,icon:{content:'<div style="padding:4px 10px;background:rgba(0,0,0,.85);color:#fff;border-radius:8px;font-size:11px;font-weight:700;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,.4);border:2px solid '+sp.color+'">'+sp.icon+' '+sp.name+' <span style="color:'+sp.color+'">'+cnt+'명</span></div>',anchor:new naver.maps.Point(50,16)}});
+            naver.maps.Event.addListener(mk,'click',function(){
+              var iw=new naver.maps.InfoWindow({content:'<div style="padding:12px;min-width:160px;background:#111;color:#fff;border-radius:8px"><div style="font-size:14px;font-weight:700;margin-bottom:4px">'+sp.icon+' '+sp.name+'</div><div style="font-size:11px;color:#aaa">'+sp.cat+' · '+sp.id+'</div><div style="font-size:18px;font-weight:800;color:'+sp.color+';margin-top:6px">'+cnt+'명</div><div style="font-size:10px;color:#555;margin-top:4px">'+sp.lat.toFixed(5)+', '+sp.lng.toFixed(5)+'</div></div>',borderWidth:0,backgroundColor:'transparent',anchorSize:new naver.maps.Size(0,0)});
+              iw.open(m,mk);
+            });
+          });
+        }catch(e){console.error('portal map error:',e)}
+      });
+    },100);
+  }
+
+  return h;
+}
+
 function renderRentalSatMap(filteredRentals){
   var RENTAL_TIMES=['09:00~18:00(종일)'];
   var allBks=S.rentalBookings||[];
@@ -4919,12 +5019,12 @@ function renderRentalSatMap(filteredRentals){
   var mapId='rentalSatMap';
 
   var spotCoords=[
-    {id:'bench-back',name:'등받이평상',type:'bench',lat:36.56900,lng:127.45310,color:'#10b981'},
-    {id:'bench-normal',name:'일반평상',type:'bench',lat:36.56895,lng:127.45340,color:'#3b82f6'},
-    {id:'bench-deck',name:'데크평상',type:'bench',lat:36.56905,lng:127.45380,color:'#6366f1'},
-    {id:'bench-vip',name:'VIP평상',type:'bench',lat:36.56908,lng:127.45305,color:'#f59e0b'},
-    {id:'cabin',name:'오두막',type:'cabin',lat:36.56920,lng:127.45345,color:'#ef4444'},
-    {id:'camping',name:'캠핑테이블',type:'camping',lat:36.56890,lng:127.45320,color:'#8b5cf6'}
+    {id:'bench-back',name:'등받이평상',type:'bench',lat:36.63870,lng:127.38140,color:'#10b981'},
+    {id:'bench-normal',name:'일반평상',type:'bench',lat:36.63860,lng:127.38170,color:'#3b82f6'},
+    {id:'bench-deck',name:'데크평상',type:'bench',lat:36.63910,lng:127.38230,color:'#6366f1'},
+    {id:'bench-vip',name:'VIP평상',type:'bench',lat:36.63865,lng:127.38120,color:'#f59e0b'},
+    {id:'cabin',name:'오두막',type:'cabin',lat:36.63920,lng:127.38160,color:'#ef4444'},
+    {id:'camping',name:'캠핑테이블',type:'camping',lat:36.63855,lng:127.38150,color:'#8b5cf6'}
   ];
 
   // Match spot coords with server rentals
@@ -4933,7 +5033,7 @@ function renderRentalSatMap(filteredRentals){
     var dayBks=allBks.filter(function(b){return b.rentalId===r.id&&b.date===selRentalDate&&b.status!=='cancelled'});
     var offsetLat=coord?(idx%2)*0.00008:0;
     var offsetLng=coord?(idx%2)*0.00012:0;
-    return {id:r.id,name:r.name,type:r.type,price:r.price,desc:r.desc||'',color:r.color||'#888',lat:coord?coord.lat+offsetLat:36.56905+Math.random()*0.0005,lng:coord?coord.lng+offsetLng:127.45345+Math.random()*0.0005,bookings:dayBks};
+    return {id:r.id,name:r.name,type:r.type,price:r.price,desc:r.desc||'',color:r.color||'#888',lat:coord?coord.lat+offsetLat:36.63890+Math.random()*0.0005,lng:coord?coord.lng+offsetLng:127.38180+Math.random()*0.0005,bookings:dayBks};
   });
 
   var html='<div class="card" style="padding:0;overflow:hidden;margin-bottom:12px">';
@@ -4990,7 +5090,7 @@ function renderRentalSatMap(filteredRentals){
       loadNaverMapScript(function(){
         if(typeof naver==='undefined'||!naver.maps)return;
         try{
-          var center=new naver.maps.LatLng(36.56905,127.45345);
+          var center=new naver.maps.LatLng(36.63890,127.38180);
           var m=new naver.maps.Map(mapId,{center:center,zoom:19,mapTypeId:naver.maps.MapTypeId.SATELLITE,zoomControl:true,zoomControlOptions:{position:naver.maps.Position.RIGHT_CENTER}});
           spots.forEach(function(s){
             var bkCount=s.bookings.length;

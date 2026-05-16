@@ -10,7 +10,7 @@
   var savedKey = localStorage.getItem('__naver_map_key') || '';
   if(savedKey){
     var s = document.createElement('script');
-    s.src = 'https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=' + savedKey + '&submodules=geocoder';
+    s.src = 'https://oapi.map.naver.com/openapi/v3/maps.js?ncpClientId=' + savedKey + '&submodules=geocoder';
     s.onload = function(){ if(typeof naver !== 'undefined' && naver.maps){ naver.maps.onJSContentLoaded = initMap; }};
     s.onerror = function(){ showApiKeyPrompt('API 키가 유효하지 않습니다. 다시 입력해주세요.'); };
     document.head.appendChild(s);
@@ -442,7 +442,7 @@ function applyApiKey() {
   if (!key) { alert('API 키를 입력하세요'); return; }
   localStorage.setItem('__naver_map_key', key);
   var script = document.createElement('script');
-  script.src = 'https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=' + key + '&submodules=geocoder';
+  script.src = 'https://oapi.map.naver.com/openapi/v3/maps.js?ncpClientId=' + key + '&submodules=geocoder';
   script.onload = function() {
     if(typeof naver !== 'undefined' && naver.maps) {
       document.getElementById('map').innerHTML = '';

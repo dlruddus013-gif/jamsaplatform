@@ -5012,17 +5012,22 @@ function renderRentalSatMap(filteredRentals){
   return html;
 }
 
-var _naverMapLoaded=false;
+var _naverMapLoaded=false,_naverMapLoadedKey='';
 function loadNaverMapScript(cb){
-  if(_naverMapLoaded&&typeof naver!=='undefined'&&naver.maps){if(cb)cb();return;}
   var key=localStorage.getItem('__naver_map_key')||'';
   if(!key)return;
+  if(_naverMapLoaded&&_naverMapLoadedKey===key&&typeof naver!=='undefined'&&naver.maps){if(cb)cb();return;}
   var existing=document.querySelector('script[src*="oapi.map.naver"]');
-  if(existing&&typeof naver!=='undefined'&&naver.maps){_naverMapLoaded=true;if(cb)cb();return;}
+  if(existing){
+    if(_naverMapLoadedKey===key&&typeof naver!=='undefined'&&naver.maps){_naverMapLoaded=true;if(cb)cb();return;}
+    existing.remove();
+    if(typeof naver!=='undefined')try{delete window.naver}catch(e){window.naver=undefined}
+    _naverMapLoaded=false;
+  }
   var s=document.createElement('script');
-  s.src='https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId='+key+'&submodules=geocoder';
-  s.onload=function(){_naverMapLoaded=true;if(cb)cb();};
-  s.onerror=function(){toast('네이버 지도 스크립트 로드 실패','error');};
+  s.src='https://oapi.map.naver.com/openapi/v3/maps.js?ncpClientId='+key+'&submodules=geocoder';
+  s.onload=function(){_naverMapLoaded=true;_naverMapLoadedKey=key;if(cb)cb();};
+  s.onerror=function(){toast('네이버 지도 스크립트 로드 실패 - Client ID를 확인하세요','error');};
   document.head.appendChild(s);
 }
 

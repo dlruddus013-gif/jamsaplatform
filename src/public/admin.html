@@ -4701,10 +4701,42 @@ function addExpPrompt(){
 }
 
 // ═══ 대여예약 ═══
+function rentalIcon(type){return type==='cabin'?'🏕️':type==='camping'?'⛺':'🪑'}
 function renderRental(){
-  var RENTAL_TIMES=['09:00~12:00','12:00~15:00','15:00~18:00','09:00~18:00(종일)'];
+  var RENTAL_TIMES=['09:00~18:00(종일)'];
   var rentals=S.rentals||[];
   var filtered=selRentalType==='all'?rentals:rentals.filter(function(r){return r.type===selRentalType});
+
+  // 요금 안내 카드
+  var menuData=[
+    {no:'①',name:'등받이 평상',loc:'물놀이장 앞',price:50000,color:'#10b981',note:'등받이 있음'},
+    {no:'②',name:'일반 평상',loc:'물놀이장 앞',price:40000,color:'#3b82f6',note:'등받이 없음'},
+    {no:'③',name:'데크 평상',loc:'사계절썰매장 앞',price:40000,color:'#6366f1',note:'데크 위'},
+    {no:'④',name:'VIP 평상',loc:'물놀이장 바로 앞',price:50000,color:'#f59e0b',note:'바람막이 있음'},
+    {no:'⑤',name:'오두막',loc:'',price:70000,color:'#ef4444',note:'종일권'},
+    {no:'⑥',name:'캠핑테이블존',loc:'물놀이장 바로 앞',price:40000,color:'#8b5cf6',note:'4인기준 · 의자추가 5천원'}
+  ];
+  var menuHtml='<div class="card" style="margin-bottom:14px;border:1px solid #252540">'
+    +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">'
+    +'<div style="font-size:13px;font-weight:700;color:#fff">🏖️ 물놀이장·평상·오두막 이용안내</div>'
+    +'<div style="display:flex;gap:6px">'
+    +'<span style="font-size:9px;padding:3px 8px;border-radius:6px;background:rgba(245,158,11,.12);color:#f59e0b;font-weight:600">전 좌석 종일권</span>'
+    +'<span style="font-size:9px;padding:3px 8px;border-radius:6px;background:rgba(239,68,68,.12);color:#ef4444;font-weight:600">보증금 1만원</span>'
+    +'</div></div>'
+    +'<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:6px;margin-bottom:10px">';
+  menuData.forEach(function(m){
+    menuHtml+='<div style="background:#0d0d1a;border-radius:8px;padding:8px;border-left:3px solid '+m.color+'">'
+      +'<div style="font-size:11px;font-weight:700;color:'+m.color+'">'+m.no+' '+m.name+'</div>'
+      +(m.loc?'<div style="font-size:8px;color:#888">'+m.loc+'</div>':'')
+      +'<div style="font-size:14px;font-weight:800;color:#fff;margin-top:2px">'+m.price.toLocaleString()+'<span style="font-size:9px;color:#888;font-weight:400">원</span></div>'
+      +'<div style="font-size:8px;color:#666;margin-top:1px">'+m.note+'</div></div>';
+  });
+  menuHtml+='</div>'
+    +'<div style="display:flex;align-items:center;gap:8px;background:#0d0d1a;border-radius:8px;padding:8px">'
+    +'<span style="font-size:18px">🔥</span>'
+    +'<div style="flex:1"><div style="font-size:11px;font-weight:600;color:#f97316">추가옵션 · 그릴세트</div>'
+    +'<div style="font-size:9px;color:#888">버너 + 불판 + 가위 + 집게 + 부탄가스</div></div>'
+    +'<div style="font-size:14px;font-weight:800;color:#f97316">15,000<span style="font-size:9px;color:#888;font-weight:400">원</span></div></div></div>';
 
   // Ticket verify (reuse)
   var verifyHtml='';
@@ -4716,7 +4748,7 @@ function renderRental(){
   }
 
   // Type filter
-  var filters=[['all','전체'],['cabin','🏕️ 오두막'],['bench','🪑 평상']].map(function(f){
+  var filters=[['all','전체'],['bench','🪑 평상'],['cabin','🏕️ 오두막'],['camping','⛺ 캠핑테이블']].map(function(f){
     return '<button class="btn" onclick="selRentalType=\''+f[0]+'\';render()" style="padding:5px 14px;border-radius:16px;background:'+(selRentalType===f[0]?'#10b981':'#252540')+';color:'+(selRentalType===f[0]?'#fff':'#888')+';font-size:11px;font-weight:'+(selRentalType===f[0]?'600':'400')+'">'+f[1]+'</button>'
   }).join('');
 
@@ -4734,12 +4766,12 @@ function renderRental(){
   } else if(rentalViewMode==='calendar'){
     contentHtml=renderRentalCalendar(filtered,RENTAL_TIMES);
   } else {
-    // Grid table (original)
-    var gridHtml='<table style="font-size:11px"><thead><tr><th style="min-width:80px">장소</th>';
-    RENTAL_TIMES.forEach(function(t){gridHtml+='<th style="text-align:center;min-width:90px;font-size:10px">'+t+'</th>'});
+    // Grid table
+    var gridHtml='<table style="font-size:11px"><thead><tr><th style="min-width:120px">장소</th>';
+    RENTAL_TIMES.forEach(function(t){gridHtml+='<th style="text-align:center;min-width:110px;font-size:10px">'+t+'</th>'});
     gridHtml+='</tr></thead><tbody>';
     filtered.forEach(function(r){
-      gridHtml+='<tr><td style="font-weight:600;color:'+r.color+'">'+(r.type==='cabin'?'🏕️':'🪑')+' '+r.name+'<div style="font-size:9px;font-weight:400;color:#888">'+r.price.toLocaleString()+'원</div></td>';
+      gridHtml+='<tr><td style="font-weight:600;color:'+r.color+'">'+rentalIcon(r.type)+' '+r.name+'<div style="font-size:9px;font-weight:400;color:#888">'+r.price.toLocaleString()+'원'+(r.deposit?' <span style="color:#f59e0b">+보증금 '+r.deposit.toLocaleString()+'원</span>':'')+'</div>'+(r.desc?'<div style="font-size:8px;color:#555">'+r.desc+'</div>':'')+'</td>';
       RENTAL_TIMES.forEach(function(time){
         var bk=(S.rentalBookings||[]).find(function(b){return b.rentalId===r.id&&b.date===selRentalDate&&b.time===time&&b.status!=='cancelled'});
         if(bk){
@@ -4758,14 +4790,14 @@ function renderRental(){
   var todayBks=(S.rentalBookings||[]).filter(function(b){return b.date===selRentalDate});
   var summaryHtml=todayBks.length?todayBks.map(function(b){
     var r=(S.rentals||[]).find(function(x){return x.id===b.rentalId})||{color:'#888'};
-    return '<div class="card" style="padding:8px 12px;display:flex;align-items:center;gap:10px;border-left:3px solid '+r.color+'"><div style="flex:1"><span style="font-weight:600;color:'+r.color+'">'+b.rentalName+'</span><span style="font-size:11px;color:#888;margin-left:6px">'+b.time+'</span><div style="font-size:11px;color:#888">'+b.buyer+' · '+b.phone+' · '+b.price.toLocaleString()+'원</div></div><span style="font-size:10px;padding:2px 7px;border-radius:8px;background:'+(b.status==='used'?'rgba(136,136,136,.12);color:#888':'rgba(16,185,129,.12);color:#10b981')+'">'+( b.status==='used'?(b.autoUsed?'⏰이용중':'✅완료'):'확정')+'</span></div>'
+    return '<div class="card" style="padding:8px 12px;display:flex;align-items:center;gap:10px;border-left:3px solid '+r.color+'"><div style="flex:1"><span style="font-weight:600;color:'+r.color+'">'+b.rentalName+'</span><span style="font-size:11px;color:#888;margin-left:6px">'+b.time+'</span><div style="font-size:11px;color:#888">'+b.buyer+' · '+b.phone+' · '+b.price.toLocaleString()+'원'+(r.deposit?' <span style="color:#f59e0b">(보증금 '+r.deposit.toLocaleString()+'원)</span>':'')+'</div></div><span style="font-size:10px;padding:2px 7px;border-radius:8px;background:'+(b.status==='used'?'rgba(136,136,136,.12);color:#888':'rgba(16,185,129,.12);color:#10b981')+'">'+( b.status==='used'?(b.autoUsed?'⏰이용중':'✅완료'):'확정')+'</span></div>'
   }).join(''):'<div style="text-align:center;padding:24px;color:#555;font-size:12px">예약 없음</div>';
 
   var dateControl=rentalViewMode==='calendar'
     ?'<div style="margin-left:auto;display:flex;align-items:center;gap:4px"><button class="btn" onclick="calNavMonth(-1)" style="padding:4px 8px;background:#252540;color:#aaa;font-size:12px">◀</button><span style="font-size:12px;font-weight:600;color:#fff;min-width:90px;text-align:center">'+calMonth+'</span><button class="btn" onclick="calNavMonth(1)" style="padding:4px 8px;background:#252540;color:#aaa;font-size:12px">▶</button></div>'
     :'<div style="margin-left:auto"><input type="date" value="'+selRentalDate+'" onchange="selRentalDate=this.value;render()" style="width:auto;padding:5px 8px;font-size:11px"></div>';
 
-  return '<div style="max-width:950px;margin:0 auto;animation:fadeIn .3s">'+verifyHtml
+  return '<div style="max-width:950px;margin:0 auto;animation:fadeIn .3s">'+menuHtml+verifyHtml
     +'<div style="display:flex;gap:6px;margin-bottom:12px;align-items:center;flex-wrap:wrap">'+filters+viewToggle+dateControl+'</div>'
     +contentHtml
     +'<div style="font-size:13px;font-weight:600;color:#fff;margin-bottom:8px">📋 '+(rentalViewMode==='calendar'?selRentalDate:'')+' 현황 ('+todayBks.length+'건)</div>'+summaryHtml+'</div>';
@@ -4797,9 +4829,10 @@ function renderRentalCalendar(filteredRentals,RENTAL_TIMES){
 
     calHtml+='<div class="card" style="margin-bottom:12px;overflow-x:auto">'
       +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">'
-      +'<span style="font-size:16px">'+(rental.type==='cabin'?'🏕️':'🪑')+'</span>'
+      +'<span style="font-size:16px">'+rentalIcon(rental.type)+'</span>'
       +'<span style="font-size:14px;font-weight:700;color:'+rental.color+'">'+rental.name+'</span>'
       +'<span style="font-size:10px;color:#888">'+rental.price.toLocaleString()+'원</span>'
+      +(rental.desc?'<span style="font-size:9px;color:#666">'+rental.desc+'</span>':'')
       +'<span style="font-size:10px;padding:2px 8px;border-radius:8px;background:rgba(59,130,246,.1);color:#60a5fa;margin-left:auto">이번달 '+rBks.length+'건</span>'
       +'</div>';
 
@@ -4880,27 +4913,27 @@ function renderRentalCalendar(filteredRentals,RENTAL_TIMES){
 }
 
 function renderRentalSatMap(filteredRentals){
-  var RENTAL_TIMES=['09:00~12:00','12:00~15:00','15:00~18:00','09:00~18:00(종일)'];
+  var RENTAL_TIMES=['09:00~18:00(종일)'];
   var allBks=S.rentalBookings||[];
   var savedKey=typeof localStorage!=='undefined'?localStorage.getItem('__naver_map_key')||'':'';
   var mapId='rentalSatMap';
 
   var spotCoords=[
-    {id:'cabin-A',name:'오두막 A',type:'cabin',lat:36.56920,lng:127.45310,color:'#f59e0b'},
-    {id:'cabin-B',name:'오두막 B',type:'cabin',lat:36.56925,lng:127.45340,color:'#f59e0b'},
-    {id:'cabin-C',name:'오두막 C',type:'cabin',lat:36.56930,lng:127.45370,color:'#f59e0b'},
-    {id:'bench-1',name:'평상 1',type:'bench',lat:36.56900,lng:127.45320,color:'#3b82f6'},
-    {id:'bench-2',name:'평상 2',type:'bench',lat:36.56895,lng:127.45350,color:'#3b82f6'},
-    {id:'bench-3',name:'평상 3',type:'bench',lat:36.56905,lng:127.45380,color:'#3b82f6'},
-    {id:'bench-4',name:'평상 4',type:'bench',lat:36.56890,lng:127.45330,color:'#3b82f6'},
-    {id:'bench-5',name:'평상 5',type:'bench',lat:36.56885,lng:127.45360,color:'#3b82f6'}
+    {id:'bench-back',name:'등받이평상',type:'bench',lat:36.56900,lng:127.45310,color:'#10b981'},
+    {id:'bench-normal',name:'일반평상',type:'bench',lat:36.56895,lng:127.45340,color:'#3b82f6'},
+    {id:'bench-deck',name:'데크평상',type:'bench',lat:36.56905,lng:127.45380,color:'#6366f1'},
+    {id:'bench-vip',name:'VIP평상',type:'bench',lat:36.56908,lng:127.45305,color:'#f59e0b'},
+    {id:'cabin',name:'오두막',type:'cabin',lat:36.56920,lng:127.45345,color:'#ef4444'},
+    {id:'camping',name:'캠핑테이블',type:'camping',lat:36.56890,lng:127.45320,color:'#8b5cf6'}
   ];
 
   // Match spot coords with server rentals
-  var spots=filteredRentals.map(function(r){
-    var coord=spotCoords.find(function(c){return r.name&&r.name.includes(c.name.split(' ')[1]||c.name)});
+  var spots=filteredRentals.map(function(r,idx){
+    var coord=spotCoords.find(function(c){return r.id&&r.id.startsWith(c.id)});
     var dayBks=allBks.filter(function(b){return b.rentalId===r.id&&b.date===selRentalDate&&b.status!=='cancelled'});
-    return {id:r.id,name:r.name,type:r.type,price:r.price,color:r.color||'#888',lat:coord?coord.lat:36.56905+Math.random()*0.0005,lng:coord?coord.lng:127.45345+Math.random()*0.0005,bookings:dayBks};
+    var offsetLat=coord?(idx%2)*0.00008:0;
+    var offsetLng=coord?(idx%2)*0.00012:0;
+    return {id:r.id,name:r.name,type:r.type,price:r.price,desc:r.desc||'',color:r.color||'#888',lat:coord?coord.lat+offsetLat:36.56905+Math.random()*0.0005,lng:coord?coord.lng+offsetLng:127.45345+Math.random()*0.0005,bookings:dayBks};
   });
 
   var html='<div class="card" style="padding:0;overflow:hidden;margin-bottom:12px">';
@@ -4925,7 +4958,7 @@ function renderRentalSatMap(filteredRentals){
 
   // Spot list with booking status
   html+='<div class="card"><div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:10px">📍 시설 목록 <span style="font-size:10px;color:#888;font-weight:400">'+spots.length+'개 스팟</span></div>';
-  var filterBtns=[['all','전체'],['cabin','🏕️ 오두막'],['bench','🪑 평상']];
+  var filterBtns=[['all','전체'],['bench','🪑 평상'],['cabin','🏕️ 오두막'],['camping','⛺ 캠핑테이블']];
   html+='<div style="display:flex;gap:4px;margin-bottom:10px">';
   filterBtns.forEach(function(f){
     html+='<button class="btn" onclick="selRentalType=\''+f[0]+'\';render()" style="padding:4px 10px;border-radius:12px;background:'+(selRentalType===f[0]?'#10b981':'#252540')+';color:'+(selRentalType===f[0]?'#fff':'#888')+';font-size:10px">'+f[1]+'</button>';
@@ -4938,9 +4971,9 @@ function renderRentalSatMap(filteredRentals){
     var statusColor=bkCount===0?'#10b981':'#ef4444';
     var statusBg=bkCount===0?'rgba(16,185,129,.12)':'rgba(239,68,68,.12)';
     html+='<div style="padding:8px 10px;border-bottom:1px solid #151528;display:flex;align-items:center;gap:10px">'
-      +'<span style="font-size:14px">'+(s.type==='cabin'?'🏕️':'🪑')+'</span>'
+      +'<span style="font-size:14px">'+rentalIcon(s.type)+'</span>'
       +'<div style="flex:1"><div style="font-weight:600;color:'+s.color+';font-size:12px">'+s.name+'</div>'
-      +'<div style="font-size:10px;color:#888">'+s.price.toLocaleString()+'원 · ('+s.lat.toFixed(5)+', '+s.lng.toFixed(5)+')</div></div>'
+      +'<div style="font-size:10px;color:#888">'+s.price.toLocaleString()+'원'+(s.desc?' · '+s.desc:'')+'</div></div>'
       +'<span style="font-size:10px;padding:3px 8px;border-radius:8px;background:'+statusBg+';color:'+statusColor+';font-weight:600">'+statusLabel+'</span></div>';
     if(s.bookings.length>0){
       s.bookings.forEach(function(b){
@@ -4961,7 +4994,7 @@ function renderRentalSatMap(filteredRentals){
           var m=new naver.maps.Map(mapId,{center:center,zoom:19,mapTypeId:naver.maps.MapTypeId.SATELLITE,zoomControl:true,zoomControlOptions:{position:naver.maps.Position.RIGHT_CENTER}});
           spots.forEach(function(s){
             var bkCount=s.bookings.length;
-            var mk=new naver.maps.Marker({position:new naver.maps.LatLng(s.lat,s.lng),map:m,icon:{content:'<div style="padding:3px 8px;background:'+(bkCount>0?'rgba(239,68,68,.9)':'rgba(16,185,129,.9)')+';color:#fff;border-radius:8px;font-size:10px;font-weight:700;white-space:nowrap;box-shadow:0 2px 6px rgba(0,0,0,.3);border:2px solid #fff">'+(s.type==='cabin'?'🏕️':'🪑')+' '+s.name+(bkCount>0?' ('+bkCount+'건)':' 여유')+'</div>',anchor:new naver.maps.Point(40,16)}});
+            var mk=new naver.maps.Marker({position:new naver.maps.LatLng(s.lat,s.lng),map:m,icon:{content:'<div style="padding:3px 8px;background:'+(bkCount>0?'rgba(239,68,68,.9)':'rgba(16,185,129,.9)')+';color:#fff;border-radius:8px;font-size:10px;font-weight:700;white-space:nowrap;box-shadow:0 2px 6px rgba(0,0,0,.3);border:2px solid #fff">'+rentalIcon(s.type)+' '+s.name+(bkCount>0?' ('+bkCount+'건)':' 여유')+'</div>',anchor:new naver.maps.Point(40,16)}});
             naver.maps.Event.addListener(mk,'click',function(){
               var info='<b>'+s.name+'</b><br>'+s.price.toLocaleString()+'원<br>';
               if(s.bookings.length>0)s.bookings.forEach(function(b){info+=b.time+' '+b.buyer+'<br>';});

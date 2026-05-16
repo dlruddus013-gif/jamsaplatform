@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>자산/재고 관리 - 한국잠사박물관</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--primary:#1a472a;--secondary:#2d6a4f;--tertiary:#40916c;--bg:#f7f5f0;--card:#fff;--text:#2c2c2c;--border:#e8e4dc;--red:#e74c3c;--green:#27ae60;--blue:#2980b9;--orange:#f39c12;--purple:#8e44ad}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.header{background:linear-gradient(135deg,var(--primary),var(--secondary));color:#fff;padding:20px;text-align:center;position:sticky;top:0;z-index:100;position:relative}
+.header h1{font-size:20px;font-weight:800}
+.header p{font-size:12px;opacity:.8;margin-top:4px}
+.back-btn{position:absolute;left:16px;top:50%;transform:translateY(-50%);background:none;border:none;color:#fff;font-size:20px;cursor:pointer}
+.container{max-width:960px;margin:0 auto;padding:16px}
+.tabs{display:flex;gap:6px;margin-bottom:16px;overflow-x:auto;padding-bottom:4px}
+.tab{padding:10px 18px;border-radius:20px;font-size:13px;font-weight:600;border:2px solid var(--border);background:var(--card);cursor:pointer;white-space:nowrap;transition:all .2s}
+.tab.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+.card{background:var(--card);border-radius:16px;padding:20px;margin-bottom:16px;box-shadow:0 2px 10px rgba(0,0,0,.06)}
+.card-title{font-size:15px;font-weight:800;margin-bottom:14px;color:var(--primary);display:flex;align-items:center;gap:8px}
+.search-bar{display:flex;gap:8px;margin-bottom:16px}
+.search-bar input{flex:1;padding:12px 16px;border:2px solid var(--border);border-radius:12px;font-size:14px;font-family:inherit;outline:none}
+.search-bar input:focus{border-color:var(--tertiary)}
+.search-bar button{padding:12px 20px;background:var(--primary);color:#fff;border:none;border-radius:12px;font-size:13px;font-weight:700;cursor:pointer}
+.btn{padding:8px 16px;border:none;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:4px}
+.btn:hover{transform:translateY(-1px)}
+.btn-primary{background:var(--primary);color:#fff}
+.btn-green{background:var(--green);color:#fff}
+.btn-red{background:var(--red);color:#fff}
+.btn-blue{background:var(--blue);color:#fff}
+.btn-orange{background:var(--orange);color:#fff}
+.btn-purple{background:var(--purple);color:#fff}
+.btn-outline{background:none;border:2px solid var(--border);color:var(--text)}
+.btn-sm{padding:6px 12px;font-size:11px}
+.item-list{display:flex;flex-direction:column;gap:10px}
+.item-row{background:#f9f9f6;border-radius:14px;padding:14px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:all .2s;border:2px solid transparent}
+.item-row:hover,.item-row.active{border-color:var(--primary);background:#e8f5e9}
+.item-qr{width:48px;height:48px;background:#fff;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#999;border:1px solid var(--border);flex-shrink:0}
+.item-info{flex:1;min-width:0}
+.item-name{font-size:14px;font-weight:700;margin-bottom:2px}
+.item-meta{font-size:11px;color:#999}
+.item-qty{font-size:20px;font-weight:900;min-width:50px;text-align:right}
+.item-qty.zero{color:var(--red)}
+.item-qty.ok{color:var(--green)}
+.item-qty.low{color:var(--orange)}
+.detail-header{display:flex;align-items:center;gap:16px;margin-bottom:20px;flex-wrap:wrap}
+.detail-qr{width:80px;height:80px;background:#fff;border-radius:12px;display:flex;align-items:center;justify-content:center;border:2px solid var(--border);flex-shrink:0;flex-direction:column;gap:4px}
+.detail-qr .qr-icon{font-size:28px}
+.detail-qr .qr-code{font-size:9px;font-weight:700;color:#999}
+.detail-title{flex:1}
+.detail-title h2{font-size:18px;font-weight:800;margin-bottom:4px}
+.detail-title .sub{font-size:12px;color:#999}
+.detail-actions{display:flex;gap:6px;flex-wrap:wrap}
+.info-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:16px}
+.info-cell{background:#f9f9f6;border-radius:10px;padding:12px}
+.info-cell .label{font-size:10px;color:#999;font-weight:600;margin-bottom:4px}
+.info-cell .value{font-size:14px;font-weight:700}
+.photo-area{margin-bottom:16px}
+.photo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px;margin-top:10px}
+.photo-thumb{width:100%;aspect-ratio:1;border-radius:10px;overflow:hidden;position:relative;background:#f0f0f0;cursor:pointer;border:2px solid var(--border);display:flex;align-items:center;justify-content:center}
+.photo-thumb img{width:100%;height:100%;object-fit:cover}
+.photo-thumb .remove-photo{position:absolute;top:4px;right:4px;width:20px;height:20px;background:rgba(231,76,60,.9);color:#fff;border:none;border-radius:50%;font-size:12px;cursor:pointer;display:none;align-items:center;justify-content:center}
+.photo-thumb:hover .remove-photo{display:flex}
+.photo-add{background:none;border:2px dashed var(--border);border-radius:10px;width:100%;aspect-ratio:1;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:#999;font-size:11px;font-weight:600;transition:all .2s}
+.photo-add:hover{border-color:var(--primary);color:var(--primary);background:#e8f5e9}
+.log-item{padding:12px;border-bottom:1px solid var(--border);display:flex;gap:12px;align-items:flex-start}
+.log-item:last-child{border:none}
+.log-icon{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.log-icon.in{background:#e8f5e9;color:#2e7d32}
+.log-icon.out{background:#fce4ec;color:#c62828}
+.log-icon.adj{background:#e3f2fd;color:#1565c0}
+.log-icon.pay{background:#fff3e0;color:#e65100}
+.log-icon.photo{background:#f3e5f5;color:#7b1fa2}
+.log-body{flex:1}
+.log-title{font-size:13px;font-weight:700;margin-bottom:2px}
+.log-desc{font-size:11px;color:#999;line-height:1.5}
+.log-photos{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
+.log-photo-sm{width:48px;height:48px;border-radius:6px;object-fit:cover;border:1px solid var(--border);cursor:pointer}
+.log-time{font-size:10px;color:#bbb;white-space:nowrap;flex-shrink:0;margin-top:2px}
+.payment-card{background:#f9f9f6;border-radius:12px;padding:14px;margin-bottom:10px;display:flex;align-items:center;gap:12px;border:2px solid transparent;transition:all .2s}
+.payment-card:hover{border-color:var(--blue)}
+.pay-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.pay-icon.card-pay{background:#e3f2fd}
+.pay-icon.bank-pay{background:#e8f5e9}
+.pay-icon.cash-pay{background:#fff3e0}
+.pay-info{flex:1}
+.pay-name{font-size:13px;font-weight:700;margin-bottom:2px}
+.pay-detail{font-size:11px;color:#999}
+.pay-amount{font-size:16px;font-weight:800;color:var(--primary)}
+.pay-status{font-size:10px;padding:3px 8px;border-radius:8px;font-weight:700}
+.ps-done{background:#e8f5e9;color:#2e7d32}
+.ps-pending{background:#fff3e0;color:#e65100}
+.ps-cancel{background:#fce4ec;color:#c62828}
+.summary-row{display:flex;justify-content:space-between;padding:8px 0;font-size:13px;border-bottom:1px solid var(--border)}
+.summary-row:last-child{border:none;font-weight:800;font-size:15px;color:var(--primary)}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:300;display:none;align-items:center;justify-content:center;padding:20px}
+.modal-bg.show{display:flex}
+.modal{background:#fff;border-radius:20px;padding:24px;max-width:480px;width:100%;max-height:85vh;overflow-y:auto}
+.modal h2{font-size:18px;font-weight:800;margin-bottom:16px;color:var(--primary)}
+.fg{margin-bottom:14px}
+.fg label{display:block;font-size:12px;font-weight:600;margin-bottom:6px;color:#555}
+.fg input,.fg select,.fg textarea{width:100%;padding:12px;border:2px solid var(--border);border-radius:10px;font-size:14px;font-family:inherit;outline:none}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--tertiary)}
+.fg textarea{resize:vertical;min-height:60px}
+.photo-upload-area{border:2px dashed var(--border);border-radius:12px;padding:20px;text-align:center;cursor:pointer;transition:all .2s;margin-top:6px}
+.photo-upload-area:hover{border-color:var(--primary);background:#e8f5e9}
+.photo-upload-area input[type=file]{display:none}
+.photo-preview-list{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.photo-preview-item{width:64px;height:64px;border-radius:8px;overflow:hidden;position:relative}
+.photo-preview-item img{width:100%;height:100%;object-fit:cover}
+.photo-preview-item .pp-remove{position:absolute;top:2px;right:2px;width:18px;height:18px;background:var(--red);color:#fff;border:none;border-radius:50%;font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.stat-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:16px}
+.stat-card{background:var(--card);border-radius:14px;padding:16px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.05)}
+.stat-card .sc-icon{font-size:24px;margin-bottom:6px}
+.stat-card .sc-val{font-size:22px;font-weight:900}
+.stat-card .sc-label{font-size:11px;color:#999;margin-top:2px}
+.lightbox{position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:400;display:none;align-items:center;justify-content:center;cursor:pointer}
+.lightbox.show{display:flex}
+.lightbox img{max-width:90vw;max-height:90vh;border-radius:12px}
+@media(max-width:640px){
+.info-grid{grid-template-columns:repeat(2,1fr)}
+.stat-cards{grid-template-columns:repeat(2,1fr)}
+.detail-header{flex-direction:column;align-items:flex-start}
+}
+</style>
+</head>
+<body>
+<div class="header">
+  <button class="back-btn" onclick="history.back()">←</button>
+  <h1>📦 자산/재고 관리</h1>
+  <p>잠사박물관 비품·자재·체험용품 관리</p>
+</div>
+<div class="container">
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('inventory',this)">📦 재고 목록</div>
+    <div class="tab" onclick="switchTab('payments',this)">💳 결제 내역</div>
+    <div class="tab" onclick="switchTab('photos',this)">📸 사진 관리</div>
+    <div class="tab" onclick="switchTab('stats',this)">📊 통계</div>
+  </div>
+
+  <div id="tabInventory">
+    <div class="search-bar">
+      <input id="searchInput" placeholder="품목명, QR코드, 카테고리 검색..." oninput="renderItems()">
+      <button onclick="openAddItem()">+ 등록</button>
+    </div>
+    <div class="stat-cards" id="statCards"></div>
+    <div id="itemListView">
+      <div class="item-list" id="itemList"></div>
+    </div>
+    <div id="itemDetailView" style="display:none"></div>
+  </div>
+
+  <div id="tabPayments" style="display:none">
+    <div class="search-bar">
+      <input id="paySearch" placeholder="결제 내역 검색..." oninput="renderPayments()">
+      <button onclick="openAddPayment()">+ 결제 등록</button>
+    </div>
+    <div class="card">
+      <div class="card-title">💳 결제 요약</div>
+      <div id="paySummary"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">📋 결제 내역</div>
+      <div id="paymentList"></div>
+    </div>
+  </div>
+
+  <div id="tabPhotos" style="display:none">
+    <div class="card">
+      <div class="card-title">📸 보관장소 현장 사진</div>
+      <div class="photo-upload-area" onclick="document.getElementById('bulkPhotoInput').click()">
+        <div style="font-size:32px;margin-bottom:8px">📷</div>
+        <div style="font-size:13px;font-weight:600">카메라 📸 또는 파일 🖼️ 버튼으로 사진을 추가하세요</div>
+        <div style="font-size:11px;color:#999;margin-top:4px">여러 장 동시 선택 가능 (최대 20장)</div>
+        <input type="file" id="bulkPhotoInput" accept="image/*" multiple onchange="handleBulkPhotos(event)">
+      </div>
+      <div class="photo-grid" id="bulkPhotoGrid" style="margin-top:12px"></div>
+    </div>
+  </div>
+
+  <div id="tabStats" style="display:none">
+    <div class="stat-cards" id="fullStats"></div>
+    <div class="card">
+      <div class="card-title">📊 카테고리별 재고 현황</div>
+      <div id="catStats"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">💰 월별 지출 현황</div>
+      <div id="monthlyStats"></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="modalBg" onclick="if(event.target===this)closeModal()">
+  <div class="modal" id="modal"></div>
+</div>
+<div class="lightbox" id="lightbox" onclick="this.classList.remove('show')">
+  <img id="lightboxImg" src="">
+</div>
+
+<script>
+const DB_KEY='__inventory_db';
+const PAY_KEY='__payment_db';
+const PHOTO_KEY='__photo_db';
+
+let items=JSON.parse(localStorage.getItem(DB_KEY)||'null')||[
+  {id:1,qr:'JB-0001',name:'8mm 디폼 블럭',category:'체험',location:'수장고 A-6',unit:'개',qty:0,safeQty:50,photos:[],logs:[]},
+  {id:2,qr:'JB-0002',name:'젤캔들 재료세트',category:'체험',location:'수장고 A-3',unit:'세트',qty:120,safeQty:30,photos:[],logs:[]},
+  {id:3,qr:'JB-0003',name:'누에 사육 키트',category:'교육',location:'본관 B-1',unit:'개',qty:45,safeQty:20,photos:[],logs:[]},
+  {id:4,qr:'JB-0004',name:'뽕나무잎 (건조)',category:'사료',location:'창고 C-2',unit:'kg',qty:8,safeQty:15,photos:[],logs:[]},
+  {id:5,qr:'JB-0005',name:'양 먹이 (건초)',category:'사료',location:'목장 D-1',unit:'포',qty:32,safeQty:10,photos:[],logs:[]},
+  {id:6,qr:'JB-0006',name:'썰매',category:'시설',location:'썰매장 E-1',unit:'대',qty:25,safeQty:15,photos:[],logs:[]},
+  {id:7,qr:'JB-0007',name:'A4 용지',category:'사무',location:'사무실 F-1',unit:'박스',qty:3,safeQty:5,photos:[],logs:[]},
+  {id:8,qr:'JB-0008',name:'입장 팔찌 (성인)',category:'운영',location:'매표소 G-1',unit:'개',qty:500,safeQty:200,photos:[],logs:[]},
+  {id:9,qr:'JB-0009',name:'입장 팔찌 (유아)',category:'운영',location:'매표소 G-1',unit:'개',qty:350,safeQty:200,photos:[],logs:[]},
+  {id:10,qr:'JB-0010',name:'오디주스 원액',category:'식당',location:'식당 H-1',unit:'L',qty:18,safeQty:10,photos:[],logs:[]}
+];
+
+let payments=JSON.parse(localStorage.getItem(PAY_KEY)||'null')||[
+  {id:1,date:'2026-05-14',type:'card',cardName:'법인카드(신한)',cardNum:'****-1234',merchant:'교육자재마트',desc:'디폼 블럭 500개 구매',amount:250000,status:'done',itemId:1,photos:[]},
+  {id:2,date:'2026-05-13',type:'bank',bankName:'농협',accountNum:'***-****-1234',merchant:'충북사료',desc:'양 건초 20포 구매',amount:180000,status:'done',itemId:5,photos:[]},
+  {id:3,date:'2026-05-12',type:'card',cardName:'법인카드(신한)',cardNum:'****-1234',merchant:'캔들월드',desc:'젤캔들 재료 50세트',amount:375000,status:'done',itemId:2,photos:[]},
+  {id:4,date:'2026-05-10',type:'bank',bankName:'농협',accountNum:'***-****-1234',merchant:'잠사농장',desc:'건조 뽕잎 30kg',amount:90000,status:'done',itemId:4,photos:[]},
+  {id:5,date:'2026-05-08',type:'card',cardName:'법인카드(국민)',cardNum:'****-5678',merchant:'오디팜',desc:'오디주스 원액 20L',amount:120000,status:'pending',itemId:10,photos:[]},
+  {id:6,date:'2026-05-05',type:'cash',merchant:'동네문구',desc:'A4 용지 5박스',amount:45000,status:'done',itemId:7,photos:[]},
+  {id:7,date:'2026-05-01',type:'card',cardName:'법인카드(신한)',cardNum:'****-1234',merchant:'팔찌공장',desc:'입장팔찌 성인/유아 각 1000개',amount:320000,status:'done',itemId:8,photos:[]}
+];
+
+let bulkPhotos=JSON.parse(localStorage.getItem(PHOTO_KEY)||'[]');
+let curTab='inventory',selectedItem=null;
+
+function save(){localStorage.setItem(DB_KEY,JSON.stringify(items));localStorage.setItem(PAY_KEY,JSON.stringify(payments));localStorage.setItem(PHOTO_KEY,JSON.stringify(bulkPhotos));}
+
+function switchTab(tab,el){
+  curTab=tab;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  ['tabInventory','tabPayments','tabPhotos','tabStats'].forEach(id=>document.getElementById(id).style.display='none');
+  const map={inventory:'tabInventory',payments:'tabPayments',photos:'tabPhotos',stats:'tabStats'};
+  document.getElementById(map[tab]).style.display='block';
+  if(tab==='payments')renderPayments();
+  if(tab==='photos')renderBulkPhotos();
+  if(tab==='stats')renderStats();
+  if(tab==='inventory'){selectedItem=null;document.getElementById('itemDetailView').style.display='none';document.getElementById('itemListView').style.display='block';renderItems();}
+}
+
+function renderItems(){
+  const q=(document.getElementById('searchInput')?.value||'').toLowerCase();
+  const filtered=items.filter(i=>!q||i.name.toLowerCase().includes(q)||i.qr.toLowerCase().includes(q)||i.category.includes(q)||i.location.includes(q));
+  const zero=items.filter(i=>i.qty===0).length;
+  const low=items.filter(i=>i.qty>0&&i.qty<i.safeQty).length;
+  document.getElementById('statCards').innerHTML=`
+    <div class="stat-card"><div class="sc-icon">📦</div><div class="sc-val">${items.length}</div><div class="sc-label">전체 품목</div></div>
+    <div class="stat-card"><div class="sc-icon" style="color:var(--red)">⚠️</div><div class="sc-val" style="color:var(--red)">${zero}</div><div class="sc-label">재고 없음</div></div>
+    <div class="stat-card"><div class="sc-icon" style="color:var(--orange)">📉</div><div class="sc-val" style="color:var(--orange)">${low}</div><div class="sc-label">부족 품목</div></div>
+    <div class="stat-card"><div class="sc-icon" style="color:var(--green)">✅</div><div class="sc-val" style="color:var(--green)">${items.length-zero-low}</div><div class="sc-label">정상</div></div>`;
+  let h='';
+  filtered.forEach(i=>{
+    const cls=i.qty===0?'zero':i.qty<i.safeQty?'low':'ok';
+    h+=`<div class="item-row" onclick="showDetail(${i.id})">
+      <div class="item-qr">📱<br>${i.qr}</div>
+      <div class="item-info">
+        <div class="item-name">${i.name}</div>
+        <div class="item-meta">${i.category} · ${i.location} · ${i.unit}</div>
+      </div>
+      <div class="item-qty ${cls}">${i.qty}</div>
+    </div>`;
+  });
+  document.getElementById('itemList').innerHTML=h||'<div style="text-align:center;padding:30px;color:#999">검색 결과가 없습니다</div>';
+}
+
+function showDetail(id){
+  selectedItem=id;
+  const i=items.find(x=>x.id===id);
+  if(!i)return;
+  document.getElementById('itemListView').style.display='none';
+  const dv=document.getElementById('itemDetailView');
+  dv.style.display='block';
+  const cls=i.qty===0?'zero':i.qty<i.safeQty?'low':'ok';
+  const relPayments=payments.filter(p=>p.itemId===id);
+  let photosHtml='';
+  (i.photos||[]).forEach((p,idx)=>{
+    photosHtml+=`<div class="photo-thumb" onclick="openLightbox('${p}')"><img src="${p}"><button class="remove-photo" onclick="event.stopPropagation();removeItemPhoto(${id},${idx})">×</button></div>`;
+  });
+  photosHtml+=`<button class="photo-add" onclick="document.getElementById('itemPhotoInput').click()">
+    <span style="font-size:20px">📷</span>추가<input type="file" id="itemPhotoInput" accept="image/*" multiple onchange="handleItemPhotos(event,${id})" style="display:none">
+  </button>`;
+  let logsHtml='';
+  const allLogs=[...(i.logs||[])];
+  relPayments.forEach(p=>{
+    allLogs.push({type:'pay',title:`💳 결제: ${p.merchant}`,desc:`${p.desc} — ${p.amount.toLocaleString()}원 (${p.type==='card'?'카드':p.type==='bank'?'계좌이체':'현금'})`,time:p.date,photos:p.photos||[]});
+  });
+  allLogs.sort((a,b)=>new Date(b.time)-new Date(a.time));
+  if(allLogs.length===0)logsHtml='<div style="text-align:center;padding:20px;color:#999">아직 활동 이력이 없습니다</div>';
+  else allLogs.forEach(l=>{
+    const iconCls=l.type==='in'?'in':l.type==='out'?'out':l.type==='adj'?'adj':l.type==='pay'?'pay':'photo';
+    const iconEmoji=l.type==='in'?'📥':l.type==='out'?'📤':l.type==='adj'?'🔄':l.type==='pay'?'💳':'📸';
+    let logPhotosHtml='';
+    if(l.photos&&l.photos.length>0){
+      logPhotosHtml='<div class="log-photos">';
+      l.photos.forEach(p=>logPhotosHtml+=`<img class="log-photo-sm" src="${p}" onclick="openLightbox('${p}')">`);
+      logPhotosHtml+='</div>';
+    }
+    logsHtml+=`<div class="log-item">
+      <div class="log-icon ${iconCls}">${iconEmoji}</div>
+      <div class="log-body"><div class="log-title">${l.title}</div><div class="log-desc">${l.desc||''}</div>${logPhotosHtml}</div>
+      <div class="log-time">${l.time}</div>
+    </div>`;
+  });
+  dv.innerHTML=`
+    <div class="card">
+      <div class="detail-header">
+        <div class="detail-qr"><div class="qr-icon">📱</div><div class="qr-code">${i.qr}</div></div>
+        <div class="detail-title"><h2>${i.name}</h2><div class="sub">${i.qr} · ${i.category} · ${i.location}</div></div>
+        <div class="item-qty ${cls}" style="font-size:32px">${i.qty}</div>
+      </div>
+      <div class="detail-actions">
+        <button class="btn btn-green" onclick="openStockModal(${id},'in')">📥 입고</button>
+        <button class="btn btn-red" onclick="openStockModal(${id},'out')">📤 출고</button>
+        <button class="btn btn-blue" onclick="openStockModal(${id},'adj')">🔄 조정</button>
+        <button class="btn btn-outline" onclick="selectedItem=null;document.getElementById('itemDetailView').style.display='none';document.getElementById('itemListView').style.display='block'">← 목록</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="info-grid">
+        <div class="info-cell"><div class="label">QR 코드</div><div class="value">${i.qr}</div></div>
+        <div class="info-cell"><div class="label">카테고리</div><div class="value">${i.category}</div></div>
+        <div class="info-cell"><div class="label">기본 위치</div><div class="value">${i.location}</div></div>
+        <div class="info-cell"><div class="label">단위</div><div class="value">${i.unit}</div></div>
+        <div class="info-cell"><div class="label">총 재고</div><div class="value" style="color:${i.qty===0?'var(--red)':i.qty<i.safeQty?'var(--orange)':'var(--green)'}">${i.qty}</div></div>
+        <div class="info-cell"><div class="label">적정재고</div><div class="value">${i.safeQty||'-'}</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">📸 현장 사진 (${(i.photos||[]).length}장)</div>
+      <div class="photo-grid">${photosHtml}</div>
+    </div>
+    ${relPayments.length>0?`<div class="card"><div class="card-title">💳 연관 결제 내역 (${relPayments.length}건)</div>
+      ${relPayments.map(p=>`<div class="payment-card">
+        <div class="pay-icon ${p.type==='card'?'card-pay':p.type==='bank'?'bank-pay':'cash-pay'}">${p.type==='card'?'💳':p.type==='bank'?'🏦':'💵'}</div>
+        <div class="pay-info"><div class="pay-name">${p.merchant}</div><div class="pay-detail">${p.date} · ${p.desc}</div></div>
+        <div style="text-align:right"><div class="pay-amount">${p.amount.toLocaleString()}원</div><span class="pay-status ${p.status==='done'?'ps-done':p.status==='pending'?'ps-pending':'ps-cancel'}">${p.status==='done'?'완료':p.status==='pending'?'대기':'취소'}</span></div>
+      </div>`).join('')}
+    </div>`:''}
+    <div class="card">
+      <div class="card-title">📋 활동 로그 (${allLogs.length}건)</div>
+      ${logsHtml}
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
+      <button class="btn btn-orange btn-sm" onclick="openAddPayment(${id})">📝 품의 작성</button>
+      <button class="btn btn-purple btn-sm" onclick="alert('QR 라벨 인쇄: ${i.qr}\\n${i.name}')">🏷️ QR 라벨</button>
+      <button class="btn btn-red btn-sm" onclick="deleteItem(${id})">🗑️ 삭제</button>
+    </div>`;
+}
+
+function openStockModal(id,type){
+  const i=items.find(x=>x.id===id);
+  const labels={in:'📥 입고',out:'📤 출고',adj:'🔄 조정'};
+  let h=`<h2>${labels[type]} — ${i.name}</h2>
+    <div class="fg"><label>수량</label><input id="mQty" type="number" placeholder="수량 입력" min="0"></div>
+    <div class="fg"><label>사유/메모</label><textarea id="mMemo" placeholder="입고/출고 사유"></textarea></div>
+    <div class="fg"><label>📸 사진 첨부 (여러 장 가능)</label>
+      <div class="photo-upload-area" onclick="document.getElementById('mPhotoInput').click()">
+        <div>📷 클릭하여 사진 추가</div>
+        <input type="file" id="mPhotoInput" accept="image/*" multiple onchange="handleModalPhotos(event)">
+      </div>
+      <div class="photo-preview-list" id="mPhotoPreview"></div>
+    </div>
+    <button class="btn btn-primary" style="width:100%;padding:14px;font-size:15px" onclick="submitStock(${id},'${type}')">확인</button>
+    <button style="width:100%;padding:10px;border:none;background:none;color:#999;margin-top:8px;cursor:pointer" onclick="closeModal()">취소</button>`;
+  document.getElementById('modal').innerHTML=h;
+  document.getElementById('modalBg').classList.add('show');
+  window.__modalPhotos=[];
+}
+
+let __modalPhotos=[];
+function handleModalPhotos(e){
+  Array.from(e.target.files).forEach(f=>{
+    const reader=new FileReader();
+    reader.onload=ev=>{
+      __modalPhotos.push(ev.target.result);
+      renderModalPhotos();
+    };
+    reader.readAsDataURL(f);
+  });
+}
+function renderModalPhotos(){
+  const el=document.getElementById('mPhotoPreview');
+  if(!el)return;
+  el.innerHTML=__modalPhotos.map((p,i)=>`<div class="photo-preview-item"><img src="${p}"><button class="pp-remove" onclick="__modalPhotos.splice(${i},1);renderModalPhotos()">×</button></div>`).join('');
+}
+
+function submitStock(id,type){
+  const qty=parseInt(document.getElementById('mQty')?.value)||0;
+  const memo=document.getElementById('mMemo')?.value||'';
+  if(qty<=0){alert('수량을 입력하세요');return;}
+  const i=items.find(x=>x.id===id);
+  if(type==='in')i.qty+=qty;
+  else if(type==='out'){if(qty>i.qty){alert('재고가 부족합니다');return;}i.qty-=qty;}
+  else i.qty=qty;
+  const labels={in:'입고',out:'출고',adj:'조정'};
+  i.logs.push({type,title:`${labels[type]}: ${type==='adj'?qty+'으로 조정':qty+i.unit}`,desc:memo,time:new Date().toISOString().split('T')[0],photos:[...__modalPhotos]});
+  save();closeModal();showDetail(id);
+}
+
+function handleItemPhotos(e,id){
+  const i=items.find(x=>x.id===id);
+  if(!i.photos)i.photos=[];
+  Array.from(e.target.files).forEach(f=>{
+    const reader=new FileReader();
+    reader.onload=ev=>{
+      i.photos.push(ev.target.result);
+      save();showDetail(id);
+    };
+    reader.readAsDataURL(f);
+  });
+}
+function removeItemPhoto(id,idx){
+  const i=items.find(x=>x.id===id);
+  i.photos.splice(idx,1);
+  save();showDetail(id);
+}
+
+function openAddItem(){
+  const nextId=items.length>0?Math.max(...items.map(x=>x.id))+1:1;
+  const nextQr='JB-'+String(nextId).padStart(4,'0');
+  let h=`<h2>📦 새 품목 등록</h2>
+    <div class="fg"><label>품목명</label><input id="nName" placeholder="품목명"></div>
+    <div class="fg"><label>QR 코드</label><input id="nQr" value="${nextQr}"></div>
+    <div class="fg"><label>카테고리</label><select id="nCat"><option>체험</option><option>교육</option><option>사료</option><option>시설</option><option>사무</option><option>운영</option><option>식당</option><option>기타</option></select></div>
+    <div class="fg"><label>위치</label><input id="nLoc" placeholder="수장고 A-1"></div>
+    <div class="fg"><label>단위</label><input id="nUnit" placeholder="개"></div>
+    <div class="fg"><label>초기 수량</label><input id="nQty" type="number" value="0"></div>
+    <div class="fg"><label>적정 재고</label><input id="nSafe" type="number" value="10"></div>
+    <div class="fg"><label>📸 사진 (여러 장)</label>
+      <div class="photo-upload-area" onclick="document.getElementById('nPhotoInput').click()">📷 클릭하여 사진 추가<input type="file" id="nPhotoInput" accept="image/*" multiple onchange="handleModalPhotos(event)"></div>
+      <div class="photo-preview-list" id="mPhotoPreview"></div>
+    </div>
+    <button class="btn btn-primary" style="width:100%;padding:14px;font-size:15px" onclick="submitNewItem()">등록</button>
+    <button style="width:100%;padding:10px;border:none;background:none;color:#999;margin-top:8px;cursor:pointer" onclick="closeModal()">취소</button>`;
+  document.getElementById('modal').innerHTML=h;
+  document.getElementById('modalBg').classList.add('show');
+  __modalPhotos=[];
+}
+function submitNewItem(){
+  const name=document.getElementById('nName')?.value.trim();
+  if(!name){alert('품목명을 입력하세요');return;}
+  const id=items.length>0?Math.max(...items.map(x=>x.id))+1:1;
+  items.push({id,qr:document.getElementById('nQr').value,name,category:document.getElementById('nCat').value,location:document.getElementById('nLoc').value,unit:document.getElementById('nUnit').value||'개',qty:parseInt(document.getElementById('nQty').value)||0,safeQty:parseInt(document.getElementById('nSafe').value)||10,photos:[...__modalPhotos],logs:[]});
+  save();closeModal();renderItems();
+}
+
+function deleteItem(id){
+  if(!confirm('정말 삭제하시겠습니까?'))return;
+  items=items.filter(x=>x.id!==id);
+  save();selectedItem=null;
+  document.getElementById('itemDetailView').style.display='none';
+  document.getElementById('itemListView').style.display='block';
+  renderItems();
+}
+
+function renderPayments(){
+  const q=(document.getElementById('paySearch')?.value||'').toLowerCase();
+  const filtered=payments.filter(p=>!q||p.merchant.toLowerCase().includes(q)||p.desc.toLowerCase().includes(q)||(p.cardName||'').includes(q));
+  const total=payments.reduce((s,p)=>s+(p.status!=='cancel'?p.amount:0),0);
+  const cardTotal=payments.filter(p=>p.type==='card'&&p.status!=='cancel').reduce((s,p)=>s+p.amount,0);
+  const bankTotal=payments.filter(p=>p.type==='bank'&&p.status!=='cancel').reduce((s,p)=>s+p.amount,0);
+  const cashTotal=payments.filter(p=>p.type==='cash'&&p.status!=='cancel').reduce((s,p)=>s+p.amount,0);
+  document.getElementById('paySummary').innerHTML=`
+    <div class="summary-row"><span>💳 카드 결제</span><span>${cardTotal.toLocaleString()}원</span></div>
+    <div class="summary-row"><span>🏦 계좌이체</span><span>${bankTotal.toLocaleString()}원</span></div>
+    <div class="summary-row"><span>💵 현금</span><span>${cashTotal.toLocaleString()}원</span></div>
+    <div class="summary-row"><span>합계</span><span>${total.toLocaleString()}원</span></div>`;
+  let h='';
+  filtered.sort((a,b)=>new Date(b.date)-new Date(a.date));
+  filtered.forEach(p=>{
+    const item=items.find(x=>x.id===p.itemId);
+    let payPhotos='';
+    if(p.photos&&p.photos.length>0){
+      payPhotos='<div class="log-photos" style="margin-top:6px">';
+      p.photos.forEach(ph=>payPhotos+=`<img class="log-photo-sm" src="${ph}" onclick="openLightbox('${ph}')">`);
+      payPhotos+='</div>';
+    }
+    h+=`<div class="payment-card" onclick="openPaymentDetail(${p.id})">
+      <div class="pay-icon ${p.type==='card'?'card-pay':p.type==='bank'?'bank-pay':'cash-pay'}">${p.type==='card'?'💳':p.type==='bank'?'🏦':'💵'}</div>
+      <div class="pay-info">
+        <div class="pay-name">${p.merchant}</div>
+        <div class="pay-detail">${p.date} · ${p.type==='card'?p.cardName:p.type==='bank'?p.bankName:'현금'} · ${item?item.name:'일반'}</div>
+        <div class="pay-detail">${p.desc}</div>
+        ${payPhotos}
+      </div>
+      <div style="text-align:right;flex-shrink:0">
+        <div class="pay-amount">${p.amount.toLocaleString()}원</div>
+        <span class="pay-status ${p.status==='done'?'ps-done':p.status==='pending'?'ps-pending':'ps-cancel'}">${p.status==='done'?'완료':p.status==='pending'?'대기':'취소'}</span>
+      </div>
+    </div>`;
+  });
+  document.getElementById('paymentList').innerHTML=h||'<div style="text-align:center;padding:20px;color:#999">결제 내역이 없습니다</div>';
+}
+
+function openAddPayment(itemId){
+  let h=`<h2>💳 결제 등록</h2>
+    <div class="fg"><label>결제 유형</label><select id="pType" onchange="togglePayFields()"><option value="card">💳 카드</option><option value="bank">🏦 계좌이체</option><option value="cash">💵 현금</option></select></div>
+    <div id="cardFields">
+      <div class="fg"><label>카드명</label><input id="pCardName" placeholder="법인카드(신한)" value="법인카드(신한)"></div>
+      <div class="fg"><label>카드번호 (끝 4자리)</label><input id="pCardNum" placeholder="1234" maxlength="4"></div>
+    </div>
+    <div id="bankFields" style="display:none">
+      <div class="fg"><label>은행명</label><input id="pBankName" placeholder="농협"></div>
+      <div class="fg"><label>계좌번호 (끝 4자리)</label><input id="pAccNum" placeholder="1234" maxlength="4"></div>
+    </div>
+    <div class="fg"><label>거래처</label><input id="pMerchant" placeholder="거래처명"></div>
+    <div class="fg"><label>내역</label><textarea id="pDesc" placeholder="구매 내용 상세"></textarea></div>
+    <div class="fg"><label>금액 (원)</label><input id="pAmount" type="number" placeholder="금액"></div>
+    <div class="fg"><label>결제일</label><input id="pDate" type="date" value="${new Date().toISOString().split('T')[0]}"></div>
+    <div class="fg"><label>연관 품목</label><select id="pItem"><option value="">선택안함</option>${items.map(i=>`<option value="${i.id}" ${itemId===i.id?'selected':''}>${i.qr} ${i.name}</option>`).join('')}</select></div>
+    <div class="fg"><label>상태</label><select id="pStatus"><option value="done">완료</option><option value="pending">대기</option></select></div>
+    <div class="fg"><label>📸 영수증/증빙 사진 (여러 장)</label>
+      <div class="photo-upload-area" onclick="document.getElementById('pPhotoInput').click()">📷 영수증 사진 추가<input type="file" id="pPhotoInput" accept="image/*" multiple onchange="handleModalPhotos(event)"></div>
+      <div class="photo-preview-list" id="mPhotoPreview"></div>
+    </div>
+    <button class="btn btn-primary" style="width:100%;padding:14px;font-size:15px" onclick="submitPayment()">등록</button>
+    <button style="width:100%;padding:10px;border:none;background:none;color:#999;margin-top:8px;cursor:pointer" onclick="closeModal()">취소</button>`;
+  document.getElementById('modal').innerHTML=h;
+  document.getElementById('modalBg').classList.add('show');
+  __modalPhotos=[];
+}
+function togglePayFields(){
+  const t=document.getElementById('pType').value;
+  document.getElementById('cardFields').style.display=t==='card'?'block':'none';
+  document.getElementById('bankFields').style.display=t==='bank'?'block':'none';
+}
+function submitPayment(){
+  const type=document.getElementById('pType').value;
+  const merchant=document.getElementById('pMerchant')?.value.trim();
+  const amount=parseInt(document.getElementById('pAmount')?.value)||0;
+  if(!merchant||!amount){alert('거래처와 금액을 입력하세요');return;}
+  const id=payments.length>0?Math.max(...payments.map(x=>x.id))+1:1;
+  const p={id,date:document.getElementById('pDate').value,type,merchant,desc:document.getElementById('pDesc')?.value||'',amount,status:document.getElementById('pStatus').value,itemId:parseInt(document.getElementById('pItem')?.value)||null,photos:[...__modalPhotos]};
+  if(type==='card'){p.cardName=document.getElementById('pCardName')?.value||'';p.cardNum='****-'+(document.getElementById('pCardNum')?.value||'0000');}
+  if(type==='bank'){p.bankName=document.getElementById('pBankName')?.value||'';p.accountNum='***-****-'+(document.getElementById('pAccNum')?.value||'0000');}
+  payments.push(p);
+  save();closeModal();
+  if(curTab==='payments')renderPayments();
+  else if(selectedItem)showDetail(selectedItem);
+}
+
+function openPaymentDetail(id){
+  const p=payments.find(x=>x.id===id);
+  if(!p)return;
+  const item=items.find(x=>x.id===p.itemId);
+  let photosHtml='';
+  if(p.photos&&p.photos.length>0){
+    photosHtml='<div class="photo-grid" style="margin-top:10px">';
+    p.photos.forEach((ph,idx)=>photosHtml+=`<div class="photo-thumb" onclick="openLightbox('${ph}')"><img src="${ph}"><button class="remove-photo" onclick="event.stopPropagation();payments.find(x=>x.id===${id}).photos.splice(${idx},1);save();openPaymentDetail(${id})">×</button></div>`);
+    photosHtml+=`<button class="photo-add" onclick="document.getElementById('addPayPhoto').click()"><span style="font-size:20px">📷</span>추가<input type="file" id="addPayPhoto" accept="image/*" multiple onchange="addPaymentPhotos(event,${id})" style="display:none"></button>`;
+    photosHtml+='</div>';
+  }else{
+    photosHtml=`<div style="margin-top:10px"><button class="photo-add" style="width:120px;height:80px" onclick="document.getElementById('addPayPhoto').click()"><span style="font-size:20px">📷</span>사진 추가<input type="file" id="addPayPhoto" accept="image/*" multiple onchange="addPaymentPhotos(event,${id})" style="display:none"></button></div>`;
+  }
+  let h=`<h2>💳 결제 상세</h2>
+    <div class="info-grid">
+      <div class="info-cell"><div class="label">결제일</div><div class="value">${p.date}</div></div>
+      <div class="info-cell"><div class="label">유형</div><div class="value">${p.type==='card'?'💳 카드':p.type==='bank'?'🏦 계좌이체':'💵 현금'}</div></div>
+      <div class="info-cell"><div class="label">거래처</div><div class="value">${p.merchant}</div></div>
+      <div class="info-cell"><div class="label">금액</div><div class="value" style="color:var(--primary)">${p.amount.toLocaleString()}원</div></div>
+      ${p.cardName?`<div class="info-cell"><div class="label">카드</div><div class="value">${p.cardName} ${p.cardNum}</div></div>`:''}
+      ${p.bankName?`<div class="info-cell"><div class="label">계좌</div><div class="value">${p.bankName} ${p.accountNum}</div></div>`:''}
+      <div class="info-cell"><div class="label">연관 품목</div><div class="value">${item?item.name:'-'}</div></div>
+      <div class="info-cell"><div class="label">상태</div><div class="value"><span class="pay-status ${p.status==='done'?'ps-done':p.status==='pending'?'ps-pending':'ps-cancel'}">${p.status==='done'?'완료':p.status==='pending'?'대기':'취소'}</span></div></div>
+    </div>
+    <div style="margin-bottom:12px"><div style="font-size:12px;font-weight:600;color:#555;margin-bottom:4px">내역</div><div style="font-size:13px;background:#f9f9f6;padding:12px;border-radius:10px">${p.desc||'-'}</div></div>
+    <div><div style="font-size:12px;font-weight:600;color:#555;margin-bottom:4px">📸 영수증/증빙 사진 (${(p.photos||[]).length}장)</div>${photosHtml}</div>
+    <div style="display:flex;gap:8px;margin-top:16px">
+      <button class="btn btn-red btn-sm" onclick="if(confirm('삭제하시겠습니까?')){payments=payments.filter(x=>x.id!==${id});save();closeModal();renderPayments();}">🗑️ 삭제</button>
+    </div>
+    <button style="width:100%;padding:10px;border:none;background:none;color:#999;margin-top:8px;cursor:pointer" onclick="closeModal()">닫기</button>`;
+  document.getElementById('modal').innerHTML=h;
+  document.getElementById('modalBg').classList.add('show');
+}
+function addPaymentPhotos(e,id){
+  const p=payments.find(x=>x.id===id);
+  if(!p.photos)p.photos=[];
+  Array.from(e.target.files).forEach(f=>{
+    const reader=new FileReader();
+    reader.onload=ev=>{p.photos.push(ev.target.result);save();openPaymentDetail(id);};
+    reader.readAsDataURL(f);
+  });
+}
+
+function handleBulkPhotos(e){
+  Array.from(e.target.files).forEach(f=>{
+    const reader=new FileReader();
+    reader.onload=ev=>{
+      bulkPhotos.push({src:ev.target.result,name:f.name,date:new Date().toISOString().split('T')[0]});
+      save();renderBulkPhotos();
+    };
+    reader.readAsDataURL(f);
+  });
+}
+function renderBulkPhotos(){
+  let h='';
+  bulkPhotos.forEach((p,i)=>{
+    h+=`<div class="photo-thumb" onclick="openLightbox('${p.src}')"><img src="${p.src}"><button class="remove-photo" onclick="event.stopPropagation();bulkPhotos.splice(${i},1);save();renderBulkPhotos()">×</button></div>`;
+  });
+  document.getElementById('bulkPhotoGrid').innerHTML=h||'<div style="color:#999;font-size:12px;padding:10px">등록된 사진이 없습니다</div>';
+}
+
+function renderStats(){
+  const total=items.length;
+  const totalQty=items.reduce((s,i)=>s+i.qty,0);
+  const zero=items.filter(i=>i.qty===0).length;
+  const low=items.filter(i=>i.qty>0&&i.qty<i.safeQty).length;
+  const totalPay=payments.filter(p=>p.status!=='cancel').reduce((s,p)=>s+p.amount,0);
+  const monthPay=payments.filter(p=>p.status!=='cancel'&&p.date.startsWith(new Date().toISOString().slice(0,7))).reduce((s,p)=>s+p.amount,0);
+  document.getElementById('fullStats').innerHTML=`
+    <div class="stat-card"><div class="sc-icon">📦</div><div class="sc-val">${total}</div><div class="sc-label">전체 품목</div></div>
+    <div class="stat-card"><div class="sc-icon">📊</div><div class="sc-val">${totalQty.toLocaleString()}</div><div class="sc-label">총 재고 수량</div></div>
+    <div class="stat-card"><div class="sc-icon" style="color:var(--red)">⚠️</div><div class="sc-val" style="color:var(--red)">${zero}</div><div class="sc-label">재고 없음</div></div>
+    <div class="stat-card"><div class="sc-icon" style="color:var(--orange)">📉</div><div class="sc-val" style="color:var(--orange)">${low}</div><div class="sc-label">부족 경고</div></div>
+    <div class="stat-card"><div class="sc-icon">💰</div><div class="sc-val">${(totalPay/10000).toFixed(0)}만</div><div class="sc-label">총 지출</div></div>
+    <div class="stat-card"><div class="sc-icon">📅</div><div class="sc-val">${(monthPay/10000).toFixed(0)}만</div><div class="sc-label">이번달 지출</div></div>`;
+  const cats={};items.forEach(i=>{if(!cats[i.category])cats[i.category]={count:0,qty:0};cats[i.category].count++;cats[i.category].qty+=i.qty;});
+  let catH='';
+  for(const[cat,d]of Object.entries(cats)){
+    catH+=`<div class="summary-row"><span>${cat} (${d.count}품목)</span><span>${d.qty.toLocaleString()}개</span></div>`;
+  }
+  document.getElementById('catStats').innerHTML=catH;
+  const months={};payments.forEach(p=>{const m=p.date.slice(0,7);if(!months[m])months[m]=0;if(p.status!=='cancel')months[m]+=p.amount;});
+  let mH='';
+  Object.keys(months).sort().reverse().forEach(m=>{
+    mH+=`<div class="summary-row"><span>${m}</span><span>${months[m].toLocaleString()}원</span></div>`;
+  });
+  document.getElementById('monthlyStats').innerHTML=mH||'<div style="color:#999;font-size:12px">데이터 없음</div>';
+}
+
+function openLightbox(src){document.getElementById('lightboxImg').src=src;document.getElementById('lightbox').classList.add('show');}
+function closeModal(){document.getElementById('modalBg').classList.remove('show');}
+
+renderItems();
+</script>
+</body>
+</html>

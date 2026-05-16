@@ -137,6 +137,14 @@ export default function FacilitySelect({ onSelect }: FacilitySelectProps) {
               <span className="text-[22px]">📋</span>
               <span className="text-[10px] font-bold text-gray-700 leading-tight">예약시스템</span>
             </a>
+            <a href="/inventory.html" className="flex flex-col items-center gap-1 py-3 px-1 bg-teal-50 rounded-xl text-center no-underline hover:bg-teal-100 transition-colors border border-teal-200">
+              <span className="text-[22px]">📦</span>
+              <span className="text-[10px] font-bold text-teal-800 leading-tight">재고/결제</span>
+            </a>
+            <a href="/portal.html" className="flex flex-col items-center gap-1 py-3 px-1 bg-slate-50 rounded-xl text-center no-underline hover:bg-slate-100 transition-colors border border-slate-200">
+              <span className="text-[22px]">🏠</span>
+              <span className="text-[10px] font-bold text-slate-700 leading-tight">통합포털</span>
+            </a>
           </div>
         </div>
 

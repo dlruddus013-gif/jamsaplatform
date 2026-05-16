@@ -133,7 +133,7 @@ const STATE = {
       naverNotice: process.env.NAVER_NOTICE || '운영 10:00~18:00(입장마감17시)/24개월미만 무료(증빙지참)/매표소 핸드링착용 후 입장/주차가능/반려동물 불가',
       templates: [
         { id: 'welcome', name: '입장권 안내', type: 'sms',
-          body: '[한국잠사박물관]\n{buyer}님 입장권이 확인되었습니다.\n\n■ 상품: {product}\n■ 매수: {qty}매\n■ QR코드: {qrUrl}\n\n즐거운 관람 되세요!' },
+          body: '[한국잠사박물관]\n{buyer}님 입장권이 확인되었습니다.\n\n■ 상품: {product}\n■ 매수: {qty}매\n■ QR코드: {qrUrl}\n\n📱 스마트 방문센터\n{visitUrl}\nQR입장·AI추천일정·체험예약·매점주문을 한번에!\n\n즐거운 관람 되세요!' },
         { id: 'remind', name: '방문 리마인드', type: 'sms',
           body: '[한국잠사박물관]\n{buyer}님, 오늘 방문 예정입니다.\n\n■ 상품: {product}\n■ 매수: {qty}매\n\n운영시간: 09:00~18:00\n주소: 충북 청주시 흥덕구' },
         { id: 'complete', name: '이용완료 감사', type: 'sms',
@@ -8278,6 +8278,8 @@ app.get('/api/ticket/find', function(req, res) {
 // ═══ 고객 페이지 라우트 ═══
 app.get('/c', function(req, res) { res.sendFile(path.join(__dirname, 'public', 'customer.html')); });
 app.get('/customer', function(req, res) { res.sendFile(path.join(__dirname, 'public', 'customer.html')); });
+app.get('/v', function(req, res) { res.sendFile(path.join(__dirname, 'public', 'visit.html')); });
+app.get('/visit', function(req, res) { res.sendFile(path.join(__dirname, 'public', 'visit.html')); });
 app.get('/admin', function(req, res) { res.sendFile(path.join(__dirname, 'public', 'index.html')); });
 app.get('/r', function(req, res) { res.sendFile(path.join(__dirname, 'public', 'review.html')); });
 app.get('/review', function(req, res) { res.sendFile(path.join(__dirname, 'public', 'review.html')); });
@@ -10426,7 +10428,8 @@ function fillTemplate(tmplBody, tk) {
     .replace(/\{date\}/g, new Date().toISOString().split('T')[0])
     .replace(/\{notice\}/g, (STATE.config.msg.naverNotice || '').substring(0, 100))
     .replace(/\{sales\}/g, generateSalesSummaryServer())
-    .replace(/\{reviewUrl\}/g, baseUrl + '/r');
+    .replace(/\{reviewUrl\}/g, baseUrl + '/r')
+    .replace(/\{visitUrl\}/g, baseUrl + '/v?t=' + encodeURIComponent(tk.id || tk.couponNo || tk.orderNo || ''));
 }
 
 function generateSalesSummaryServer() {

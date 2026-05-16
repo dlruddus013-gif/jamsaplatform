@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>스마트 방문센터 | 한국잠사박물관</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0d1117;--card:#161b22;--card2:#1c2128;--card3:#21262d;
+  --border:#30363d;--border2:#3a424b;
+  --text:#e6edf3;--sub:#8b949e;--muted:#484f58;
+  --green:#2ea043;--green2:#3fb950;--green-bg:rgba(46,160,67,.12);
+  --blue:#58a6ff;--blue-bg:rgba(88,166,255,.12);
+  --purple:#bc8cff;--purple-bg:rgba(188,140,255,.12);
+  --pink:#f778ba;--pink-bg:rgba(247,120,186,.12);
+  --orange:#d29922;--orange-bg:rgba(210,153,34,.12);
+  --red:#f85149;--red-bg:rgba(248,81,73,.12);
+  --cyan:#39d2c0;--cyan-bg:rgba(57,210,192,.12);
+  --radius:16px;--radius-sm:12px;--radius-xs:8px;
+  --shadow:0 4px 24px rgba(0,0,0,.25);
+}
+html{scroll-behavior:smooth}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);
+  min-height:100dvh;-webkit-font-smoothing:antialiased;padding-bottom:72px}
+
+/* ═══ 상단 네비 ═══ */
+.top-nav{position:sticky;top:0;z-index:50;background:rgba(13,17,23,.92);backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border);padding:0 16px}
+.top-nav-inner{max-width:480px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:52px}
+.nav-brand{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--sub);font-weight:500}
+.nav-brand b{color:var(--text);font-weight:700;font-size:15px}
+.nav-tabs{display:flex;gap:2px}
+.nav-tab{padding:6px 10px;font-size:11px;color:var(--muted);font-weight:600;border-radius:6px;cursor:pointer;
+  border:none;background:none;font-family:inherit;transition:all .15s}
+.nav-tab.active{color:var(--text);background:var(--card3)}
+.nav-tab:active{background:var(--card3)}
+.qr-entry-btn{padding:6px 14px;background:transparent;border:1.5px solid var(--green);color:var(--green);
+  border-radius:20px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s}
+.qr-entry-btn:active{background:var(--green);color:#fff}
+
+.main{max-width:480px;margin:0 auto;padding:12px 14px}
+
+/* ═══ 히어로 ═══ */
+.hero{background:linear-gradient(135deg,#0a1628 0%,#162033 50%,#0d1a2a 100%);
+  border-radius:20px;padding:28px 22px 24px;margin-bottom:14px;position:relative;overflow:hidden;
+  border:1px solid rgba(88,166,255,.08)}
+.hero::before{content:'';position:absolute;top:-40px;right:-40px;width:200px;height:200px;
+  background:radial-gradient(circle,rgba(46,160,67,.08),transparent 70%);pointer-events:none}
+.hero-tags{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap}
+.hero-tag{padding:4px 10px;border-radius:20px;font-size:10px;font-weight:600;display:flex;align-items:center;gap:3px}
+.hero-tag.green{background:var(--green-bg);color:var(--green2)}
+.hero-tag.blue{background:var(--blue-bg);color:var(--blue)}
+.hero-tag.purple{background:var(--purple-bg);color:var(--purple)}
+.hero h2{font-size:22px;font-weight:800;line-height:1.35;margin-bottom:8px;letter-spacing:-0.5px}
+.hero h2 em{font-style:normal;color:var(--green2);font-size:28px}
+.hero-desc{font-size:12px;color:var(--sub);line-height:1.6;margin-bottom:20px}
+.hero-btns{display:flex;gap:8px}
+.hero-btn{flex:1;padding:12px 0;border-radius:12px;font-size:13px;font-weight:700;cursor:pointer;
+  border:none;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:4px;transition:all .15s}
+.hero-btn.primary{background:var(--green);color:#fff}
+.hero-btn.secondary{background:var(--card3);color:var(--text);border:1px solid var(--border)}
+.hero-btn:active{transform:scale(.97)}
+
+/* ═══ 방문 인원 선택 ═══ */
+.visitor-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+  padding:18px;margin-bottom:14px}
+.visitor-title{font-size:14px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.visit-types{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+.visit-type{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;
+  border:1.5px solid var(--border);cursor:pointer;transition:all .15s}
+.visit-type.selected{border-color:var(--green);background:var(--green-bg)}
+.visit-type-icon{font-size:18px}
+.visit-type-info{flex:1}
+.visit-type-name{font-size:13px;font-weight:700}
+.visit-type-desc{font-size:10px;color:var(--sub)}
+.ppl-row{display:flex;gap:10px}
+.ppl-item{flex:1;background:var(--card2);border-radius:10px;padding:10px;text-align:center}
+.ppl-label{font-size:10px;color:var(--sub);margin-bottom:6px}
+.ppl-ctrl{display:flex;align-items:center;justify-content:center;gap:8px}
+.ppl-btn{width:28px;height:28px;border-radius:8px;border:1px solid var(--border);background:var(--card3);
+  color:var(--text);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:700}
+.ppl-btn:active{background:var(--green);color:#fff;border-color:var(--green)}
+.ppl-val{font-size:20px;font-weight:800;min-width:24px;color:var(--green2)}
+.ppl-total{text-align:right;font-size:13px;font-weight:700;color:var(--sub);margin-top:8px}
+.ppl-total b{color:var(--green2);font-size:16px}
+
+/* ═══ 퀵 액션 4 ═══ */
+.quick-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+.quick-item{background:var(--card);border:1px solid var(--border);border-radius:14px;
+  padding:14px;cursor:pointer;transition:all .15s;position:relative;overflow:hidden}
+.quick-item:active{background:var(--card2);transform:scale(.98)}
+.quick-icon{font-size:24px;margin-bottom:8px}
+.quick-name{font-size:13px;font-weight:700;margin-bottom:2px}
+.quick-desc{font-size:10px;color:var(--sub);line-height:1.4}
+.quick-badge{position:absolute;top:10px;right:10px;padding:2px 8px;border-radius:10px;font-size:9px;font-weight:700}
+.quick-badge.green{background:var(--green-bg);color:var(--green2)}
+.quick-badge.blue{background:var(--blue-bg);color:var(--blue)}
+.quick-badge.pink{background:var(--pink-bg);color:var(--pink)}
+.quick-badge.orange{background:var(--orange-bg);color:var(--orange)}
+.quick-arrow{position:absolute;bottom:12px;right:12px;color:var(--muted);font-size:12px}
+
+/* ═══ 섹션 헤더 ═══ */
+.sec-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;padding:0 2px}
+.sec-title{font-size:16px;font-weight:800;display:flex;align-items:center;gap:6px}
+.sec-badge{padding:3px 8px;border-radius:8px;font-size:10px;font-weight:700}
+
+/* ═══ 내 티켓 / QR ═══ */
+.ticket-section{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+  padding:18px;margin-bottom:14px}
+.ticket-row{display:flex;gap:14px;align-items:flex-start;margin-bottom:14px}
+.ticket-info{flex:1}
+.ticket-label{font-size:10px;color:var(--sub);margin-bottom:2px}
+.ticket-number{font-size:16px;font-weight:800;color:var(--blue);margin-bottom:6px;letter-spacing:0.5px}
+.ticket-meta{font-size:11px;color:var(--sub);line-height:1.7}
+.ticket-meta b{color:var(--text)}
+.ticket-qr{width:110px;height:110px;background:#fff;border-radius:10px;display:flex;align-items:center;
+  justify-content:center;flex-shrink:0}
+.ticket-qr img{width:100px;height:100px;image-rendering:pixelated}
+.ticket-qr-btn{width:100%;padding:12px;background:var(--card2);border:1px solid var(--border);
+  border-radius:10px;font-size:13px;font-weight:700;color:var(--text);cursor:pointer;
+  font-family:inherit;display:flex;align-items:center;justify-content:center;gap:4px;transition:all .15s}
+.ticket-qr-btn:active{background:var(--green);color:#fff;border-color:var(--green)}
+
+/* ═══ AI 추천 일정표 ═══ */
+.schedule-section{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+  padding:18px;margin-bottom:14px}
+.schedule-list{position:relative;padding-left:16px}
+.schedule-list::before{content:'';position:absolute;left:5px;top:8px;bottom:8px;width:2px;
+  background:var(--border);border-radius:1px}
+.schedule-item{display:flex;gap:12px;margin-bottom:16px;position:relative}
+.schedule-item:last-child{margin-bottom:0}
+.schedule-dot{position:absolute;left:-16px;top:4px;width:12px;height:12px;border-radius:50%;
+  border:2px solid var(--bg)}
+.schedule-dot.green{background:var(--green2)}
+.schedule-dot.blue{background:var(--blue)}
+.schedule-dot.pink{background:var(--pink)}
+.schedule-dot.orange{background:var(--orange)}
+.schedule-time{font-size:14px;font-weight:800;color:var(--sub);min-width:44px;flex-shrink:0}
+.schedule-content{flex:1}
+.schedule-name{font-size:13px;font-weight:700}
+.schedule-desc{font-size:10px;color:var(--sub);margin-top:2px}
+.schedule-tag{display:inline-block;padding:2px 8px;border-radius:6px;font-size:9px;font-weight:700;margin-left:4px}
+.schedule-tag.required{background:var(--blue-bg);color:var(--blue)}
+.schedule-tag.recommend{background:var(--green-bg);color:var(--green2)}
+.schedule-tag.reserve{background:var(--pink-bg);color:var(--pink)}
+.schedule-tag.order{background:var(--orange-bg);color:var(--orange)}
+.schedule-rebuild{width:100%;padding:11px;background:var(--card2);border:1px solid var(--border);
+  border-radius:10px;font-size:12px;font-weight:600;color:var(--sub);cursor:pointer;
+  font-family:inherit;margin-top:14px;transition:all .15s}
+.schedule-rebuild:active{background:var(--card3);color:var(--text)}
+
+/* ═══ 3열 하단 섹션 ═══ */
+.triple-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.info-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px}
+.info-card.wide{grid-column:1/-1}
+.info-card-title{font-size:13px;font-weight:700;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between}
+.info-card-title .badge{padding:2px 8px;border-radius:6px;font-size:9px;font-weight:700}
+
+/* 혼잡도 */
+.crowd-item{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border)}
+.crowd-item:last-child{border-bottom:none}
+.crowd-icon{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px}
+.crowd-name{flex:1;font-size:12px;font-weight:600}
+.crowd-sub{font-size:9px;color:var(--sub)}
+.crowd-status{padding:3px 8px;border-radius:6px;font-size:10px;font-weight:700}
+.crowd-status.low{background:var(--green-bg);color:var(--green2)}
+.crowd-status.mid{background:var(--orange-bg);color:var(--orange)}
+.crowd-status.high{background:var(--red-bg);color:var(--red)}
+
+/* 체험 */
+.exp-item{display:flex;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)}
+.exp-item:last-child{border-bottom:none}
+.exp-thumb{width:40px;height:40px;border-radius:8px;background:var(--card3);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.exp-info{flex:1}
+.exp-name{font-size:12px;font-weight:700}
+.exp-time{font-size:10px;color:var(--sub)}
+.exp-badge{padding:2px 8px;border-radius:6px;font-size:9px;font-weight:700}
+
+/* 매점 주문 */
+.order-banner{background:linear-gradient(135deg,#2a2000,#1a1500);border:1px solid rgba(210,153,34,.2);
+  border-radius:10px;padding:12px;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.order-banner-icon{font-size:22px}
+.order-banner-text{font-size:11px;color:var(--orange);font-weight:600;line-height:1.4}
+.order-btns{display:flex;gap:8px}
+.order-btn{flex:1;padding:14px 0;background:var(--card2);border:1px solid var(--border);border-radius:10px;
+  text-align:center;cursor:pointer;transition:all .15s;font-family:inherit}
+.order-btn:active{background:var(--card3)}
+.order-btn-icon{font-size:22px;margin-bottom:4px}
+.order-btn-label{font-size:11px;font-weight:700;color:var(--text)}
+
+/* 지도 */
+.map-card{background:var(--card);border:1px solid var(--border);border-radius:14px;
+  padding:14px;margin-bottom:14px}
+.map-placeholder{width:100%;height:160px;background:var(--card2);border-radius:10px;margin-bottom:10px;
+  display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:12px;overflow:hidden;position:relative}
+.map-placeholder img{width:100%;height:100%;object-fit:cover}
+
+/* AI 문의 */
+.inquiry-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:14px}
+.inquiry-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);cursor:pointer}
+.inquiry-item:last-child{border-bottom:none}
+.inquiry-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.inquiry-info{flex:1}
+.inquiry-name{font-size:13px;font-weight:700}
+.inquiry-desc{font-size:10px;color:var(--sub)}
+.inquiry-arrow{color:var(--muted);font-size:14px}
+.staff-btn{width:100%;padding:14px;background:linear-gradient(135deg,#e91e8c,#f06292);color:#fff;
+  border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;
+  margin-top:10px;display:flex;align-items:center;justify-content:center;gap:6px;transition:all .15s}
+.staff-btn:active{transform:scale(.97);opacity:.9}
+
+/* ═══ 하단 네비 ═══ */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:rgba(13,17,23,.95);backdrop-filter:blur(12px);
+  border-top:1px solid var(--border);z-index:50;padding:4px 0 env(safe-area-inset-bottom,4px)}
+.bottom-nav-inner{max-width:480px;margin:0 auto;display:flex}
+.bnav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 0;
+  cursor:pointer;border:none;background:none;font-family:inherit;transition:all .15s}
+.bnav-item .icon{font-size:18px;opacity:.4}
+.bnav-item .label{font-size:10px;color:var(--muted);font-weight:600}
+.bnav-item.active .icon{opacity:1}
+.bnav-item.active .label{color:var(--green2)}
+
+/* ═══ 섹션 뷰 (탭별 콘텐츠) ═══ */
+.section-view{display:none}
+.section-view.active{display:block}
+
+/* ═══ 유틸 ═══ */
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);padding:12px 24px;border-radius:12px;
+  color:#fff;font-size:13px;font-weight:600;z-index:999;animation:toastIn .3s;box-shadow:0 4px 16px rgba(0,0,0,.3)}
+.toast.success{background:var(--green)}
+.toast.error{background:var(--red)}
+.toast.info{background:var(--blue)}
+
+@keyframes toastIn{from{opacity:0;transform:translate(-50%,10px)}to{opacity:1;transform:translate(-50%,0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes slideUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+
+/* QR 풀스크린 */
+.qr-fullscreen{position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:200;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;animation:fadeIn .2s;padding:20px}
+.qr-full-box{background:#fff;border-radius:20px;padding:24px;text-align:center}
+.qr-full-box img{width:240px;height:240px;image-rendering:pixelated}
+.qr-full-info{color:#333;font-size:14px;font-weight:700;margin-top:10px}
+.qr-full-timer{color:#888;font-size:12px;margin-top:4px}
+.qr-full-close{margin-top:16px;padding:12px 40px;background:var(--green);color:#fff;border:none;
+  border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit}
+</style>
+</head>
+<body>
+
+<!-- 상단 네비 -->
+<nav class="top-nav">
+  <div class="top-nav-inner">
+    <div class="nav-brand">🦋 <b>스마트 방문센터</b></div>
+    <div class="nav-tabs">
+      <button class="nav-tab active" data-tab="home">홈</button>
+      <button class="nav-tab" data-tab="ticket">티켓</button>
+      <button class="nav-tab" data-tab="schedule">일정표</button>
+      <button class="nav-tab" data-tab="order">주문</button>
+      <button class="nav-tab" data-tab="inquiry">문의</button>
+    </div>
+    <button class="qr-entry-btn" onclick="showFullQR()">QR 입장</button>
+  </div>
+</nav>
+
+<div class="main">
+
+  <!-- ═══ 홈 탭 ═══ -->
+  <div class="section-view active" id="sec-home">
+
+    <!-- 히어로 -->
+    <div class="hero">
+      <div class="hero-tags">
+        <span class="hero-tag green">🎫 오늘 방문</span>
+        <span class="hero-tag blue">📱 모바일 입장</span>
+        <span class="hero-tag purple">🤖 AI 코스 추천</span>
+      </div>
+      <h2>잠사박물관 방문을<br><em>1분 안에</em> 준비하세요.</h2>
+      <div class="hero-desc">예약 확인부터 QR 입장, 추천 일정, 체험 예약, 주문, 문의까지<br>모바일 하나로 간편하게 이용하세요.</div>
+      <div class="hero-btns">
+        <button class="hero-btn primary" onclick="switchTab('ticket')">🎫 티켓/QR 확인하기</button>
+        <button class="hero-btn secondary" onclick="switchTab('schedule')">📅 추천 일정표 만들기</button>
+      </div>
+    </div>
+
+    <!-- 방문 인원 선택 -->
+    <div class="visitor-card">
+      <div class="visitor-title">👥 방문 인원 선택</div>
+      <div class="visit-types">
+        <div class="visit-type selected" onclick="selectVisitType(this,'family')">
+          <span class="visit-type-icon">👶</span>
+          <div class="visit-type-info">
+            <div class="visit-type-name">아이 동반 가족</div>
+            <div class="visit-type-desc">체험과 쉬는 시간을 포함해 추천</div>
+          </div>
+        </div>
+        <div class="visit-type" onclick="selectVisitType(this,'group')">
+          <span class="visit-type-icon">🏫</span>
+          <div class="visit-type-info">
+            <div class="visit-type-name">단체 / 학교</div>
+            <div class="visit-type-desc">회차와 이동 동선을 우선 추천</div>
+          </div>
+        </div>
+        <div class="visit-type" onclick="selectVisitType(this,'light')">
+          <span class="visit-type-icon">🚶</span>
+          <div class="visit-type-info">
+            <div class="visit-type-name">가볍게 관람</div>
+            <div class="visit-type-desc">짧고 편한 코스 위주 추천</div>
+          </div>
+        </div>
+      </div>
+      <div class="ppl-row">
+        <div class="ppl-item">
+          <div class="ppl-label">어른</div>
+          <div class="ppl-ctrl">
+            <button class="ppl-btn" onclick="changePpl('adult',-1)">−</button>
+            <span class="ppl-val" id="adultCount">2</span>
+            <button class="ppl-btn" onclick="changePpl('adult',1)">+</button>
+          </div>
+        </div>
+        <div class="ppl-item">
+          <div class="ppl-label">어린이</div>
+          <div class="ppl-ctrl">
+            <button class="ppl-btn" onclick="changePpl('child',-1)">−</button>
+            <span class="ppl-val" id="childCount">1</span>
+            <button class="ppl-btn" onclick="changePpl('child',1)">+</button>
+          </div>
+        </div>
+      </div>
+      <div class="ppl-total">총 <b id="totalPpl">3</b>명</div>
+    </div>
+
+    <!-- 퀵 액션 4 -->
+    <div class="quick-grid">
+      <div class="quick-item" onclick="switchTab('ticket')">
+        <div class="quick-icon">🎫</div>
+        <div class="quick-name">티켓 / 예약 확인</div>
+        <div class="quick-desc">예약번호 또는 휴대폰으로<br>바로 확인</div>
+        <span class="quick-badge green">입장 전</span>
+        <span class="quick-arrow">›</span>
+      </div>
+      <div class="quick-item" onclick="switchTab('schedule')">
+        <div class="quick-icon">🤖</div>
+        <div class="quick-name">AI 추천 일정표</div>
+        <div class="quick-desc">현재 위치와 퇴장시간에 맞춘<br>코스 추천</div>
+        <span class="quick-badge blue">현장용</span>
+        <span class="quick-arrow">›</span>
+      </div>
+      <div class="quick-item" onclick="showToast('체험 예약은 준비 중입니다','info')">
+        <div class="quick-icon">⭐</div>
+        <div class="quick-name">체험 예약</div>
+        <div class="quick-desc">오두막 · 만들기 · 먹이주기<br>체험 신청</div>
+        <span class="quick-badge pink">인기</span>
+        <span class="quick-arrow">›</span>
+      </div>
+      <div class="quick-item" onclick="switchTab('order')">
+        <div class="quick-icon">🍱</div>
+        <div class="quick-name">매점 / 식당 사전주문</div>
+        <div class="quick-desc">기다리지 않고 픽업<br>시간 선택</div>
+        <span class="quick-badge orange">빠른주문</span>
+        <span class="quick-arrow">›</span>
+      </div>
+    </div>
+
+    <!-- 실시간 혼잡도 + 오늘 체험 -->
+    <div class="triple-grid">
+      <div class="info-card">
+        <div class="info-card-title">실시간 혼잡도 <span class="badge" style="background:var(--blue-bg);color:var(--blue)">현장 안내</span></div>
+        <div class="crowd-item">
+          <div class="crowd-icon" style="background:var(--green-bg)">🐛</div>
+          <div><div class="crowd-name">누에 생태관</div><div class="crowd-sub">바로 입장 가능</div></div>
+          <span class="crowd-status low">여유</span>
+        </div>
+        <div class="crowd-item">
+          <div class="crowd-icon" style="background:var(--blue-bg)">🏠</div>
+          <div><div class="crowd-name">오두막 체험</div><div class="crowd-sub">약 10분 대기</div></div>
+          <span class="crowd-status mid">보통</span>
+        </div>
+        <div class="crowd-item">
+          <div class="crowd-icon" style="background:var(--red-bg)">🏪</div>
+          <div><div class="crowd-name">매점</div><div class="crowd-sub">사전주문 추천</div></div>
+          <span class="crowd-status high">혼잡</span>
+        </div>
+      </div>
+
+      <div class="info-card">
+        <div class="info-card-title">오늘 가능한 체험 <span class="badge" style="background:var(--green-bg);color:var(--green2)">전체 보기</span></div>
+        <div class="exp-item">
+          <div class="exp-thumb">🏠</div>
+          <div class="exp-info"><div class="exp-name">오두막 체험</div><div class="exp-time">11:00 / 13:30</div></div>
+          <span class="exp-badge" style="background:var(--green-bg);color:var(--green2)">오늘 가능</span>
+        </div>
+        <div class="exp-item">
+          <div class="exp-thumb">🐛</div>
+          <div class="exp-info"><div class="exp-name">누에 관찰 체험</div><div class="exp-time">상시 운영</div></div>
+          <span class="exp-badge" style="background:var(--purple-bg);color:var(--purple)">가족 추천</span>
+        </div>
+        <div class="exp-item">
+          <div class="exp-thumb">🧵</div>
+          <div class="exp-info"><div class="exp-name">실크 만들기</div><div class="exp-time">14:00</div></div>
+          <span class="exp-badge" style="background:var(--orange-bg);color:var(--orange)">잔여 소수</span>
+        </div>
+      </div>
+
+      <!-- 매점 사전주문 -->
+      <div class="info-card wide">
+        <div class="info-card-title">매점 / 식당 사전주문 <span class="badge" style="background:var(--orange-bg);color:var(--orange)">대기시간 줄이기</span></div>
+        <div class="order-banner">
+          <span class="order-banner-icon">⏱</span>
+          <div class="order-banner-text">지금 주문하면 <b>11:30 픽업 가능</b><br><span style="font-size:10px;opacity:.7">현장 결제 또는 온라인 결제와 연결할 수 있습니다.</span></div>
+        </div>
+        <div class="order-btns">
+          <div class="order-btn" onclick="showToast('메뉴 준비 중입니다','info')">
+            <div class="order-btn-icon">🍿</div>
+            <div class="order-btn-label">간식 보기</div>
+          </div>
+          <div class="order-btn" onclick="showToast('주문 확인 준비 중입니다','info')">
+            <div class="order-btn-icon">📋</div>
+            <div class="order-btn-label">주문 확인</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 지도 + AI 문의 -->
+    <div class="triple-grid">
+      <div class="info-card">
+        <div class="info-card-title">위치 / QR 스팟 <span class="badge" style="background:var(--blue-bg);color:var(--blue)">네이버 지도</span></div>
+        <div class="map-placeholder" id="miniMap">
+          <img src="https://naveropenapi.apigw.ntruss.com/map-static/v2/raster-cors?w=300&h=160&center=127.38180,36.63890&level=17&maptype=satellite&format=png" alt="지도" onerror="this.parentElement.textContent='📍 지도 로드 중...'">
+        </div>
+        <button class="ticket-qr-btn" onclick="window.open('/rental-map.html','_blank')">지도 전체 보기 🔗</button>
+      </div>
+
+      <div class="info-card">
+        <div class="info-card-title">AI 문의 / 직원 호출 <span class="badge" style="background:var(--green-bg);color:var(--green2)">고객 상담</span></div>
+        <div class="inquiry-item" onclick="switchTab('inquiry')">
+          <div class="inquiry-icon" style="background:var(--green-bg)">💬</div>
+          <div class="inquiry-info"><div class="inquiry-name">운영시간 / 요금 문의</div><div class="inquiry-desc">자주 묻는 질문을 먼저 안내합니다.</div></div>
+          <span class="inquiry-arrow">›</span>
+        </div>
+        <div class="inquiry-item" onclick="switchTab('inquiry')">
+          <div class="inquiry-icon" style="background:var(--purple-bg)">📝</div>
+          <div class="inquiry-info"><div class="inquiry-name">예약 변경 문의</div><div class="inquiry-desc">예약번호 확인 후 직원에게 전달합니다.</div></div>
+          <span class="inquiry-arrow">›</span>
+        </div>
+        <button class="staff-btn" onclick="showToast('직원 호출이 접수되었습니다','success')">직원에게 도움 요청 🙋</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ 티켓 탭 ═══ -->
+  <div class="section-view" id="sec-ticket">
+    <div class="sec-header">
+      <div class="sec-title">🎫 내 티켓 / QR 입장 <span class="sec-badge" style="background:var(--green-bg);color:var(--green2)" id="ticketStatusBadge">입장 가능</span></div>
+    </div>
+    <div class="ticket-section" id="ticketCard">
+      <div class="ticket-row">
+        <div class="ticket-info">
+          <div class="ticket-label">예약번호</div>
+          <div class="ticket-number" id="ticketNumber">-</div>
+          <div class="ticket-meta" id="ticketMeta">
+            예약 정보를 불러오는 중...
+          </div>
+          <div class="ticket-meta" style="margin-top:6px">
+            ↻ QR 갱신 <b id="qrTimer" style="color:var(--green2)">60</b>초
+          </div>
+          <div class="ticket-meta">
+            👤 인원 <b id="ticketPpl">-</b>
+          </div>
+        </div>
+        <div class="ticket-qr" id="ticketQRBox">
+          <div style="color:#aaa;font-size:11px;text-align:center">QR 로딩중</div>
+        </div>
+      </div>
+      <button class="ticket-qr-btn" onclick="showFullQR()">입구에서 QR 크게 보기 🔍</button>
+    </div>
+  </div>
+
+  <!-- ═══ 일정표 탭 ═══ -->
+  <div class="section-view" id="sec-schedule">
+    <div class="sec-header">
+      <div class="sec-title">🤖 AI 추천 일정표</div>
+      <span class="sec-badge" style="background:var(--purple-bg);color:var(--purple)" id="scheduleBadge">가족 방문 추천</span>
+    </div>
+    <div class="schedule-section">
+      <div class="schedule-list" id="scheduleList">
+        <div class="schedule-item">
+          <div class="schedule-dot green"></div>
+          <div class="schedule-time">10:00</div>
+          <div class="schedule-content">
+            <div class="schedule-name">QR 입장 확인 <span class="schedule-tag required">필수</span></div>
+            <div class="schedule-desc">입구에서 모바일 QR을 보여주세요.</div>
+          </div>
+        </div>
+        <div class="schedule-item">
+          <div class="schedule-dot blue"></div>
+          <div class="schedule-time">10:15</div>
+          <div class="schedule-content">
+            <div class="schedule-name">누에 생태관 <span class="schedule-tag recommend">추천</span></div>
+            <div class="schedule-desc">아이들이 가장 먼저 보기 좋은 전시입니다.</div>
+          </div>
+        </div>
+        <div class="schedule-item">
+          <div class="schedule-dot pink"></div>
+          <div class="schedule-time">10:45</div>
+          <div class="schedule-content">
+            <div class="schedule-name">오두막 체험 <span class="schedule-tag reserve">예약</span></div>
+            <div class="schedule-desc">예약자 우선 입장, 체험 시작 5분 전 도착 권장</div>
+          </div>
+        </div>
+        <div class="schedule-item">
+          <div class="schedule-dot orange"></div>
+          <div class="schedule-time">11:30</div>
+          <div class="schedule-content">
+            <div class="schedule-name">매점 픽업 <span class="schedule-tag order">주문</span></div>
+            <div class="schedule-desc">사전주문한 간식과 음료를 받을 수 있습니다.</div>
+          </div>
+        </div>
+      </div>
+      <button class="schedule-rebuild" onclick="rebuildSchedule()">내 일정표 다시 만들기 ↻</button>
+    </div>
+  </div>
+
+  <!-- ═══ 주문 탭 ═══ -->
+  <div class="section-view" id="sec-order">
+    <div class="sec-header">
+      <div class="sec-title">🍱 매점 / 식당 사전주문</div>
+    </div>
+    <div class="info-card" style="margin-bottom:14px">
+      <div class="order-banner">
+        <span class="order-banner-icon">⏱</span>
+        <div class="order-banner-text">지금 주문하면 픽업 가능!<br><span style="font-size:10px;opacity:.7">주문하고 픽업 시간에 맞춰 편하게 받아가세요!</span></div>
+      </div>
+      <div style="text-align:center;padding:40px 0;color:var(--sub);font-size:13px">
+        🚧 사전주문 메뉴 준비 중입니다.<br><span style="font-size:11px;color:var(--muted)">곧 이용 가능합니다.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ 문의 탭 ═══ -->
+  <div class="section-view" id="sec-inquiry">
+    <div class="sec-header">
+      <div class="sec-title">💬 문의 / 도움말</div>
+    </div>
+    <div class="inquiry-card">
+      <div class="inquiry-item">
+        <div class="inquiry-icon" style="background:var(--green-bg)">⏰</div>
+        <div class="inquiry-info"><div class="inquiry-name">운영시간 안내</div><div class="inquiry-desc">10:00 ~ 18:00 (입장마감 17:00)</div></div>
+      </div>
+      <div class="inquiry-item">
+        <div class="inquiry-icon" style="background:var(--blue-bg)">💰</div>
+        <div class="inquiry-info"><div class="inquiry-name">입장요금</div><div class="inquiry-desc">입장권(대/소공통) 13,000원 · 누에3종체험 12,000원 · 오디3종체험 12,000원</div></div>
+      </div>
+      <div class="inquiry-item">
+        <div class="inquiry-icon" style="background:var(--orange-bg)">📍</div>
+        <div class="inquiry-info"><div class="inquiry-name">오시는 길</div><div class="inquiry-desc">충북 청주시 흥덕구 강내면 청주역로 213-52</div></div>
+      </div>
+      <div class="inquiry-item">
+        <div class="inquiry-icon" style="background:var(--purple-bg)">📞</div>
+        <div class="inquiry-info"><div class="inquiry-name">전화 문의</div><div class="inquiry-desc">0507-1412-1273</div></div>
+      </div>
+      <div class="inquiry-item">
+        <div class="inquiry-icon" style="background:var(--cyan-bg)">🅿️</div>
+        <div class="inquiry-info"><div class="inquiry-name">주차 / 기타</div><div class="inquiry-desc">무료주차 가능 · 24개월 미만 무료(증빙지참) · 반려동물 불가</div></div>
+      </div>
+      <button class="staff-btn" onclick="showToast('직원 호출이 접수되었습니다','success')">직원에게 도움 요청 🙋</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- 하단 네비 -->
+<nav class="bottom-nav">
+  <div class="bottom-nav-inner">
+    <button class="bnav-item active" data-tab="home"><span class="icon">🏠</span><span class="label">홈</span></button>
+    <button class="bnav-item" data-tab="ticket"><span class="icon">🎫</span><span class="label">티켓</span></button>
+    <button class="bnav-item" data-tab="schedule"><span class="icon">📅</span><span class="label">일정</span></button>
+    <button class="bnav-item" data-tab="order"><span class="icon">🍽</span><span class="label">주문</span></button>
+    <button class="bnav-item" data-tab="inquiry"><span class="icon">💬</span><span class="label">문의</span></button>
+  </div>
+</nav>
+
+<script>
+// ═══ 상태 ═══
+var ticketData = null;
+var visitType = 'family';
+var adultCount = 2;
+var childCount = 1;
+var qrRefreshInterval = null;
+var qrCountdown = 60;
+
+// ═══ URL 파라미터에서 티켓 ID 추출 ═══
+var params = new URLSearchParams(location.search);
+var ticketId = params.get('t') || '';
+var ticketCode = params.get('code') || '';
+
+// ═══ 초기 로드 ═══
+window.addEventListener('DOMContentLoaded', function() {
+  initTabs();
+  if (ticketId || ticketCode) {
+    loadTicket(ticketId || ticketCode);
+  }
+  updatePplFromTicket();
+});
+
+// ═══ 탭 전환 ═══
+function initTabs() {
+  document.querySelectorAll('.nav-tab, .bnav-item').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      switchTab(this.dataset.tab);
+    });
+  });
+}
+
+function switchTab(tab) {
+  document.querySelectorAll('.section-view').forEach(function(s) { s.classList.remove('active'); });
+  document.querySelectorAll('.nav-tab').forEach(function(b) { b.classList.remove('active'); });
+  document.querySelectorAll('.bnav-item').forEach(function(b) { b.classList.remove('active'); });
+  var sec = document.getElementById('sec-' + tab);
+  if (sec) sec.classList.add('active');
+  document.querySelectorAll('[data-tab="' + tab + '"]').forEach(function(b) { b.classList.add('active'); });
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+// ═══ 티켓 로드 ═══
+async function loadTicket(code) {
+  try {
+    var r = await fetch('/api/ticket/find?code=' + encodeURIComponent(code));
+    var d = await r.json();
+    if (d.ok) {
+      var tk = d.ticket || (d.tickets && d.tickets[0]);
+      if (tk) {
+        ticketData = tk;
+        renderTicket(tk);
+        updatePplFromTicket();
+      }
+    }
+  } catch(e) {
+    console.error('티켓 로드 실패:', e);
+  }
+}
+
+function renderTicket(tk) {
+  var numEl = document.getElementById('ticketNumber');
+  var metaEl = document.getElementById('ticketMeta');
+  var pplEl = document.getElementById('ticketPpl');
+  var badgeEl = document.getElementById('ticketStatusBadge');
+  var qrBox = document.getElementById('ticketQRBox');
+
+  var isUsable = tk.status === '사용가능' || tk.status === '확정';
+  var orderNo = tk.orderNo || tk.id || '';
+  var today = new Date().toISOString().split('T')[0].replace(/-/g,'');
+  var displayNo = 'JS-' + today.substring(0,4) + '-' + today.substring(4);
+
+  numEl.textContent = displayNo;
+  metaEl.innerHTML = (tk.product ? '📦 ' + tk.product : 'MOCK 데이터') + '<br>'
+    + (tk.source === 'naver' ? '네이버 예약' : tk.source === 'la2fdoci' ? '라이프도시' : '직접 예매');
+  pplEl.innerHTML = '<span style="color:var(--green2);font-size:16px">' + (tk.qty || 1) + '명</span>';
+
+  if (isUsable) {
+    badgeEl.textContent = '입장 가능';
+    badgeEl.style.background = 'var(--green-bg)';
+    badgeEl.style.color = 'var(--green2)';
+  } else {
+    badgeEl.textContent = '사용완료';
+    badgeEl.style.background = 'var(--orange-bg)';
+    badgeEl.style.color = 'var(--orange)';
+  }
+
+  var qrUrl = location.origin + '/c?code=' + encodeURIComponent(tk.couponNo || tk.orderNo || tk.id || '');
+  qrBox.innerHTML = '<img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=' + encodeURIComponent(qrUrl) + '" alt="QR">';
+
+  startQRTimer();
+}
+
+function updatePplFromTicket() {
+  if (ticketData && ticketData.qty) {
+    var total = ticketData.qty;
+    if (total >= 2) { adultCount = Math.max(1, total - 1); childCount = total - adultCount; }
+    else { adultCount = total; childCount = 0; }
+    document.getElementById('adultCount').textContent = adultCount;
+    document.getElementById('childCount').textContent = childCount;
+    document.getElementById('totalPpl').textContent = total;
+    var badge = document.getElementById('scheduleBadge');
+    if (badge) badge.textContent = '가족 방문 ' + total + '명 기준 추천';
+  }
+}
+
+function startQRTimer() {
+  if (qrRefreshInterval) clearInterval(qrRefreshInterval);
+  qrCountdown = 60;
+  document.getElementById('qrTimer').textContent = qrCountdown;
+  qrRefreshInterval = setInterval(function() {
+    qrCountdown--;
+    document.getElementById('qrTimer').textContent = qrCountdown;
+    if (qrCountdown <= 0) {
+      if (ticketData) renderTicket(ticketData);
+    }
+  }, 1000);
+}
+
+// ═══ QR 풀스크린 ═══
+function showFullQR() {
+  if (!ticketData) { showToast('티켓 정보가 없습니다', 'info'); return; }
+  var qrUrl = location.origin + '/c?code=' + encodeURIComponent(ticketData.couponNo || ticketData.orderNo || ticketData.id || '');
+  var ov = document.createElement('div');
+  ov.className = 'qr-fullscreen';
+  ov.id = 'qrFullOverlay';
+  ov.innerHTML = '<div class="qr-full-box">'
+    + '<img src="https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=' + encodeURIComponent(qrUrl) + '" alt="QR">'
+    + '<div class="qr-full-info">한국잠사박물관 입장 QR</div>'
+    + '<div class="qr-full-timer">입구 직원에게 보여주세요</div>'
+    + '</div>'
+    + '<button class="qr-full-close" onclick="closeFullQR()">닫기</button>';
+  document.body.appendChild(ov);
+  ov.addEventListener('click', function(e) { if (e.target === ov) closeFullQR(); });
+}
+
+function closeFullQR() {
+  var ov = document.getElementById('qrFullOverlay');
+  if (ov) ov.remove();
+}
+
+// ═══ 방문 인원 ═══
+function selectVisitType(el, type) {
+  document.querySelectorAll('.visit-type').forEach(function(v) { v.classList.remove('selected'); });
+  el.classList.add('selected');
+  visitType = type;
+}
+
+function changePpl(type, delta) {
+  if (type === 'adult') {
+    adultCount = Math.max(0, adultCount + delta);
+    document.getElementById('adultCount').textContent = adultCount;
+  } else {
+    childCount = Math.max(0, childCount + delta);
+    document.getElementById('childCount').textContent = childCount;
+  }
+  document.getElementById('totalPpl').textContent = adultCount + childCount;
+  var badge = document.getElementById('scheduleBadge');
+  if (badge) badge.textContent = (visitType === 'family' ? '가족' : visitType === 'group' ? '단체' : '관람') + ' 방문 ' + (adultCount + childCount) + '명 기준 추천';
+}
+
+// ═══ 일정표 다시 만들기 ═══
+function rebuildSchedule() {
+  showToast('AI가 일정표를 다시 만들고 있습니다...', 'info');
+  var list = document.getElementById('scheduleList');
+  var total = adultCount + childCount;
+  var hasChild = childCount > 0;
+  var now = new Date();
+  var h = now.getHours();
+  var m = now.getMinutes();
+  var startMin = Math.max(h * 60 + m, 600);
+
+  var items = [
+    { time: startMin, name: 'QR 입장 확인', desc: '입구에서 모바일 QR을 보여주세요.', dot: 'green', tag: 'required', tagText: '필수' }
+  ];
+  if (hasChild) {
+    items.push({ time: startMin + 15, name: '누에 생태관', desc: '아이들이 가장 좋아하는 전시입니다.', dot: 'blue', tag: 'recommend', tagText: '추천' });
+    items.push({ time: startMin + 45, name: '오두막 체험', desc: '예약자 우선, 시작 5분 전 도착 권장', dot: 'pink', tag: 'reserve', tagText: '예약' });
+    items.push({ time: startMin + 90, name: '매점 픽업', desc: '사전주문한 간식을 받을 수 있습니다.', dot: 'orange', tag: 'order', tagText: '주문' });
+  } else {
+    items.push({ time: startMin + 10, name: '박물관 관람', desc: '잠사 역사와 실크 문화를 둘러보세요.', dot: 'blue', tag: 'recommend', tagText: '추천' });
+    items.push({ time: startMin + 40, name: '실크 만들기 체험', desc: '직접 실크를 만들어볼 수 있습니다.', dot: 'pink', tag: 'reserve', tagText: '체험' });
+    items.push({ time: startMin + 70, name: '매점 방문', desc: '잠사 기념품과 간식을 구매하세요.', dot: 'orange', tag: 'order', tagText: '추천' });
+  }
+
+  var html = '';
+  items.forEach(function(it) {
+    var hh = Math.floor(it.time / 60);
+    var mm = it.time % 60;
+    var timeStr = String(hh).padStart(2,'0') + ':' + String(mm).padStart(2,'0');
+    html += '<div class="schedule-item">'
+      + '<div class="schedule-dot ' + it.dot + '"></div>'
+      + '<div class="schedule-time">' + timeStr + '</div>'
+      + '<div class="schedule-content">'
+      + '<div class="schedule-name">' + it.name + ' <span class="schedule-tag ' + it.tag + '">' + it.tagText + '</span></div>'
+      + '<div class="schedule-desc">' + it.desc + '</div>'
+      + '</div></div>';
+  });
+  list.innerHTML = html;
+}
+
+// ═══ 토스트 ═══
+function showToast(msg, type) {
+  var t = document.createElement('div');
+  t.className = 'toast ' + (type || 'info');
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(function() { t.remove(); }, 2500);
+}
+</script>
+</body>
+</html>

@@ -72,7 +72,8 @@ td{padding:7px 8px;border-bottom:1px solid #151528}
 </script>
 
 <script>
-var ws,S={tickets:[],posLog:[],logs:[],crawlStatus:{la2fdoci:'idle',naver:'idle',okpos:'idle'},sessions:{},isRunning:false,totalCrawls:0,config:{msg:{templates:[]}},experiences:[],expBookings:[],rentals:[],rentalBookings:[],aiDiags:[],aiAlerts:0,msgHistory:[],useHistory:[],priceMap:{},reviews:[]};
+var ws,S={tickets:[],posLog:[],logs:[],crawlStatus:{la2fdoci:'idle',naver:'idle',okpos:'idle'},sessions:{},isRunning:false,totalCrawls:0,config:{msg:{templates:[]}},experiences:[],expBookings:[],rentals:[],rentalBookings:[],aiDiags:[],aiAlerts:0,msgHistory:[],useHistory:[],priceMap:{},reviews:[],smsLogs:JSON.parse(localStorage.getItem('__sms_logs')||'[]')};
+var smsLogViewMode='byCustomer';
 var tab='scan',countdown=0,cdTimer=null;
 var _renderTimer=null;
 function debouncedRender(){if(_renderTimer)clearTimeout(_renderTimer);_renderTimer=setTimeout(function(){_renderTimer=null;if(tab!=='settings')render();else updateDots();},300);}
@@ -223,7 +224,7 @@ function connectWS(){
     if(msg.type==='rentalBookingNew'){S.rentalBookings=[msg.data].concat(S.rentalBookings||[]);if(tab==='rental')render()}
     if(msg.type==='aiDiag'){S.aiDiags=S.aiDiags||[];S.aiDiags.unshift(msg);if(S.aiDiags.length>20)S.aiDiags.length=20;if(msg.status==='diagnosed')toast('🤖 AI진단: '+(msg.diag?msg.diag.diagnosis:''),'info');if(msg.status==='repaired'){S.aiAlerts=(S.aiAlerts||0)+1;toast('🔧 자동복구 완료','success')};if(tab==='ai')render()}
     if(msg.type==='aiAlert'){S.aiAlerts=(S.aiAlerts||0)+1;toast('🚨 ['+msg.service+'] '+msg.message,'error');render()}
-    if(msg.type==='msgSent'){S.msgHistory=S.msgHistory||[];S.msgHistory.unshift(msg.data);if(S.msgHistory.length>200)S.msgHistory.length=200;if(tab==='msg')render()}
+    if(msg.type==='msgSent'){S.msgHistory=S.msgHistory||[];S.msgHistory.unshift(msg.data);if(S.msgHistory.length>200)S.msgHistory.length=200;if(msg.data)logSmsSend(msg.data.phone,msg.data.buyer,msg.data.template,msg.data.ok,msg.data.provider,'','ws');if(tab==='msg')render()}
     if(msg.type==='reviewUpdate'){S.reviews=S.reviews||[];var idx=S.reviews.findIndex(function(r){return r.id===msg.data.id});if(idx>=0)S.reviews[idx]=msg.data;else S.reviews.push(msg.data);if(tab==='msg')render()}
     if(msg.type==='useLog'){S.useHistory=S.useHistory||[];S.useHistory.unshift(msg.data);if(S.useHistory.length>500)S.useHistory.length=500;if(tab==='useLog')render()}
   }catch(e){}}
@@ -410,8 +411,9 @@ function renderTickets(){
   } else {
     S.tickets.slice(0,80).forEach(function(t){
       var sC='';
-      if(t.smsSent){sC='<span style="font-size:8px;padding:2px 4px;border-radius:3px;background:rgba(16,185,129,.12);color:#10b981">✓발송</span> <button class="btn" onclick="resendSms(\''+t.id+'\',\''+t.buyer+'\')" style="padding:1px 4px;border-radius:3px;background:rgba(245,158,11,.08);color:#f59e0b;font-size:7px;border:1px solid #f59e0b20">재발송</button>';}
-      else{sC='<button class="btn" onclick="sendSms(\''+t.id+'\',\''+t.buyer+'\')" style="padding:2px 6px;border-radius:3px;background:rgba(99,102,241,.12);color:#6366f1;font-size:8px;border:1px solid #6366f120">📱발송</button>';}
+      var smsCount=getSmsLogsForPhone(t.phone).length;
+      if(t.smsSent){sC='<span style="font-size:8px;padding:2px 4px;border-radius:3px;background:rgba(16,185,129,.12);color:#10b981">✓발송</span>'+(smsCount>1?'<span style="font-size:7px;padding:1px 3px;border-radius:3px;background:rgba(99,102,241,.1);color:#6366f1;margin-left:2px">'+smsCount+'회</span>':'')+' <button class="btn" onclick="resendSms(\''+t.id+'\',\''+t.buyer+'\')" style="padding:1px 4px;border-radius:3px;background:rgba(245,158,11,.08);color:#f59e0b;font-size:7px;border:1px solid #f59e0b20">재발송</button>';}
+      else{sC='<button class="btn" onclick="sendSms(\''+t.id+'\',\''+t.buyer+'\')" style="padding:2px 6px;border-radius:3px;background:rgba(99,102,241,.12);color:#6366f1;font-size:8px;border:1px solid #6366f120">📱발송</button>'+(smsCount>0?'<div style="font-size:7px;color:#f59e0b;margin-top:1px">⚠ 이전 '+smsCount+'회</div>':'');}
       var cpn=(t.couponNo||'').substring(0,16);
       var cpnCnt=(t.couponNos&&t.couponNos.length>1)?'<span style="color:#f59e0b;font-size:7px"> ('+t.couponNos.length+'장)</span>':'';
       var mgmt='<div style="display:flex;gap:2px;flex-wrap:wrap;justify-content:center">';
@@ -3676,20 +3678,89 @@ function renderMsg(){
   });
   h+='</div>';
   
-  // 발송 이력
+  // 발송 이력 (탭: 고객별 / 전체이력)
+  var smsLogs=S.smsLogs||[];
   h+='<div class="card"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">'
     +'<span style="font-size:12px;font-weight:600;color:#10b981">📊 발송 이력</span>'
-    +'<button onclick="loadMsgHistory()" style="padding:2px 6px;background:rgba(16,185,129,.1);color:#10b981;border:1px solid #10b98120;border-radius:4px;font-size:8px;cursor:pointer">🔄 새로고침</button></div>';
-  if(!hist.length){h+='<div style="text-align:center;padding:15px;font-size:10px;color:#555">발송 이력 없음</div>';}
-  else{
-    hist.slice(0,20).forEach(function(m){
-      var t=new Date(m.time).toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'});
-      h+='<div style="display:flex;align-items:center;gap:6px;padding:4px 0;border-bottom:1px solid #151528">'
-        +'<span style="font-size:14px">'+(m.ok?'✅':'❌')+'</span>'
-        +'<div style="flex:1;min-width:0"><div style="font-size:10px;color:#fff">'+m.buyer+' <span style="color:#555">'+m.phone+'</span></div>'
-        +'<div style="font-size:8px;color:#888">'+m.template+' · '+(provNames[m.provider]||m.provider)+'</div></div>'
-        +'<span style="font-size:8px;color:#555">'+t+'</span></div>';
+    +'<div style="display:flex;gap:4px">'
+    +'<button onclick="smsLogViewMode=\'byCustomer\';render()" style="padding:2px 8px;border-radius:5px;font-size:9px;cursor:pointer;border:1px solid '+(smsLogViewMode==='byCustomer'?'#10b981':'#252540')+';background:'+(smsLogViewMode==='byCustomer'?'rgba(16,185,129,.12)':'transparent')+';color:'+(smsLogViewMode==='byCustomer'?'#10b981':'#666')+'">👤 고객별</button>'
+    +'<button onclick="smsLogViewMode=\'all\';render()" style="padding:2px 8px;border-radius:5px;font-size:9px;cursor:pointer;border:1px solid '+(smsLogViewMode==='all'?'#3b82f6':'#252540')+';background:'+(smsLogViewMode==='all'?'rgba(59,130,246,.12)':'transparent')+';color:'+(smsLogViewMode==='all'?'#3b82f6':'#666')+'">📋 전체이력</button>'
+    +'<button onclick="loadMsgHistory()" style="padding:2px 6px;background:rgba(16,185,129,.1);color:#10b981;border:1px solid #10b98120;border-radius:4px;font-size:8px;cursor:pointer">🔄</button>'
+    +'<button onclick="if(confirm(\'발송 로그를 모두 삭제하시겠습니까?\')){S.smsLogs=[];localStorage.removeItem(\'__sms_logs\');render();toast(\'🗑 로그 삭제됨\',\'info\')}" style="padding:2px 6px;background:rgba(239,68,68,.08);color:#ef4444;border:1px solid #ef444420;border-radius:4px;font-size:8px;cursor:pointer">🗑</button>'
+    +'</div></div>';
+
+  if(smsLogViewMode==='byCustomer'){
+    // 고객별 그룹핑
+    var grouped={};
+    smsLogs.forEach(function(l){
+      var key=(l.phone||'').replace(/[-\s]/g,'')||'unknown';
+      if(!grouped[key])grouped[key]={phone:l.phone,buyer:l.buyer,logs:[],okCnt:0,failCnt:0};
+      grouped[key].logs.push(l);
+      if(l.ok)grouped[key].okCnt++;else grouped[key].failCnt++;
+      if(l.buyer&&l.buyer!=='테스트'&&l.buyer!=='직접발송')grouped[key].buyer=l.buyer;
     });
+    var customers=Object.keys(grouped).map(function(k){return grouped[k]});
+    customers.sort(function(a,b){return(b.logs[0]?new Date(b.logs[0].time):0)-(a.logs[0]?new Date(a.logs[0].time):0)});
+
+    if(!customers.length){
+      h+='<div style="text-align:center;padding:20px;font-size:10px;color:#555">발송 이력 없음</div>';
+    } else {
+      h+='<div style="font-size:9px;color:#888;margin-bottom:6px">총 '+customers.length+'명 고객 · '+smsLogs.length+'건 발송</div>';
+      customers.slice(0,30).forEach(function(c){
+        var lastTime=c.logs[0]?new Date(c.logs[0].time).toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}):'';
+        h+='<div style="margin-bottom:6px;background:#0d0d1a;border-radius:8px;border:1px solid #1a1a30;overflow:hidden">'
+          +'<div onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display===\'none\'?\'block\':\'none\'" style="display:flex;align-items:center;gap:8px;padding:8px 10px;cursor:pointer;user-select:none">'
+          +'<span style="font-size:16px">👤</span>'
+          +'<div style="flex:1;min-width:0">'
+          +'<div style="font-size:11px;font-weight:600;color:#fff">'+(c.buyer||'알 수 없음')+' <span style="font-size:9px;color:#555;font-weight:400">'+c.phone+'</span></div>'
+          +'<div style="font-size:8px;color:#888">최근 '+lastTime+'</div></div>'
+          +'<div style="display:flex;gap:4px;align-items:center">'
+          +'<span style="font-size:9px;padding:2px 6px;border-radius:4px;background:rgba(16,185,129,.1);color:#10b981">✅'+c.okCnt+'</span>';
+        if(c.failCnt>0)h+='<span style="font-size:9px;padding:2px 6px;border-radius:4px;background:rgba(239,68,68,.1);color:#ef4444">❌'+c.failCnt+'</span>';
+        h+='<span style="font-size:9px;padding:2px 6px;border-radius:4px;background:rgba(99,102,241,.1);color:#6366f1;font-weight:700">'+c.logs.length+'회</span>'
+          +'<span style="font-size:10px;color:#555">▼</span></div></div>';
+
+        h+='<div style="display:none;border-top:1px solid #1a1a30;padding:6px 10px;max-height:200px;overflow-y:auto">';
+        c.logs.forEach(function(l,idx){
+          var dt=new Date(l.time);
+          var timeStr=dt.toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit'});
+          var typeLabels={send:'발송',resend:'재발송',test:'테스트',specific:'직접발송',bulk:'대량발송',ws:'서버'};
+          var typeColors={send:'#3b82f6',resend:'#f59e0b',test:'#8b5cf6',specific:'#10b981',bulk:'#ef4444',ws:'#6366f1'};
+          h+='<div style="display:flex;align-items:center;gap:6px;padding:3px 0;'+(idx<c.logs.length-1?'border-bottom:1px solid #151528;':'')+'">'
+            +'<span style="font-size:11px;width:16px;text-align:center">'+(l.ok?'✅':'❌')+'</span>'
+            +'<span style="font-size:8px;padding:1px 5px;border-radius:3px;background:'+(typeColors[l.type]||'#666')+'15;color:'+(typeColors[l.type]||'#666')+';min-width:38px;text-align:center">'+(typeLabels[l.type]||l.type)+'</span>'
+            +'<div style="flex:1;min-width:0;font-size:9px;color:#aaa;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+(l.template||'-')+'</div>'
+            +'<span style="font-size:8px;color:#555;white-space:nowrap">'+timeStr+'</span></div>';
+        });
+        h+='</div></div>';
+      });
+      if(customers.length>30)h+='<div style="text-align:center;padding:6px;font-size:9px;color:#555">...외 '+(customers.length-30)+'명</div>';
+    }
+  } else {
+    // 전체 이력 (기존 + smsLogs 병합)
+    var allLogs=smsLogs.slice(0,50);
+    if(!allLogs.length&&!hist.length){
+      h+='<div style="text-align:center;padding:15px;font-size:10px;color:#555">발송 이력 없음</div>';
+    } else {
+      var merged=allLogs.slice();
+      hist.forEach(function(m){
+        var dup=merged.some(function(l){return l.phone===m.phone&&Math.abs(new Date(l.time)-new Date(m.time))<3000});
+        if(!dup)merged.push({phone:m.phone,buyer:m.buyer,template:m.template,ok:m.ok,provider:m.provider,time:m.time,type:'server'});
+      });
+      merged.sort(function(a,b){return new Date(b.time)-new Date(a.time)});
+
+      h+='<div style="font-size:9px;color:#888;margin-bottom:6px">총 '+merged.length+'건</div>';
+      merged.slice(0,50).forEach(function(m){
+        var t=new Date(m.time).toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'});
+        var typeLabels={send:'발송',resend:'재발송',test:'테스트',specific:'직접',bulk:'대량',ws:'서버',server:'서버'};
+        h+='<div style="display:flex;align-items:center;gap:6px;padding:4px 0;border-bottom:1px solid #151528">'
+          +'<span style="font-size:14px">'+(m.ok?'✅':'❌')+'</span>'
+          +'<div style="flex:1;min-width:0"><div style="font-size:10px;color:#fff">'+(m.buyer||'-')+' <span style="color:#555">'+(m.phone||'')+'</span></div>'
+          +'<div style="font-size:8px;color:#888">'+(m.template||'-')+' · '+(provNames[m.provider]||m.provider||'-')+'</div></div>'
+          +'<span style="font-size:8px;padding:1px 4px;border-radius:3px;background:#252540;color:#888">'+(typeLabels[m.type]||m.type||'')+'</span>'
+          +'<span style="font-size:8px;color:#555">'+t+'</span></div>';
+      });
+    }
   }
   h+='</div></div>';
   return h;
@@ -3704,9 +3775,14 @@ function saveMsgConfig(type){
 }
 function testMsg(){
   var ph=$('testPhone').value;if(!ph){toast('전화번호 입력','error');return;}
+  var tmplId=$('testTmpl').value;
+  var pv=(S.config&&S.config.msg&&S.config.msg.provider)||'ppurio';
   toast('🧪 테스트 발송중...','info');
-  api('msg/test',{phone:ph,template:$('testTmpl').value}).then(function(r){
+  api('msg/test',{phone:ph,template:tmplId}).then(function(r){
+    var phones=ph.split(/[,\s\n]+/).filter(Boolean);
+    phones.forEach(function(p){logSmsSend(p.trim(),'테스트',tmplId,r.ok,pv,'','test');});
     if(r.ok)toast('✅ 테스트 성공!','success');else toast('❌ '+(r.error||r.detail||'실패'),'error');
+    if(tab==='msg')render();
   });
 }
 async function sendSpecific(){
@@ -3714,23 +3790,31 @@ async function sendSpecific(){
   if(!ph){toast('수신 전화번호를 입력해주세요','error');return;}
   var msg=($('specificMsg')||{}).value||'';
   var tmpl=($('specificTmpl')||{}).value||'';
-  
+
   if(!msg&&!tmpl){toast('메시지 또는 템플릿을 선택해주세요','error');return;}
-  
+
   if(!confirm('📱 '+ph+' 번호로 메시지를 발송합니다.\n\n진행하시겠습니까?'))return;
   toast('📱 '+ph+' 발송중...','info');
-  
+  var pv=(S.config&&S.config.msg&&S.config.msg.provider)||'ppurio';
+
   try{
     var r=await api('msg/send-specific',{phone:ph,message:msg,template:tmpl});
+    var phones=ph.split(/[,\s\n]+/).filter(Boolean);
+    phones.forEach(function(p){logSmsSend(p.trim(),'직접발송',tmpl||'직접입력',r.ok,pv,'','specific');});
     if(r.ok) toast('✅ '+ph+' 발송 완료!','success');
     else toast('❌ '+(r.error||'실패'),'error');
+    if(tab==='msg')render();
   }catch(e){toast('❌ '+e.message,'error');}
 }
 function bulkSend(){
-  var cnt=S.tickets.filter(function(t){return isU(t)&&t.phone&&!t.smsSent}).length;
+  var targets=S.tickets.filter(function(t){return isU(t)&&t.phone&&!t.smsSent});
+  var cnt=targets.length;
   if(!confirm('📨 미발송 '+cnt+'건에 문자를 일괄 발송합니다.\n\n진행하시겠습니까?'))return;
   toast('📨 대량발송 시작...','info');
-  api('msg/bulk',{template:$('bulkTmpl').value}).then(function(r){
+  var tmpl=$('bulkTmpl').value;
+  var pv=(S.config&&S.config.msg&&S.config.msg.provider)||'ppurio';
+  api('msg/bulk',{template:tmpl}).then(function(r){
+    targets.forEach(function(t){logSmsSend(t.phone,t.buyer,tmpl,r.ok,pv,t.id,'bulk');});
     if(r.ok)toast('📨 완료: 성공 '+r.success+' / 실패 '+r.fail,'success');
     else toast('❌ '+(r.error||'실패'),'error');render();
   });
@@ -4934,7 +5018,7 @@ function selectTk(id){
       +(prodName?'<div style="background:#080815;border-radius:6px;padding:8px;margin-bottom:10px;font-size:11px;color:#aaa">📦 '+prodName+'</div>':''  )
       +'<div style="display:flex;gap:6px;margin-bottom:10px">'
       +'<div style="font-size:9px;padding:3px 6px;border-radius:4px;background:rgba(99,102,241,.08);color:#818cf8">주문 #'+(t.orderNo||'-')+'</div>'
-      +'<div style="font-size:9px;padding:3px 6px;border-radius:4px;background:'+(t.smsSent?'rgba(16,185,129,.08)':'rgba(239,68,68,.08)')+';color:'+(t.smsSent?'#10b981':'#ef4444')+'">'+(t.smsSent?'📱 문자발송완료':'📱 미발송')+'</div>'
+      +'<div style="font-size:9px;padding:3px 6px;border-radius:4px;background:'+(t.smsSent?'rgba(16,185,129,.08)':'rgba(239,68,68,.08)')+';color:'+(t.smsSent?'#10b981':'#ef4444')+'">'+(t.smsSent?'📱 문자발송완료':'📱 미발송')+(function(){var cnt=getSmsLogsForPhone(t.phone).length;return cnt>0?' ('+cnt+'회)':''}())+'</div>'
       +'</div>'
       +(u?'<div id="splitCtrl" style="margin-bottom:8px">'
       +((t.qty||1)>1?'<div style="display:flex;align-items:center;gap:8px;background:#080815;border-radius:8px;padding:8px 12px;margin-bottom:6px"><span style="font-size:11px;color:#888">사용 매수:</span><div style="display:flex;align-items:center;gap:4px"><button onclick="var v=document.getElementById(&quot;splitQty&quot;);var n=parseInt(v.value)-1;if(n>=1)v.value=n" style="width:28px;height:28px;border-radius:6px;background:#252540;color:#fff;border:none;font-size:14px;cursor:pointer">-</button><input id="splitQty" type="number" value="'+(t.qty||1)+'" min="1" max="'+(t.qty||1)+'" style="width:50px;text-align:center;padding:4px;border-radius:6px;background:#151528;color:#fff;border:1px solid #252540;font-size:14px;font-weight:700"><button onclick="var v=document.getElementById(&quot;splitQty&quot;);var n=parseInt(v.value)+1;if(n<='+(t.qty||1)+')v.value=n" style="width:28px;height:28px;border-radius:6px;background:#252540;color:#fff;border:none;font-size:14px;cursor:pointer">+</button></div><span style="font-size:11px;color:#555">/ '+(t.qty||1)+'매</span></div>':'')
@@ -5481,8 +5565,34 @@ async function adminUse(id,name){
     toast('❌ '+(r.error||'실패'),'error');
   }}catch(e){toast('❌ 사용처리 오류: '+e.message,'error')}
 }
-async function sendSms(id,name){toast('📱 '+name+' 문자 발송중...','info');var r=await api('ticket/sms',{ticketId:id});if(r.ok){toast('✅ '+name+' 문자 발송 완료!','success');render()}else{toast('❌ '+(r.error||'실패'),'error')}}
-async function resendSms(id,name){if(!confirm(name+' 에게 문자를 재발송하시겠습니까?'))return;toast('📱 '+name+' 재발송중...','info');var r=await api('ticket/sms',{ticketId:id});if(r.ok){toast('✅ '+name+' 재발송 완료!','success');render()}else{toast('❌ '+(r.error||'실패'),'error')}}
+function logSmsSend(phone,buyer,template,ok,provider,ticketId,type){
+  S.smsLogs=S.smsLogs||[];
+  S.smsLogs.unshift({phone:phone||'',buyer:buyer||'',template:template||'',ok:!!ok,provider:provider||'',ticketId:ticketId||'',type:type||'send',time:new Date().toISOString()});
+  if(S.smsLogs.length>500)S.smsLogs.length=500;
+  try{localStorage.setItem('__sms_logs',JSON.stringify(S.smsLogs))}catch(e){}
+}
+function getSmsLogsForPhone(phone){
+  if(!phone)return[];
+  var clean=phone.replace(/[-\s]/g,'');
+  return(S.smsLogs||[]).filter(function(l){return l.phone&&l.phone.replace(/[-\s]/g,'')===clean});
+}
+async function sendSms(id,name){
+  toast('📱 '+name+' 문자 발송중...','info');
+  var t=S.tickets.find(function(x){return x.id===id});
+  var pv=(S.config&&S.config.msg&&S.config.msg.provider)||'ppurio';
+  var r=await api('ticket/sms',{ticketId:id});
+  logSmsSend(t?t.phone:'',name,'티켓발송',r.ok,pv,id,'send');
+  if(r.ok){toast('✅ '+name+' 문자 발송 완료!','success');render()}else{toast('❌ '+(r.error||'실패'),'error')}
+}
+async function resendSms(id,name){
+  if(!confirm(name+' 에게 문자를 재발송하시겠습니까?'))return;
+  toast('📱 '+name+' 재발송중...','info');
+  var t=S.tickets.find(function(x){return x.id===id});
+  var pv=(S.config&&S.config.msg&&S.config.msg.provider)||'ppurio';
+  var r=await api('ticket/sms',{ticketId:id});
+  logSmsSend(t?t.phone:'',name,'티켓발송',r.ok,pv,id,'resend');
+  if(r.ok){toast('✅ '+name+' 재발송 완료!','success');render()}else{toast('❌ '+(r.error||'실패'),'error')}
+}
 api('state').then(function(d){dbg('api/state response: '+(d?'OK, tickets='+((d.tickets||[]).length):'NULL'));if(d){S=Object.assign(S,d);if(d.config){pwCache.la2fdoci=d.config.la2fdoci&&d.config.la2fdoci.pw||'';pwCache.naver=d.config.naver&&d.config.naver.pw||'';pwCache.okpos=d.config.okpos&&d.config.okpos.pw||''}if(!S.experiences)S.experiences=[];if(!S.expBookings)S.expBookings=[];if(!S.rentals)S.rentals=[];if(!S.rentalBookings)S.rentalBookings=[];render()}}).catch(function(e){dbg('api/state ERROR: '+e.message);render()});
 dbg('calling initial render()');
 render();

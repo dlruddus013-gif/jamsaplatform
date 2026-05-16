@@ -93,6 +93,8 @@ const STATE = {
     { id: 'camping-2', name: '캠핑테이블 B', type: 'camping', price: 40000, color: '#7c3aed', desc: '4인기준 · 의자추가 5천원', deposit: 10000 },
   ],
   rentalBookings: [],
+  spotScans: {},
+  spotScanLogs: [],
   config: {
     la2fdoci: { loginUrl: process.env.LA2F_URL || 'https://la2fdoci.com/partner/login.do', orderUrl: process.env.LA2F_ORDER || 'https://la2fdoci.com/partner/order/orderList.do', id: process.env.LA2F_ID || 'jamsa', pw: process.env.LA2F_PW || '1234' },
     naver: { bookingUrl: process.env.NAVER_URL || '', id: process.env.NAVER_ID || 'jamsa0433', pw: process.env.NAVER_PW || 'skyeduc0089@', placeId: process.env.NAVER_PLACE_ID || '4789821', bizId: process.env.NAVER_BIZ_ID || '507900', partnerBizId: process.env.NAVER_PARTNER_BIZ_ID || '784618', bizName: process.env.NAVER_BIZ_NAME || '한국잠사플레이팝', dateFrom: '', dateTo: '' },
@@ -7664,6 +7666,7 @@ app.get('/api/state', function(req, res) {
     sessions: STATE.sessions,
     experiences: STATE.experiences, expBookings: STATE.expBookings,
     rentals: STATE.rentals, rentalBookings: STATE.rentalBookings,
+    spotScans: STATE.spotScans, spotScanLogs: (STATE.spotScanLogs || []).slice(0, 200),
     config: {
       la2fdoci: { id: STATE.config.la2fdoci.id, pw: STATE.config.la2fdoci.pw, loginUrl: STATE.config.la2fdoci.loginUrl, orderUrl: STATE.config.la2fdoci.orderUrl },
       naver: { id: STATE.config.naver.id, pw: STATE.config.naver.pw, bookingUrl: STATE.config.naver.bookingUrl },
@@ -11590,6 +11593,36 @@ app.get('/kiosk', function(req, res) { res.sendFile(path.join(__dirname, 'public
 app.get('/closing', function(req, res) { res.sendFile(path.join(__dirname, 'public', 'closing.html')); });
 app.get('/crm', function(req, res) { res.sendFile(path.join(__dirname, 'public', 'crm.html')); });
 app.get('/rental-map', function(req, res) { res.sendFile(path.join(__dirname, 'public', 'rental-map.html')); });
+
+// ═══ 스팟 QR 스캔 ═══
+app.get('/spot/:spotId', function(req, res) {
+  var spotId = req.params.spotId;
+  var phone = (req.query.p || '').replace(/[^0-9]/g, '');
+  var visitor = req.query.v || '방문자';
+  if (!STATE.spotScans) STATE.spotScans = {};
+  if (!STATE.spotScanLogs) STATE.spotScanLogs = [];
+  STATE.spotScans[spotId] = (STATE.spotScans[spotId] || 0) + 1;
+  var entry = { spotId: spotId, phone: phone, visitor: visitor, time: new Date().toISOString(), ip: req.ip };
+  STATE.spotScanLogs.unshift(entry);
+  if (STATE.spotScanLogs.length > 2000) STATE.spotScanLogs.length = 2000;
+  broadcast({ type: 'spotScan', data: entry });
+  log('spot', visitor + (phone ? '(' + phone.slice(-4) + ')' : '') + ' → ' + spotId, 'info');
+  var spotNames = { 'SPOT-gate': '입구/매표소', 'SPOT-museum': '잠사박물관', 'SPOT-kids': '키즈/놀이존', 'SPOT-sheep': '양떼정원', 'SPOT-cabin': '오두막/불멍존', 'SPOT-restaurant': '식당/매점', 'SPOT-pool': '물놀이장', 'SPOT-sled': '사계절썰매장', 'SPOT-exp': '체험장' };
+  var spotName = spotNames[spotId] || spotId;
+  res.send('<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>한국잠사박물관 - ' + spotName + '</title><style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:-apple-system,sans-serif;background:#080815;color:#eef;min-height:100vh;display:flex;align-items:center;justify-content:center}.card{background:#111128;border-radius:16px;padding:32px;text-align:center;max-width:380px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,.5)}.icon{font-size:48px;margin-bottom:12px}.name{font-size:22px;font-weight:800;margin-bottom:4px}.cat{font-size:13px;color:#888;margin-bottom:16px}.check{display:inline-block;padding:8px 24px;background:rgba(16,185,129,.15);color:#10b981;border-radius:12px;font-size:14px;font-weight:700;margin-bottom:16px}.time{font-size:11px;color:#555}.brand{margin-top:20px;font-size:12px;color:#444}</style></head><body><div class="card"><div class="icon">' + ({'SPOT-gate':'🎫','SPOT-museum':'🏛️','SPOT-kids':'🧒','SPOT-sheep':'🐑','SPOT-cabin':'🏕️','SPOT-restaurant':'🍽️','SPOT-pool':'💧','SPOT-sled':'🛷','SPOT-exp':'🧪'}[spotId] || '📍') + '</div><div class="name">' + spotName + '</div><div class="cat">한국잠사박물관</div><div class="check">✅ 방문 기록 완료!</div><div class="time">' + new Date().toLocaleString('ko-KR') + '</div><div class="brand">🏛️ 한국잠사박물관 통합 시스템</div></div></body></html>');
+});
+
+app.get('/api/spot/scans', function(req, res) {
+  res.json({ ok: true, scans: STATE.spotScans || {}, logs: (STATE.spotScanLogs || []).slice(0, 200) });
+});
+
+app.post('/api/spot/reset', function(req, res) {
+  STATE.spotScans = {};
+  STATE.spotScanLogs = [];
+  broadcast({ type: 'spotReset' });
+  log('system', '📍 스팟 스캔 데이터 초기화', 'info');
+  res.json({ ok: true });
+});
 
 // ═══ 대여 시설 스팟 위치 저장/조회 API ═══
 app.get('/api/rental/spots', function(req, res) {

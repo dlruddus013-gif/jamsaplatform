@@ -225,6 +225,8 @@ function connectWS(){
     if(msg.type==='aiDiag'){S.aiDiags=S.aiDiags||[];S.aiDiags.unshift(msg);if(S.aiDiags.length>20)S.aiDiags.length=20;if(msg.status==='diagnosed')toast('🤖 AI진단: '+(msg.diag?msg.diag.diagnosis:''),'info');if(msg.status==='repaired'){S.aiAlerts=(S.aiAlerts||0)+1;toast('🔧 자동복구 완료','success')};if(tab==='ai')render()}
     if(msg.type==='aiAlert'){S.aiAlerts=(S.aiAlerts||0)+1;toast('🚨 ['+msg.service+'] '+msg.message,'error');render()}
     if(msg.type==='msgSent'){S.msgHistory=S.msgHistory||[];S.msgHistory.unshift(msg.data);if(S.msgHistory.length>200)S.msgHistory.length=200;if(msg.data)logSmsSend(msg.data.phone,msg.data.buyer,msg.data.template,msg.data.ok,msg.data.provider,'','ws');if(tab==='msg')render()}
+    if(msg.type==='spotScan'){if(!S.spotScans)S.spotScans={};S.spotScans[msg.data.spotId]=(S.spotScans[msg.data.spotId]||0)+1;if(!S.spotScanLogs)S.spotScanLogs=[];S.spotScanLogs.unshift(msg.data);if(S.spotScanLogs.length>200)S.spotScanLogs.length=200;if(tab==='portal')render()}
+    if(msg.type==='spotReset'){S.spotScans={};S.spotScanLogs=[];if(tab==='portal')render()}
     if(msg.type==='reviewUpdate'){S.reviews=S.reviews||[];var idx=S.reviews.findIndex(function(r){return r.id===msg.data.id});if(idx>=0)S.reviews[idx]=msg.data;else S.reviews.push(msg.data);if(tab==='msg')render()}
     if(msg.type==='useLog'){S.useHistory=S.useHistory||[];S.useHistory.unshift(msg.data);if(S.useHistory.length>500)S.useHistory.length=500;if(tab==='useLog')render()}
   }catch(e){}}
@@ -4926,66 +4928,138 @@ var PORTAL_SPOTS=[
   {id:'SPOT-exp',name:'체험장',cat:'체험',icon:'🧪',color:'#ec4899',lat:36.63900,lng:127.38120}
 ];
 function getSpotScans(spotId){return(S.spotScans||{})[spotId]||0}
+function getSpotById(id){return PORTAL_SPOTS.find(function(s){return s.id===id})}
+function showSpotQR(spotId){
+  var sp=getSpotById(spotId);if(!sp)return;
+  var url=location.origin+'/spot/'+spotId;
+  var qrApi='https://api.qrserver.com/v1/create-qr-code/?size=240x240&data='+encodeURIComponent(url);
+  var ov=document.createElement('div');
+  ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:9999;display:flex;align-items:center;justify-content:center';
+  ov.onclick=function(e){if(e.target===ov)document.body.removeChild(ov)};
+  ov.innerHTML='<div style="background:#fff;border-radius:16px;padding:24px;text-align:center;max-width:320px;width:90%">'
+    +'<div style="font-size:32px;margin-bottom:4px">'+sp.icon+'</div>'
+    +'<div style="font-size:18px;font-weight:800;color:#111;margin-bottom:2px">'+sp.name+'</div>'
+    +'<div style="font-size:11px;color:#888;margin-bottom:12px">'+sp.cat+' · 한국잠사박물관</div>'
+    +'<img src="'+qrApi+'" style="width:200px;height:200px;border-radius:8px;border:2px solid #eee;margin-bottom:10px">'
+    +'<div style="font-size:10px;color:#555;word-break:break-all;margin-bottom:10px;background:#f5f5f5;padding:6px;border-radius:6px">'+url+'</div>'
+    +'<div style="display:flex;gap:6px;justify-content:center">'
+    +'<button onclick="navigator.clipboard.writeText(\''+url+'\');this.textContent=\'✅ 복사됨\'" style="padding:6px 16px;border-radius:8px;background:#10b981;color:#fff;border:none;font-size:12px;cursor:pointer">📋 URL 복사</button>'
+    +'<button onclick="window.open(\''+qrApi.replace('240x240','600x600')+'\');this.textContent=\'✅\'" style="padding:6px 16px;border-radius:8px;background:#3b82f6;color:#fff;border:none;font-size:12px;cursor:pointer">🖨️ QR 다운로드</button>'
+    +'</div></div>';
+  document.body.appendChild(ov);
+}
+function getVisitorPaths(){
+  var logs=S.spotScanLogs||[];
+  var byPhone={};
+  logs.forEach(function(l){
+    var key=l.phone||l.ip||'anon-'+Math.random();
+    if(l.phone&&l.phone.length>=4)key=l.phone;
+    else return;
+    if(!byPhone[key])byPhone[key]={phone:key,visitor:l.visitor||'',path:[]};
+    byPhone[key].path.push({spotId:l.spotId,time:l.time});
+    if(l.visitor&&l.visitor!=='방문자')byPhone[key].visitor=l.visitor;
+  });
+  return Object.values(byPhone).filter(function(v){return v.path.length>=2}).sort(function(a,b){return b.path.length-a.path.length});
+}
+var portalPathPhone='';
 function renderPortal(){
   var h='<div style="max-width:1100px;margin:0 auto;animation:fadeIn .3s">';
-
-  // 상단 통계
   var todayStr=new Date().toISOString().split('T')[0];
-  var todayTk=S.tickets.filter(function(t){return t.bookDate===todayStr||t.createdAt&&t.createdAt.startsWith(todayStr)}).length;
-  var todayExp=(S.expBookings||[]).filter(function(b){return b.date===todayStr}).length;
-  var todayRen=(S.rentalBookings||[]).filter(function(b){return b.date===todayStr}).length;
-  var totalScans=PORTAL_SPOTS.reduce(function(s,p){return s+getSpotScans(p.id)},0);
+  var logs=(S.spotScanLogs||[]).filter(function(l){return l.time&&l.time.startsWith(todayStr)});
+  var totalScans=logs.length;
+
   var stats=[
-    {l:'오늘 티켓',v:todayTk,c:'#10b981'},{l:'체험예약',v:todayExp,c:'#f59e0b'},
-    {l:'오두막/평상',v:todayRen,c:'#ef4444'},{l:'스팟스캔',v:totalScans,c:'#3b82f6'},
+    {l:'오늘 스캔',v:totalScans,c:'#3b82f6'},{l:'오늘 티켓',v:S.tickets.filter(function(t){return(t.bookDate||t.createdAt||'').startsWith(todayStr)}).length,c:'#10b981'},
+    {l:'체험예약',v:(S.expBookings||[]).filter(function(b){return b.date===todayStr}).length,c:'#f59e0b'},
+    {l:'대여',v:(S.rentalBookings||[]).filter(function(b){return b.date===todayStr}).length,c:'#ef4444'},
     {l:'방문후기',v:(S.reviews||[]).length,c:'#8b5cf6'}
   ];
-  h+='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;margin-bottom:16px">';
-  stats.forEach(function(s){
-    h+='<div class="card" style="padding:10px 14px;border-left:3px solid '+s.c+'">'
-      +'<div style="font-size:10px;color:#888">'+s.l+'</div>'
-      +'<div style="font-size:22px;font-weight:800;color:'+s.c+'">'+s.v+'</div></div>';
-  });
+  h+='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;margin-bottom:14px">';
+  stats.forEach(function(s){h+='<div class="card" style="padding:8px 12px;border-left:3px solid '+s.c+'"><div style="font-size:9px;color:#888">'+s.l+'</div><div style="font-size:20px;font-weight:800;color:'+s.c+'">'+s.v+'</div></div>'});
   h+='</div>';
 
   // 네이버 지도
   var savedKey=typeof localStorage!=='undefined'?localStorage.getItem('__naver_map_key')||'':'';
-  h+='<div class="card" style="margin-bottom:16px;padding:0;overflow:hidden">'
-    +'<div style="padding:10px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #252540">'
+  h+='<div class="card" style="margin-bottom:14px;padding:0;overflow:hidden">'
+    +'<div style="padding:8px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #252540">'
     +'<span style="font-size:13px;font-weight:700;color:#10b981">🗺️ 위치/QR 스팟 실시간 네이버지도</span>'
-    +'<span style="font-size:9px;color:#666">최근 30분 기준</span></div>';
+    +'<div style="display:flex;gap:4px;align-items:center">';
+  var visitors=getVisitorPaths();
+  if(visitors.length){
+    h+='<select onchange="portalPathPhone=this.value;render()" style="padding:3px 6px;font-size:9px;background:#1a1a3a;color:#aaa;border:1px solid #333;border-radius:4px"><option value="">🚶 이동경로 선택</option>';
+    visitors.forEach(function(v){h+='<option value="'+v.phone+'"'+(portalPathPhone===v.phone?' selected':'')+'>'+v.visitor+' ('+v.phone.slice(-4)+') '+v.path.length+'곳</option>'});
+    h+='</select>';
+  }
+  h+='<span style="font-size:9px;color:#666">오늘 '+totalScans+'건</span></div></div>';
 
   if(!savedKey){
-    h+='<div style="padding:40px;text-align:center">'
-      +'<div style="font-size:14px;font-weight:700;color:#f59e0b;margin-bottom:8px">🛰️ 네이버 Maps API 키 필요</div>'
+    h+='<div style="padding:40px;text-align:center"><div style="font-size:14px;font-weight:700;color:#f59e0b;margin-bottom:8px">🛰️ 네이버 Maps API 키 필요</div>'
       +'<div style="display:flex;gap:6px;align-items:center;max-width:400px;margin:12px auto">'
       +'<input id="portalMapKey" placeholder="NCP Client ID" style="flex:1;padding:8px;background:#1a1a3a;border:2px solid #333;border-radius:8px;color:#fff;text-align:center">'
-      +'<button class="btn" onclick="var k=document.getElementById(\'portalMapKey\').value.trim();if(!k)return;localStorage.setItem(\'__naver_map_key\',k);render()" style="padding:8px 16px;background:#03C75A;color:#fff;border-radius:8px">저장</button>'
-      +'</div></div>';
+      +'<button class="btn" onclick="var k=document.getElementById(\'portalMapKey\').value.trim();if(!k)return;localStorage.setItem(\'__naver_map_key\',k);render()" style="padding:8px 16px;background:#03C75A;color:#fff;border-radius:8px">저장</button></div></div>';
   } else {
-    h+='<div style="padding:6px 14px;display:flex;align-items:center;gap:6px;background:#0a0a20">'
-      +'<input value="'+savedKey+'" readonly style="flex:1;padding:4px 8px;background:#151528;border:1px solid #252540;border-radius:4px;color:#888;font-size:11px;font-family:monospace">'
-      +'<button class="btn" onclick="var k=prompt(\'새 Client ID:\',localStorage.getItem(\'__naver_map_key\')||\'\');if(k!==null){localStorage.setItem(\'__naver_map_key\',k.trim());render()}" style="padding:4px 10px;background:#03C75A;color:#fff;font-size:10px;border-radius:4px">지도키 저장</button>'
-      +'<a href="https://console.ncloud.com/naver-service/application" target="_blank" style="font-size:10px;color:#03C75A">네이버 콘솔</a>'
-      +'<span style="font-size:9px;color:#555">등록 URL: '+location.origin+'</span></div>'
-      +'<div id="portalMap" style="width:100%;height:420px;background:#0a0a25"></div>';
+    h+='<div style="padding:4px 14px;display:flex;align-items:center;gap:6px;background:#0a0a20">'
+      +'<input value="'+savedKey+'" readonly style="flex:1;padding:3px 6px;background:#151528;border:1px solid #252540;border-radius:4px;color:#888;font-size:10px;font-family:monospace">'
+      +'<button class="btn" onclick="var k=prompt(\'새 Client ID:\',localStorage.getItem(\'__naver_map_key\')||\'\');if(k!==null){localStorage.setItem(\'__naver_map_key\',k.trim());render()}" style="padding:3px 8px;background:#03C75A;color:#fff;font-size:9px;border-radius:4px">변경</button>'
+      +'<a href="https://console.ncloud.com/naver-service/application" target="_blank" style="font-size:9px;color:#03C75A">콘솔</a></div>'
+      +'<div id="portalMap" style="width:100%;height:400px;background:#0a0a25"></div>';
   }
   h+='</div>';
 
-  // 스팟 카드
-  h+='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-bottom:16px">';
+  // 스팟 카드 + QR
+  h+='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:8px;margin-bottom:14px">';
   PORTAL_SPOTS.forEach(function(sp){
     var cnt=getSpotScans(sp.id);
-    h+='<div class="card" style="padding:10px;border-top:3px solid '+sp.color+';cursor:pointer" onclick="if(typeof _portalMapObj!==\'undefined\'&&_portalMapObj)_portalMapObj.panTo(new naver.maps.LatLng('+sp.lat+','+sp.lng+'))">'
-      +'<div style="font-size:13px;font-weight:700;color:#fff">'+sp.icon+' '+sp.name+'</div>'
-      +'<div style="font-size:9px;color:#888">'+sp.cat+' · '+sp.id+'</div>'
-      +'<div style="font-size:20px;font-weight:800;color:'+sp.color+';margin-top:4px">'+cnt+'<span style="font-size:11px;color:#888;font-weight:400">명</span></div>'
-      +'<div style="font-size:9px;color:#3b82f6;cursor:pointer" onclick="event.stopPropagation();prompt(\'QR URL:\',location.origin+\'/qr/\'+\''+sp.id+'\')">QR URL</div></div>';
+    var todayCnt=logs.filter(function(l){return l.spotId===sp.id}).length;
+    h+='<div class="card" style="padding:10px;border-top:3px solid '+sp.color+'">'
+      +'<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;cursor:pointer" onclick="if(typeof _portalMapObj!==\'undefined\'&&_portalMapObj)_portalMapObj.panTo(new naver.maps.LatLng('+sp.lat+','+sp.lng+'))">'
+      +'<span style="font-size:20px">'+sp.icon+'</span>'
+      +'<div><div style="font-size:12px;font-weight:700;color:#fff">'+sp.name+'</div>'
+      +'<div style="font-size:8px;color:#666">'+sp.cat+'</div></div></div>'
+      +'<div style="display:flex;align-items:baseline;gap:6px;margin-bottom:6px">'
+      +'<span style="font-size:24px;font-weight:800;color:'+sp.color+'">'+todayCnt+'</span>'
+      +'<span style="font-size:10px;color:#888">오늘</span>'
+      +(cnt!==todayCnt?'<span style="font-size:10px;color:#555">총 '+cnt+'</span>':'')
+      +'</div>'
+      +'<div style="display:flex;gap:4px">'
+      +'<button class="btn" onclick="showSpotQR(\''+sp.id+'\')" style="flex:1;padding:4px;background:rgba(99,102,241,.12);color:#6366f1;font-size:9px;border:1px solid #6366f120;border-radius:4px">📱 QR코드</button>'
+      +'<button class="btn" onclick="navigator.clipboard.writeText(location.origin+\'/spot/'+sp.id+'\');toast(\'✅ URL 복사됨\',\'success\')" style="padding:4px 6px;background:rgba(16,185,129,.1);color:#10b981;font-size:9px;border:1px solid #10b98120;border-radius:4px">📋</button>'
+      +'</div></div>';
   });
   h+='</div>';
-  h+='</div>';
 
-  // 지도 초기화
+  // 스캔 로그 타임라인
+  h+='<div class="card" style="margin-bottom:14px"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">'
+    +'<span style="font-size:13px;font-weight:700;color:#3b82f6">📊 스캔 타임라인</span>'
+    +'<div style="display:flex;gap:4px">'
+    +'<button class="btn" onclick="api(\'spot/reset\',{}).then(function(){toast(\'🗑 초기화됨\',\'info\');render()})" style="padding:2px 8px;background:rgba(239,68,68,.08);color:#ef4444;font-size:8px;border:1px solid #ef444420;border-radius:4px">초기화</button>'
+    +'<button class="btn" onclick="fetch(\'/api/spot/scans\').then(function(r){return r.json()}).then(function(d){S.spotScans=d.scans;S.spotScanLogs=d.logs;render()})" style="padding:2px 8px;background:rgba(59,130,246,.08);color:#3b82f6;font-size:8px;border:1px solid #3b82f620;border-radius:4px">🔄</button>'
+    +'</div></div>';
+
+  var recentLogs=(S.spotScanLogs||[]).slice(0,30);
+  if(!recentLogs.length){
+    h+='<div style="text-align:center;padding:20px;color:#555;font-size:11px">스캔 기록 없음 - 스팟 QR코드를 생성하여 설치하세요</div>';
+  } else {
+    recentLogs.forEach(function(l,i){
+      var sp=getSpotById(l.spotId)||{icon:'📍',name:l.spotId,color:'#666'};
+      var t=new Date(l.time);
+      var timeStr=t.toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit'});
+      var prevLog=recentLogs[i+1];
+      var arrow='';
+      if(prevLog&&prevLog.phone&&prevLog.phone===l.phone&&prevLog.spotId!==l.spotId){
+        var psp=getSpotById(prevLog.spotId)||{icon:'📍',name:prevLog.spotId};
+        arrow='<span style="font-size:8px;color:#f59e0b;margin-left:4px">← '+psp.icon+psp.name+'</span>';
+      }
+      h+='<div style="display:flex;align-items:center;gap:8px;padding:5px 0;'+(i<recentLogs.length-1?'border-bottom:1px solid #151528;':'')+'">'
+        +'<span style="font-size:16px;width:24px;text-align:center">'+sp.icon+'</span>'
+        +'<div style="flex:1;min-width:0"><div style="font-size:11px;color:#fff;font-weight:600">'+sp.name+arrow+'</div>'
+        +'<div style="font-size:9px;color:#888">'+(l.visitor||'방문자')+(l.phone?' · ***'+l.phone.slice(-4):'')+'</div></div>'
+        +'<span style="font-size:9px;color:#555;white-space:nowrap">'+timeStr+'</span></div>';
+    });
+  }
+  h+='</div></div>';
+
+  // 지도 초기화 + 이동경로 표시
   if(savedKey){
     setTimeout(function(){
       loadNaverMapScript(function(){
@@ -4997,18 +5071,36 @@ function renderPortal(){
           var m=new naver.maps.Map('portalMap',{center:center,zoom:18,mapTypeId:naver.maps.MapTypeId.SATELLITE,zoomControl:true,zoomControlOptions:{position:naver.maps.Position.RIGHT_CENTER}});
           window._portalMapObj=m;
           PORTAL_SPOTS.forEach(function(sp){
-            var cnt=getSpotScans(sp.id);
-            var mk=new naver.maps.Marker({position:new naver.maps.LatLng(sp.lat,sp.lng),map:m,icon:{content:'<div style="padding:4px 10px;background:rgba(0,0,0,.85);color:#fff;border-radius:8px;font-size:11px;font-weight:700;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,.4);border:2px solid '+sp.color+'">'+sp.icon+' '+sp.name+' <span style="color:'+sp.color+'">'+cnt+'명</span></div>',anchor:new naver.maps.Point(50,16)}});
+            var cnt=logs.filter(function(l){return l.spotId===sp.id}).length;
+            var mk=new naver.maps.Marker({position:new naver.maps.LatLng(sp.lat,sp.lng),map:m,icon:{content:'<div style="padding:4px 10px;background:rgba(0,0,0,.85);color:#fff;border-radius:8px;font-size:11px;font-weight:700;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,.4);border:2px solid '+sp.color+'">'+sp.icon+' '+sp.name+' <span style="color:'+(cnt>0?sp.color:'#555')+'">'+cnt+'</span></div>',anchor:new naver.maps.Point(50,16)}});
             naver.maps.Event.addListener(mk,'click',function(){
-              var iw=new naver.maps.InfoWindow({content:'<div style="padding:12px;min-width:160px;background:#111;color:#fff;border-radius:8px"><div style="font-size:14px;font-weight:700;margin-bottom:4px">'+sp.icon+' '+sp.name+'</div><div style="font-size:11px;color:#aaa">'+sp.cat+' · '+sp.id+'</div><div style="font-size:18px;font-weight:800;color:'+sp.color+';margin-top:6px">'+cnt+'명</div><div style="font-size:10px;color:#555;margin-top:4px">'+sp.lat.toFixed(5)+', '+sp.lng.toFixed(5)+'</div></div>',borderWidth:0,backgroundColor:'transparent',anchorSize:new naver.maps.Size(0,0)});
+              var scanList=logs.filter(function(l){return l.spotId===sp.id}).slice(0,5);
+              var listHtml=scanList.map(function(l){return '<div style="font-size:10px;color:#aaa;padding:2px 0">'+(l.visitor||'')+' '+new Date(l.time).toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})+'</div>'}).join('');
+              var iw=new naver.maps.InfoWindow({content:'<div style="padding:12px;min-width:180px;background:#111;color:#fff;border-radius:8px"><div style="font-size:14px;font-weight:700;margin-bottom:4px">'+sp.icon+' '+sp.name+'</div><div style="font-size:18px;font-weight:800;color:'+sp.color+';margin:4px 0">'+cnt+'명 <span style="font-size:11px;color:#888;font-weight:400">오늘</span></div>'+(listHtml||'<div style="font-size:10px;color:#555">기록 없음</div>')+'</div>',borderWidth:0,backgroundColor:'transparent',anchorSize:new naver.maps.Size(0,0)});
               iw.open(m,mk);
             });
           });
+          // 이동경로 그리기
+          if(portalPathPhone){
+            var visitor=getVisitorPaths().find(function(v){return v.phone===portalPathPhone});
+            if(visitor&&visitor.path.length>=2){
+              var pathCoords=[];
+              var sorted=visitor.path.slice().sort(function(a,b){return new Date(a.time)-new Date(b.time)});
+              sorted.forEach(function(p,i){
+                var sp=getSpotById(p.spotId);
+                if(!sp)return;
+                pathCoords.push(new naver.maps.LatLng(sp.lat,sp.lng));
+                new naver.maps.Marker({position:new naver.maps.LatLng(sp.lat,sp.lng),map:m,icon:{content:'<div style="width:22px;height:22px;border-radius:50%;background:#f59e0b;color:#000;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.4)">'+(i+1)+'</div>',anchor:new naver.maps.Point(11,11)}});
+              });
+              if(pathCoords.length>=2){
+                new naver.maps.Polyline({map:m,path:pathCoords,strokeColor:'#f59e0b',strokeWeight:3,strokeOpacity:0.9,strokeStyle:'shortdash'});
+              }
+            }
+          }
         }catch(e){console.error('portal map error:',e)}
       });
     },100);
   }
-
   return h;
 }
 

@@ -95,6 +95,29 @@ const STATE = {
   rentalBookings: [],
   spotScans: {},
   spotScanLogs: [],
+  visitCenter: {
+    crowds: [
+      { id: 'silkworm', name: '누에 생태관', icon: '🐛', level: 'low', note: '바로 입장 가능' },
+      { id: 'cabin', name: '오두막 체험', icon: '🏠', level: 'mid', note: '약 10분 대기' },
+      { id: 'shop', name: '매점', icon: '🏪', level: 'high', note: '사전주문 추천' },
+    ],
+    experiences: [
+      { id: 'exp-cabin', name: '오두막 체험', icon: '🏠', time: '11:00 / 13:30', badge: '오늘 가능', badgeColor: 'green', enabled: true },
+      { id: 'exp-silkworm', name: '누에 관찰 체험', icon: '🐛', time: '상시 운영', badge: '가족 추천', badgeColor: 'purple', enabled: true },
+      { id: 'exp-silk', name: '실크 만들기', icon: '🧵', time: '14:00', badge: '잔여 소수', badgeColor: 'orange', enabled: true },
+    ],
+    menuItems: [
+      { id: 'menu-1', name: '아이스크림', price: 3000, icon: '🍦', enabled: true },
+      { id: 'menu-2', name: '음료 세트', price: 5000, icon: '🥤', enabled: true },
+      { id: 'menu-3', name: '핫도그', price: 4000, icon: '🌭', enabled: true },
+    ],
+    notices: [
+      { id: 'notice-1', text: '오늘 날씨가 좋아 야외 체험이 원활합니다.', type: 'info', enabled: true },
+    ],
+    pickupTime: '11:30',
+    heroTitle: '잠사박물관 방문을\n1분 안에 준비하세요.',
+    heroDesc: '예약 확인부터 QR 입장, 추천 일정, 체험 예약, 주문, 문의까지\n모바일 하나로 간편하게 이용하세요.',
+  },
   config: {
     la2fdoci: { loginUrl: process.env.LA2F_URL || 'https://la2fdoci.com/partner/login.do', orderUrl: process.env.LA2F_ORDER || 'https://la2fdoci.com/partner/order/orderList.do', id: process.env.LA2F_ID || 'jamsa', pw: process.env.LA2F_PW || '1234' },
     naver: { bookingUrl: process.env.NAVER_URL || '', id: process.env.NAVER_ID || 'jamsa0433', pw: process.env.NAVER_PW || 'skyeduc0089@', placeId: process.env.NAVER_PLACE_ID || '4789821', bizId: process.env.NAVER_BIZ_ID || '507900', partnerBizId: process.env.NAVER_PARTNER_BIZ_ID || '784618', bizName: process.env.NAVER_BIZ_NAME || '한국잠사플레이팝', dateFrom: '', dateTo: '' },
@@ -7667,6 +7690,7 @@ app.get('/api/state', function(req, res) {
     experiences: STATE.experiences, expBookings: STATE.expBookings,
     rentals: STATE.rentals, rentalBookings: STATE.rentalBookings,
     spotScans: STATE.spotScans, spotScanLogs: (STATE.spotScanLogs || []).slice(0, 200),
+    visitCenter: STATE.visitCenter,
     config: {
       la2fdoci: { id: STATE.config.la2fdoci.id, pw: STATE.config.la2fdoci.pw, loginUrl: STATE.config.la2fdoci.loginUrl, orderUrl: STATE.config.la2fdoci.orderUrl },
       naver: { id: STATE.config.naver.id, pw: STATE.config.naver.pw, bookingUrl: STATE.config.naver.bookingUrl },
@@ -11624,6 +11648,39 @@ app.post('/api/spot/reset', function(req, res) {
   STATE.spotScanLogs = [];
   broadcast({ type: 'spotReset' });
   log('system', '📍 스팟 스캔 데이터 초기화', 'info');
+  res.json({ ok: true });
+});
+
+// ═══ 스마트 방문센터 관리 API ═══
+app.get('/api/visit-center', function(req, res) {
+  res.json({ ok: true, data: STATE.visitCenter });
+});
+
+app.post('/api/visit-center', function(req, res) {
+  var b = req.body;
+  if (!b.field) return res.json({ ok: false, error: 'field required' });
+  if (b.field === 'crowds') STATE.visitCenter.crowds = b.value;
+  else if (b.field === 'experiences') STATE.visitCenter.experiences = b.value;
+  else if (b.field === 'menuItems') STATE.visitCenter.menuItems = b.value;
+  else if (b.field === 'notices') STATE.visitCenter.notices = b.value;
+  else if (b.field === 'pickupTime') STATE.visitCenter.pickupTime = b.value;
+  else if (b.field === 'heroTitle') STATE.visitCenter.heroTitle = b.value;
+  else if (b.field === 'heroDesc') STATE.visitCenter.heroDesc = b.value;
+  else return res.json({ ok: false, error: 'unknown field' });
+  broadcast({ type: 'visitCenterUpdate', data: { field: b.field, value: b.value } });
+  log('visit', '방문센터 설정 변경: ' + b.field, 'success');
+  res.json({ ok: true });
+});
+
+app.post('/api/visit-center/crowd', function(req, res) {
+  var b = req.body;
+  if (!b.id || !b.level) return res.json({ ok: false, error: 'id and level required' });
+  var item = STATE.visitCenter.crowds.find(function(c) { return c.id === b.id; });
+  if (!item) return res.json({ ok: false, error: 'not found' });
+  item.level = b.level;
+  if (b.note !== undefined) item.note = b.note;
+  broadcast({ type: 'visitCenterUpdate', data: { field: 'crowds', value: STATE.visitCenter.crowds } });
+  log('visit', '혼잡도 변경: ' + item.name + ' → ' + b.level, 'info');
   res.json({ ok: true });
 });
 

@@ -278,8 +278,8 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
         <span class="hero-tag blue">📱 모바일 입장</span>
         <span class="hero-tag purple">🤖 AI 코스 추천</span>
       </div>
-      <h2>잠사박물관 방문을<br><em>1분 안에</em> 준비하세요.</h2>
-      <div class="hero-desc">예약 확인부터 QR 입장, 추천 일정, 체험 예약, 주문, 문의까지<br>모바일 하나로 간편하게 이용하세요.</div>
+      <h2 id="heroTitle">잠사박물관 방문을<br><em>1분 안에</em> 준비하세요.</h2>
+      <div class="hero-desc" id="heroDesc">예약 확인부터 QR 입장, 추천 일정, 체험 예약, 주문, 문의까지<br>모바일 하나로 간편하게 이용하세요.</div>
       <div class="hero-btns">
         <button class="hero-btn primary" onclick="switchTab('ticket')">🎫 티켓/QR 확인하기</button>
         <button class="hero-btn secondary" onclick="switchTab('schedule')">📅 추천 일정표 만들기</button>
@@ -369,6 +369,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
     <div class="triple-grid">
       <div class="info-card">
         <div class="info-card-title">실시간 혼잡도 <span class="badge" style="background:var(--blue-bg);color:var(--blue)">현장 안내</span></div>
+        <div id="crowdList">
         <div class="crowd-item">
           <div class="crowd-icon" style="background:var(--green-bg)">🐛</div>
           <div><div class="crowd-name">누에 생태관</div><div class="crowd-sub">바로 입장 가능</div></div>
@@ -384,10 +385,12 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
           <div><div class="crowd-name">매점</div><div class="crowd-sub">사전주문 추천</div></div>
           <span class="crowd-status high">혼잡</span>
         </div>
+        </div>
       </div>
 
       <div class="info-card">
         <div class="info-card-title">오늘 가능한 체험 <span class="badge" style="background:var(--green-bg);color:var(--green2)">전체 보기</span></div>
+        <div id="expList">
         <div class="exp-item">
           <div class="exp-thumb">🏠</div>
           <div class="exp-info"><div class="exp-name">오두막 체험</div><div class="exp-time">11:00 / 13:30</div></div>
@@ -403,6 +406,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
           <div class="exp-info"><div class="exp-name">실크 만들기</div><div class="exp-time">14:00</div></div>
           <span class="exp-badge" style="background:var(--orange-bg);color:var(--orange)">잔여 소수</span>
         </div>
+        </div>
       </div>
 
       <!-- 매점 사전주문 -->
@@ -410,9 +414,10 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
         <div class="info-card-title">매점 / 식당 사전주문 <span class="badge" style="background:var(--orange-bg);color:var(--orange)">대기시간 줄이기</span></div>
         <div class="order-banner">
           <span class="order-banner-icon">⏱</span>
-          <div class="order-banner-text">지금 주문하면 <b>11:30 픽업 가능</b><br><span style="font-size:10px;opacity:.7">현장 결제 또는 온라인 결제와 연결할 수 있습니다.</span></div>
+          <div class="order-banner-text">지금 주문하면 <b id="pickupTime">11:30</b> 픽업 가능<br><span style="font-size:10px;opacity:.7">현장 결제 또는 온라인 결제와 연결할 수 있습니다.</span></div>
         </div>
-        <div class="order-btns">
+        <div id="noticeArea"></div>
+        <div class="order-btns" id="menuBtns">
           <div class="order-btn" onclick="showToast('메뉴 준비 중입니다','info')">
             <div class="order-btn-icon">🍿</div>
             <div class="order-btn-label">간식 보기</div>
@@ -598,14 +603,96 @@ var params = new URLSearchParams(location.search);
 var ticketId = params.get('t') || '';
 var ticketCode = params.get('code') || '';
 
+var vcData = null;
+
 // ═══ 초기 로드 ═══
 window.addEventListener('DOMContentLoaded', function() {
   initTabs();
+  loadVisitCenter();
   if (ticketId || ticketCode) {
     loadTicket(ticketId || ticketCode);
   }
   updatePplFromTicket();
 });
+
+// ═══ 방문센터 데이터 로드 ═══
+async function loadVisitCenter() {
+  try {
+    var r = await fetch('/api/visit-center');
+    var d = await r.json();
+    if (d.ok) { vcData = d.data; applyVisitCenterData(); }
+  } catch(e) {}
+}
+
+function applyVisitCenterData() {
+  if (!vcData) return;
+  // 혼잡도
+  var crowdEl = document.getElementById('crowdList');
+  if (crowdEl && vcData.crowds) {
+    var ch = '';
+    var levelColors = {low:'var(--green-bg)',mid:'var(--orange-bg)',high:'var(--red-bg)'};
+    var levelTextColors = {low:'var(--green2)',mid:'var(--orange)',high:'var(--red)'};
+    var levelLabels = {low:'여유',mid:'보통',high:'혼잡'};
+    var levelIconBg = {low:'var(--green-bg)',mid:'var(--orange-bg)',high:'var(--red-bg)'};
+    vcData.crowds.forEach(function(c) {
+      ch += '<div class="crowd-item">'
+        + '<div class="crowd-icon" style="background:' + (levelIconBg[c.level]||'var(--green-bg)') + '">' + c.icon + '</div>'
+        + '<div><div class="crowd-name">' + c.name + '</div><div class="crowd-sub">' + c.note + '</div></div>'
+        + '<span class="crowd-status ' + c.level + '">' + (levelLabels[c.level]||c.level) + '</span></div>';
+    });
+    crowdEl.innerHTML = ch;
+  }
+  // 체험
+  var expEl = document.getElementById('expList');
+  if (expEl && vcData.experiences) {
+    var eh = '';
+    var badgeColors = {green:'var(--green-bg);color:var(--green2)',purple:'var(--purple-bg);color:var(--purple)',orange:'var(--orange-bg);color:var(--orange)',blue:'var(--blue-bg);color:var(--blue)',pink:'var(--pink-bg);color:var(--pink)'};
+    vcData.experiences.filter(function(e){return e.enabled}).forEach(function(e) {
+      eh += '<div class="exp-item"><div class="exp-thumb">' + e.icon + '</div>'
+        + '<div class="exp-info"><div class="exp-name">' + e.name + '</div><div class="exp-time">' + e.time + '</div></div>'
+        + '<span class="exp-badge" style="background:' + (badgeColors[e.badgeColor]||badgeColors.green) + '">' + e.badge + '</span></div>';
+    });
+    expEl.innerHTML = eh;
+  }
+  // 매점 메뉴
+  var menuEl = document.getElementById('menuBtns');
+  if (menuEl && vcData.menuItems) {
+    var mh = '';
+    vcData.menuItems.filter(function(m){return m.enabled}).forEach(function(m) {
+      mh += '<div class="order-btn" onclick="showToast(\'' + m.name + ' ' + m.price.toLocaleString() + '원\',\'info\')">'
+        + '<div class="order-btn-icon">' + m.icon + '</div>'
+        + '<div class="order-btn-label">' + m.name + '<br><span style="font-size:9px;color:var(--sub)">' + m.price.toLocaleString() + '원</span></div></div>';
+    });
+    menuEl.innerHTML = mh;
+  }
+  // 픽업시간
+  var pickupEl = document.getElementById('pickupTime');
+  if (pickupEl && vcData.pickupTime) pickupEl.textContent = vcData.pickupTime;
+  // 히어로
+  if (vcData.heroTitle) {
+    var heroH2 = document.getElementById('heroTitle');
+    if (heroH2) {
+      var parts = vcData.heroTitle.split('\n');
+      heroH2.innerHTML = parts[0] + '<br><em>' + (parts[1]||'') + '</em>';
+    }
+  }
+  if (vcData.heroDesc) {
+    var heroDesc = document.getElementById('heroDesc');
+    if (heroDesc) heroDesc.innerHTML = vcData.heroDesc.replace(/\n/g, '<br>');
+  }
+  // 공지
+  var noticeEl = document.getElementById('noticeArea');
+  if (noticeEl && vcData.notices) {
+    var nh = '';
+    var nIcons = {info:'ℹ️',warn:'⚠️',event:'🎉'};
+    var nColors = {info:'var(--blue)',warn:'var(--orange)',event:'var(--pink)'};
+    vcData.notices.filter(function(n){return n.enabled}).forEach(function(n) {
+      nh += '<div style="padding:8px 12px;background:rgba(88,166,255,.06);border-radius:8px;margin-bottom:6px;font-size:11px;color:' + (nColors[n.type]||'var(--sub)') + ';display:flex;align-items:center;gap:6px">'
+        + '<span>' + (nIcons[n.type]||'ℹ️') + '</span>' + n.text + '</div>';
+    });
+    noticeEl.innerHTML = nh;
+  }
+}
 
 // ═══ 탭 전환 ═══
 function initTabs() {

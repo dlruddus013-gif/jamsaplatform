@@ -253,7 +253,7 @@ function render(){
   var avail=S.tickets.filter(isU).length;
   var todayExpCnt=(S.expBookings||[]).filter(function(b){return b.date===new Date().toISOString().split('T')[0]}).length;
   var todayRenCnt=(S.rentalBookings||[]).filter(function(b){return b.date===new Date().toISOString().split('T')[0]}).length;
-  var TABS=[{id:'scan',l:'📷 스캔',n:avail},{id:'issue',l:'🎫 발권'},{id:'experience',l:'🎯 체험',n:todayExpCnt},{id:'rental',l:'🏕️ 대여',n:todayRenCnt},{id:'tickets',l:'📋 티켓',n:S.tickets.length},{id:'useLog',l:'📊 사용이력',n:(S.useHistory||[]).length},{id:'pos',l:'₩ 매출'},{id:'posTime',l:'⏰ 시간대'},{id:'daily',l:'📋 마감일지'},{id:'msg',l:'📱 메시지'},{id:'portal',l:'🗺️ 포털관리'},{id:'crawl',l:'🔄 크롤링'},{id:'ai',l:'🤖 AI진단',n:S.aiAlerts||0},{id:'add',l:'➕ 수동'},{id:'settings',l:'🔗 설정'},{id:'logs',l:'📋 로그'}];
+  var TABS=[{id:'scan',l:'📷 스캔',n:avail},{id:'issue',l:'🎫 발권'},{id:'experience',l:'🎯 체험',n:todayExpCnt},{id:'rental',l:'🏕️ 대여',n:todayRenCnt},{id:'tickets',l:'📋 티켓',n:S.tickets.length},{id:'useLog',l:'📊 사용이력',n:(S.useHistory||[]).length},{id:'pos',l:'₩ 매출'},{id:'posTime',l:'⏰ 시간대'},{id:'daily',l:'📋 마감일지'},{id:'msg',l:'📱 메시지'},{id:'visitMgr',l:'📱 방문센터'},{id:'portal',l:'🗺️ 포털관리'},{id:'crawl',l:'🔄 크롤링'},{id:'ai',l:'🤖 AI진단',n:S.aiAlerts||0},{id:'add',l:'➕ 수동'},{id:'settings',l:'🔗 설정'},{id:'logs',l:'📋 로그'}];
   $('tabBar').innerHTML=TABS.map(function(t){return '<button onclick="switchTab(\''+t.id+'\')" style="padding:6px 10px;border-radius:5px;border:none;background:'+(tab===t.id?'rgba(16,185,129,.12)':'transparent')+';color:'+(tab===t.id?'#10b981':'#555')+';cursor:pointer;font-size:11px;font-weight:'+(tab===t.id?700:500)+';white-space:nowrap;font-family:inherit;display:flex;align-items:center;gap:3px">'+t.l+(t.n>0?'<span style="background:'+(tab===t.id?'#10b981':'#333')+';color:'+(tab===t.id?'#fff':'#888')+';font-size:8px;font-weight:700;padding:1px 4px;border-radius:8px;min-width:14px;text-align:center">'+t.n+'</span>':'')+'</button>'}).join('');
   var el=$('content');
   dbg('tabBar set, content el='+(el?'OK':'NULL'));
@@ -268,6 +268,7 @@ function render(){
   else if(tab==='posTime')html=renderPosTime();
   else if(tab==='daily')html=renderDailyReport();
   else if(tab==='msg')html=renderMsg();
+  else if(tab==='visitMgr')html=renderVisitMgr();
   else if(tab==='portal')html=renderPortal();
   else if(tab==='crawl')html=renderCrawl();
   else if(tab==='ai')html=renderAI();
@@ -4962,6 +4963,272 @@ function getVisitorPaths(){
   return Object.values(byPhone).filter(function(v){return v.path.length>=2}).sort(function(a,b){return b.path.length-a.path.length});
 }
 var portalPathPhone='';
+// ═══ 스마트 방문센터 관리 ═══
+var vcSub='overview';
+function renderVisitMgr(){
+  var vc=S.visitCenter||{crowds:[],experiences:[],menuItems:[],notices:[],pickupTime:'11:30',heroTitle:'',heroDesc:''};
+  var h='<div style="max-width:1100px;margin:0 auto;animation:fadeIn .3s">';
+  // 서브탭
+  var subs=[{id:'overview',l:'📊 대시보드'},{id:'crowd',l:'🚦 혼잡도'},{id:'exp',l:'⭐ 체험'},{id:'menu',l:'🍱 매점메뉴'},{id:'notice',l:'📢 공지'},{id:'design',l:'🎨 디자인'},{id:'preview',l:'👁 미리보기'}];
+  h+='<div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:14px">';
+  subs.forEach(function(s){h+='<button onclick="vcSub=\''+s.id+'\';render()" class="btn" style="padding:6px 12px;background:'+(vcSub===s.id?'rgba(88,166,255,.15)':'rgba(255,255,255,.03)')+';color:'+(vcSub===s.id?'#58a6ff':'#888')+';border:1px solid '+(vcSub===s.id?'#58a6ff30':'#333')+';border-radius:6px;font-size:11px;font-weight:'+(vcSub===s.id?700:500)+'">'+s.l+'</button>'});
+  h+='</div>';
+
+  if(vcSub==='overview'){
+    // 통계 카드
+    h+='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;margin-bottom:14px">';
+    var baseUrl=S.config&&S.config.msg&&S.config.msg.baseUrl?S.config.msg.baseUrl:location.origin;
+    h+='<div class="card" style="padding:10px 14px;border-left:3px solid #58a6ff"><div style="font-size:9px;color:#888">포털 URL</div><div style="font-size:11px;font-weight:700;color:#58a6ff;word-break:break-all"><a href="'+baseUrl+'/v" target="_blank" style="color:#58a6ff">'+baseUrl+'/v</a></div></div>';
+    h+='<div class="card" style="padding:10px 14px;border-left:3px solid #2ea043"><div style="font-size:9px;color:#888">혼잡도 항목</div><div style="font-size:20px;font-weight:800;color:#2ea043">'+(vc.crowds||[]).length+'</div></div>';
+    h+='<div class="card" style="padding:10px 14px;border-left:3px solid #bc8cff"><div style="font-size:9px;color:#888">체험 항목</div><div style="font-size:20px;font-weight:800;color:#bc8cff">'+(vc.experiences||[]).length+'</div></div>';
+    h+='<div class="card" style="padding:10px 14px;border-left:3px solid #d29922"><div style="font-size:9px;color:#888">매점 메뉴</div><div style="font-size:20px;font-weight:800;color:#d29922">'+(vc.menuItems||[]).length+'</div></div>';
+    h+='<div class="card" style="padding:10px 14px;border-left:3px solid #f778ba"><div style="font-size:9px;color:#888">공지사항</div><div style="font-size:20px;font-weight:800;color:#f778ba">'+(vc.notices||[]).filter(function(n){return n.enabled}).length+'</div></div>';
+    h+='<div class="card" style="padding:10px 14px;border-left:3px solid #39d2c0"><div style="font-size:9px;color:#888">픽업시간</div><div style="font-size:20px;font-weight:800;color:#39d2c0">'+(vc.pickupTime||'-')+'</div></div>';
+    h+='</div>';
+
+    // SMS 연동 안내
+    h+='<div class="card" style="margin-bottom:14px;padding:14px;border:1px solid #2ea04330">'
+      +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span style="font-size:16px">📱</span><span style="font-size:14px;font-weight:700;color:#2ea043">SMS 자동 발송 연동</span></div>'
+      +'<div style="font-size:11px;color:#aaa;line-height:1.8">'
+      +'고객이 구매하면 입장권 안내 문자에 <b style="color:#58a6ff">스마트 방문센터 URL</b>이 자동 포함됩니다.<br>'
+      +'템플릿 변수: <code style="background:#1a1a3a;padding:2px 6px;border-radius:4px;color:#f59e0b">{visitUrl}</code> → '+baseUrl+'/v?t=티켓ID<br>'
+      +'메시지 탭에서 welcome 템플릿을 확인하세요.</div></div>';
+
+    // 실시간 혼잡도 요약
+    h+='<div class="card" style="margin-bottom:14px"><div style="font-size:13px;font-weight:700;color:#58a6ff;margin-bottom:10px">🚦 현재 혼잡도 (고객에게 표시 중)</div>';
+    (vc.crowds||[]).forEach(function(c){
+      var colors={low:'#2ea043',mid:'#d29922',high:'#f85149'};
+      var labels={low:'여유',mid:'보통',high:'혼잡'};
+      h+='<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid #1a1a3a">'
+        +'<span style="font-size:18px">'+c.icon+'</span>'
+        +'<div style="flex:1"><span style="font-size:12px;font-weight:700;color:#fff">'+c.name+'</span><br><span style="font-size:10px;color:#888">'+c.note+'</span></div>'
+        +'<span style="padding:3px 10px;border-radius:8px;font-size:11px;font-weight:700;background:'+(colors[c.level]||'#666')+'20;color:'+(colors[c.level]||'#666')+'">'+(labels[c.level]||c.level)+'</span>'
+        +'<div style="display:flex;gap:2px">';
+      ['low','mid','high'].forEach(function(lv){
+        h+='<button onclick="updateCrowd(\''+c.id+'\',\''+lv+'\')" class="btn" style="padding:3px 6px;font-size:8px;border-radius:4px;background:'+(c.level===lv?(colors[lv]+'30'):'transparent')+';color:'+(colors[lv]||'#888')+';border:1px solid '+(c.level===lv?(colors[lv]+'50'):'#333')+'">'+(labels[lv])+'</button>';
+      });
+      h+='</div></div>';
+    });
+    h+='</div>';
+
+    // 체험 요약
+    h+='<div class="card" style="margin-bottom:14px"><div style="font-size:13px;font-weight:700;color:#bc8cff;margin-bottom:10px">⭐ 오늘 체험 (고객에게 표시 중)</div>';
+    (vc.experiences||[]).forEach(function(e){
+      h+='<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #1a1a3a">'
+        +'<span style="font-size:16px">'+e.icon+'</span>'
+        +'<span style="flex:1;font-size:12px;font-weight:600;color:#fff">'+e.name+'</span>'
+        +'<span style="font-size:10px;color:#888">'+e.time+'</span>'
+        +'<span style="padding:2px 8px;border-radius:6px;font-size:9px;font-weight:700;background:rgba(188,140,255,.1);color:#bc8cff">'+e.badge+'</span>'
+        +'<span style="font-size:9px;color:'+(e.enabled?'#2ea043':'#f85149')+'">'+(e.enabled?'ON':'OFF')+'</span></div>';
+    });
+    h+='</div>';
+  }
+
+  else if(vcSub==='crowd'){
+    h+='<div class="card" style="margin-bottom:14px"><div style="font-size:14px;font-weight:700;color:#58a6ff;margin-bottom:12px">🚦 혼잡도 실시간 관리</div>'
+      +'<div style="font-size:11px;color:#888;margin-bottom:14px">고객 방문센터에 즉시 반영됩니다. 한 번 클릭으로 변경!</div>';
+    (vc.crowds||[]).forEach(function(c,i){
+      var colors={low:'#2ea043',mid:'#d29922',high:'#f85149'};
+      var labels={low:'여유',mid:'보통',high:'혼잡'};
+      h+='<div style="background:#111128;border-radius:12px;padding:14px;margin-bottom:8px;border:1px solid '+(colors[c.level]||'#333')+'30">'
+        +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">'
+        +'<span style="font-size:28px">'+c.icon+'</span>'
+        +'<div style="flex:1"><div style="font-size:15px;font-weight:800;color:#fff">'+c.name+'</div>'
+        +'<div style="font-size:10px;color:#888">ID: '+c.id+'</div></div>'
+        +'<span style="padding:6px 16px;border-radius:10px;font-size:14px;font-weight:800;background:'+(colors[c.level]||'#666')+'25;color:'+(colors[c.level]||'#666')+'">'+(labels[c.level]||c.level)+'</span></div>'
+        +'<div style="display:flex;gap:6px;margin-bottom:10px">';
+      ['low','mid','high'].forEach(function(lv){
+        h+='<button onclick="updateCrowd(\''+c.id+'\',\''+lv+'\')" class="btn" style="flex:1;padding:10px 0;font-size:13px;font-weight:700;border-radius:8px;background:'+(c.level===lv?(colors[lv]):'#1a1a3a')+';color:'+(c.level===lv?'#fff':(colors[lv]||'#888'))+';border:'+(c.level===lv?'none':'1px solid #333')+'">'+(labels[lv])+'</button>';
+      });
+      h+='</div>'
+        +'<div style="display:flex;gap:6px;align-items:center">'
+        +'<input id="vcCrowdNote'+i+'" value="'+c.note+'" placeholder="상태 메모 (예: 약 10분 대기)" style="flex:1;padding:8px;background:#0d1117;border:1px solid #333;border-radius:6px;color:#fff;font-size:12px">'
+        +'<button onclick="updateCrowdNote(\''+c.id+'\',document.getElementById(\'vcCrowdNote'+i+'\').value)" class="btn" style="padding:8px 14px;background:#58a6ff;color:#fff;border-radius:6px;font-size:11px;font-weight:700">저장</button></div></div>';
+    });
+    // 혼잡도 항목 추가
+    h+='<div style="margin-top:10px;display:flex;gap:6px">'
+      +'<input id="vcNewCrowdName" placeholder="구역 이름" style="flex:1;padding:8px;background:#0d1117;border:1px solid #333;border-radius:6px;color:#fff;font-size:12px">'
+      +'<input id="vcNewCrowdIcon" placeholder="아이콘" value="📍" style="width:60px;padding:8px;background:#0d1117;border:1px solid #333;border-radius:6px;color:#fff;font-size:12px;text-align:center">'
+      +'<button onclick="addCrowd()" class="btn" style="padding:8px 14px;background:#2ea043;color:#fff;border-radius:6px;font-size:11px;font-weight:700">+ 추가</button></div>';
+    h+='</div>';
+  }
+
+  else if(vcSub==='exp'){
+    h+='<div class="card" style="margin-bottom:14px"><div style="font-size:14px;font-weight:700;color:#bc8cff;margin-bottom:12px">⭐ 체험 프로그램 관리</div>'
+      +'<div style="font-size:11px;color:#888;margin-bottom:14px">고객 방문센터 "오늘 가능한 체험" 섹션에 표시됩니다.</div>';
+    (vc.experiences||[]).forEach(function(e,i){
+      h+='<div style="background:#111128;border-radius:12px;padding:14px;margin-bottom:8px;border-left:3px solid '+(e.enabled?'#bc8cff':'#333')+';opacity:'+(e.enabled?1:.5)+'">'
+        +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">'
+        +'<span style="font-size:22px">'+e.icon+'</span>'
+        +'<div style="flex:1"><div style="font-size:13px;font-weight:700;color:#fff">'+e.name+'</div></div>'
+        +'<button onclick="toggleExpEnabled('+i+')" class="btn" style="padding:4px 10px;font-size:10px;border-radius:4px;background:'+(e.enabled?'rgba(46,160,67,.1)':'rgba(248,81,73,.1)')+';color:'+(e.enabled?'#2ea043':'#f85149')+';border:1px solid '+(e.enabled?'#2ea04330':'#f8514930')+'">'+(e.enabled?'ON':'OFF')+'</button></div>'
+        +'<div style="display:grid;grid-template-columns:1fr 1fr 60px;gap:6px">'
+        +'<input id="vcExpTime'+i+'" value="'+e.time+'" placeholder="시간" style="padding:6px;background:#0d1117;border:1px solid #333;border-radius:4px;color:#fff;font-size:11px">'
+        +'<input id="vcExpBadge'+i+'" value="'+e.badge+'" placeholder="배지텍스트" style="padding:6px;background:#0d1117;border:1px solid #333;border-radius:4px;color:#fff;font-size:11px">'
+        +'<button onclick="updateExp('+i+')" class="btn" style="padding:6px;background:#58a6ff;color:#fff;border-radius:4px;font-size:10px;font-weight:700">저장</button></div></div>';
+    });
+    h+='<div style="margin-top:10px;display:flex;gap:4px">'
+      +'<input id="vcNewExpIcon" placeholder="🎯" value="🎯" style="width:50px;padding:8px;background:#0d1117;border:1px solid #333;border-radius:6px;color:#fff;font-size:12px;text-align:center">'
+      +'<input id="vcNewExpName" placeholder="체험명" style="flex:1;padding:8px;background:#0d1117;border:1px solid #333;border-radius:6px;color:#fff;font-size:12px">'
+      +'<input id="vcNewExpTime" placeholder="시간" style="width:100px;padding:8px;background:#0d1117;border:1px solid #333;border-radius:6px;color:#fff;font-size:12px">'
+      +'<button onclick="addExp()" class="btn" style="padding:8px 14px;background:#2ea043;color:#fff;border-radius:6px;font-size:11px;font-weight:700">+</button></div>';
+    h+='</div>';
+  }
+
+  else if(vcSub==='menu'){
+    h+='<div class="card" style="margin-bottom:14px"><div style="font-size:14px;font-weight:700;color:#d29922;margin-bottom:12px">🍱 매점 메뉴 관리</div>'
+      +'<div style="font-size:11px;color:#888;margin-bottom:6px">픽업시간: <input id="vcPickup" value="'+(vc.pickupTime||'')+'" style="width:60px;padding:4px;background:#0d1117;border:1px solid #333;border-radius:4px;color:#fff;font-size:11px;text-align:center"> '
+      +'<button onclick="api(\'visit-center\',{field:\'pickupTime\',value:document.getElementById(\'vcPickup\').value}).then(function(){toast(\'✅ 저장\',\'success\');loadState()})" class="btn" style="padding:4px 8px;background:#d29922;color:#fff;font-size:9px;border-radius:4px">저장</button></div>';
+    (vc.menuItems||[]).forEach(function(m,i){
+      h+='<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid #1a1a3a">'
+        +'<span style="font-size:18px">'+m.icon+'</span>'
+        +'<input id="vcMenuName'+i+'" value="'+m.name+'" style="flex:1;padding:6px;background:#0d1117;border:1px solid #333;border-radius:4px;color:#fff;font-size:12px">'
+        +'<input id="vcMenuPrice'+i+'" value="'+m.price+'" type="number" style="width:80px;padding:6px;background:#0d1117;border:1px solid #333;border-radius:4px;color:#fff;font-size:12px;text-align:right">'
+        +'<span style="font-size:10px;color:#888">원</span>'
+        +'<button onclick="updateMenuItem('+i+')" class="btn" style="padding:4px 8px;background:#58a6ff;color:#fff;border-radius:4px;font-size:9px">저장</button>'
+        +'<button onclick="deleteMenuItem('+i+')" class="btn" style="padding:4px 8px;background:rgba(248,81,73,.1);color:#f85149;border-radius:4px;font-size:9px;border:1px solid #f8514920">삭제</button></div>';
+    });
+    h+='<div style="margin-top:10px;display:flex;gap:4px">'
+      +'<input id="vcNewMenuIcon" placeholder="🍕" value="🍕" style="width:50px;padding:8px;background:#0d1117;border:1px solid #333;border-radius:6px;color:#fff;font-size:12px;text-align:center">'
+      +'<input id="vcNewMenuName" placeholder="메뉴명" style="flex:1;padding:8px;background:#0d1117;border:1px solid #333;border-radius:6px;color:#fff;font-size:12px">'
+      +'<input id="vcNewMenuPrice" placeholder="가격" type="number" style="width:80px;padding:8px;background:#0d1117;border:1px solid #333;border-radius:6px;color:#fff;font-size:12px;text-align:right">'
+      +'<button onclick="addMenuItem()" class="btn" style="padding:8px 14px;background:#2ea043;color:#fff;border-radius:6px;font-size:11px;font-weight:700">+</button></div>';
+    h+='</div>';
+  }
+
+  else if(vcSub==='notice'){
+    h+='<div class="card" style="margin-bottom:14px"><div style="font-size:14px;font-weight:700;color:#f778ba;margin-bottom:12px">📢 공지사항 관리</div>'
+      +'<div style="font-size:11px;color:#888;margin-bottom:14px">고객 방문센터에 표시되는 안내 문구입니다.</div>';
+    (vc.notices||[]).forEach(function(n,i){
+      h+='<div style="display:flex;align-items:center;gap:6px;padding:8px 0;border-bottom:1px solid #1a1a3a">'
+        +'<button onclick="toggleNotice('+i+')" class="btn" style="padding:4px 8px;font-size:9px;border-radius:4px;background:'+(n.enabled?'rgba(46,160,67,.1)':'rgba(248,81,73,.1)')+';color:'+(n.enabled?'#2ea043':'#f85149')+';border:1px solid '+(n.enabled?'#2ea04330':'#f8514930')+'">'+(n.enabled?'ON':'OFF')+'</button>'
+        +'<input id="vcNotice'+i+'" value="'+n.text.replace(/"/g,'&quot;')+'" style="flex:1;padding:6px;background:#0d1117;border:1px solid #333;border-radius:4px;color:#fff;font-size:12px">'
+        +'<select id="vcNoticeType'+i+'" style="padding:6px;background:#0d1117;border:1px solid #333;border-radius:4px;color:#fff;font-size:10px">'
+        +'<option value="info"'+(n.type==='info'?' selected':'')+'>ℹ️ 안내</option>'
+        +'<option value="warn"'+(n.type==='warn'?' selected':'')+'>⚠️ 주의</option>'
+        +'<option value="event"'+(n.type==='event'?' selected':'')+'>🎉 이벤트</option></select>'
+        +'<button onclick="updateNotice('+i+')" class="btn" style="padding:4px 8px;background:#58a6ff;color:#fff;border-radius:4px;font-size:9px">저장</button>'
+        +'<button onclick="deleteNotice('+i+')" class="btn" style="padding:4px 8px;background:rgba(248,81,73,.1);color:#f85149;border-radius:4px;font-size:9px;border:1px solid #f8514920">X</button></div>';
+    });
+    h+='<div style="margin-top:10px;display:flex;gap:4px">'
+      +'<input id="vcNewNotice" placeholder="공지 내용" style="flex:1;padding:8px;background:#0d1117;border:1px solid #333;border-radius:6px;color:#fff;font-size:12px">'
+      +'<button onclick="addNotice()" class="btn" style="padding:8px 14px;background:#2ea043;color:#fff;border-radius:6px;font-size:11px;font-weight:700">+ 추가</button></div>';
+    h+='</div>';
+  }
+
+  else if(vcSub==='design'){
+    h+='<div class="card" style="margin-bottom:14px"><div style="font-size:14px;font-weight:700;color:#58a6ff;margin-bottom:12px">🎨 히어로 영역 편집</div>'
+      +'<div style="margin-bottom:10px"><div style="font-size:11px;color:#888;margin-bottom:4px">메인 제목 (\\n으로 줄바꿈)</div>'
+      +'<textarea id="vcHeroTitle" rows="2" style="width:100%;padding:10px;background:#0d1117;border:1px solid #333;border-radius:8px;color:#fff;font-size:14px;font-weight:700;resize:none">'+(vc.heroTitle||'').replace(/\n/g,'\n')+'</textarea></div>'
+      +'<div style="margin-bottom:10px"><div style="font-size:11px;color:#888;margin-bottom:4px">설명 텍스트</div>'
+      +'<textarea id="vcHeroDesc" rows="2" style="width:100%;padding:10px;background:#0d1117;border:1px solid #333;border-radius:8px;color:#fff;font-size:12px;resize:none">'+(vc.heroDesc||'').replace(/\n/g,'\n')+'</textarea></div>'
+      +'<button onclick="saveDesign()" class="btn" style="padding:10px 24px;background:#2ea043;color:#fff;border-radius:8px;font-size:13px;font-weight:700">💾 저장</button></div>';
+  }
+
+  else if(vcSub==='preview'){
+    var baseUrl=S.config&&S.config.msg&&S.config.msg.baseUrl?S.config.msg.baseUrl:location.origin;
+    h+='<div class="card" style="margin-bottom:14px;padding:14px">'
+      +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">'
+      +'<span style="font-size:14px;font-weight:700;color:#58a6ff">👁 미리보기</span>'
+      +'<a href="'+baseUrl+'/v" target="_blank" class="btn" style="padding:6px 14px;background:#2ea043;color:#fff;border-radius:6px;font-size:11px;font-weight:700;text-decoration:none">새 창에서 열기 ↗</a></div>'
+      +'<iframe src="/v" style="width:100%;height:700px;border:2px solid #333;border-radius:12px;background:#0d1117"></iframe></div>';
+  }
+
+  h+='</div>';
+  return h;
+}
+
+// ═══ 방문센터 관리 함수들 ═══
+function updateCrowd(id,level){
+  api('visit-center/crowd',{id:id,level:level}).then(function(){toast('✅ 혼잡도 변경','success');loadState()});
+}
+function updateCrowdNote(id,note){
+  var vc=S.visitCenter||{};var crowds=vc.crowds||[];
+  var item=crowds.find(function(c){return c.id===id});
+  if(item){item.note=note;api('visit-center',{field:'crowds',value:crowds}).then(function(){toast('✅ 메모 저장','success');loadState()})}
+}
+function addCrowd(){
+  var name=document.getElementById('vcNewCrowdName').value.trim();
+  var icon=document.getElementById('vcNewCrowdIcon').value.trim()||'📍';
+  if(!name)return toast('이름을 입력하세요','info');
+  var vc=S.visitCenter||{};var crowds=vc.crowds||[];
+  crowds.push({id:'crowd-'+Date.now(),name:name,icon:icon,level:'low',note:''});
+  api('visit-center',{field:'crowds',value:crowds}).then(function(){toast('✅ 추가됨','success');loadState()});
+}
+function toggleExpEnabled(i){
+  var vc=S.visitCenter||{};var exps=vc.experiences||[];
+  if(exps[i])exps[i].enabled=!exps[i].enabled;
+  api('visit-center',{field:'experiences',value:exps}).then(function(){toast('✅ 변경됨','success');loadState()});
+}
+function updateExp(i){
+  var vc=S.visitCenter||{};var exps=vc.experiences||[];
+  if(!exps[i])return;
+  exps[i].time=document.getElementById('vcExpTime'+i).value;
+  exps[i].badge=document.getElementById('vcExpBadge'+i).value;
+  api('visit-center',{field:'experiences',value:exps}).then(function(){toast('✅ 저장','success');loadState()});
+}
+function addExp(){
+  var icon=document.getElementById('vcNewExpIcon').value.trim()||'🎯';
+  var name=document.getElementById('vcNewExpName').value.trim();
+  var time=document.getElementById('vcNewExpTime').value.trim()||'상시';
+  if(!name)return toast('체험명을 입력하세요','info');
+  var vc=S.visitCenter||{};var exps=vc.experiences||[];
+  exps.push({id:'exp-'+Date.now(),name:name,icon:icon,time:time,badge:'신규',badgeColor:'green',enabled:true});
+  api('visit-center',{field:'experiences',value:exps}).then(function(){toast('✅ 추가됨','success');loadState()});
+}
+function updateMenuItem(i){
+  var vc=S.visitCenter||{};var items=vc.menuItems||[];
+  if(!items[i])return;
+  items[i].name=document.getElementById('vcMenuName'+i).value;
+  items[i].price=parseInt(document.getElementById('vcMenuPrice'+i).value)||0;
+  api('visit-center',{field:'menuItems',value:items}).then(function(){toast('✅ 저장','success');loadState()});
+}
+function deleteMenuItem(i){
+  var vc=S.visitCenter||{};var items=vc.menuItems||[];
+  items.splice(i,1);
+  api('visit-center',{field:'menuItems',value:items}).then(function(){toast('✅ 삭제됨','success');loadState()});
+}
+function addMenuItem(){
+  var icon=document.getElementById('vcNewMenuIcon').value.trim()||'🍕';
+  var name=document.getElementById('vcNewMenuName').value.trim();
+  var price=parseInt(document.getElementById('vcNewMenuPrice').value)||0;
+  if(!name)return toast('메뉴명을 입력하세요','info');
+  var vc=S.visitCenter||{};var items=vc.menuItems||[];
+  items.push({id:'menu-'+Date.now(),name:name,price:price,icon:icon,enabled:true});
+  api('visit-center',{field:'menuItems',value:items}).then(function(){toast('✅ 추가됨','success');loadState()});
+}
+function toggleNotice(i){
+  var vc=S.visitCenter||{};var notices=vc.notices||[];
+  if(notices[i])notices[i].enabled=!notices[i].enabled;
+  api('visit-center',{field:'notices',value:notices}).then(function(){toast('✅ 변경됨','success');loadState()});
+}
+function updateNotice(i){
+  var vc=S.visitCenter||{};var notices=vc.notices||[];
+  if(!notices[i])return;
+  notices[i].text=document.getElementById('vcNotice'+i).value;
+  notices[i].type=document.getElementById('vcNoticeType'+i).value;
+  api('visit-center',{field:'notices',value:notices}).then(function(){toast('✅ 저장','success');loadState()});
+}
+function deleteNotice(i){
+  var vc=S.visitCenter||{};var notices=vc.notices||[];
+  notices.splice(i,1);
+  api('visit-center',{field:'notices',value:notices}).then(function(){toast('✅ 삭제됨','success');loadState()});
+}
+function addNotice(){
+  var text=document.getElementById('vcNewNotice').value.trim();
+  if(!text)return toast('내용을 입력하세요','info');
+  var vc=S.visitCenter||{};var notices=vc.notices||[];
+  notices.push({id:'notice-'+Date.now(),text:text,type:'info',enabled:true});
+  api('visit-center',{field:'notices',value:notices}).then(function(){toast('✅ 추가됨','success');loadState()});
+}
+function saveDesign(){
+  var title=document.getElementById('vcHeroTitle').value;
+  var desc=document.getElementById('vcHeroDesc').value;
+  api('visit-center',{field:'heroTitle',value:title}).then(function(){
+    return api('visit-center',{field:'heroDesc',value:desc});
+  }).then(function(){toast('✅ 디자인 저장','success');loadState()});
+}
+
 function renderPortal(){
   var h='<div style="max-width:1100px;margin:0 auto;animation:fadeIn .3s">';
   var todayStr=new Date().toISOString().split('T')[0];

@@ -79,7 +79,7 @@ function debouncedRender(){if(_renderTimer)clearTimeout(_renderTimer);_renderTim
 var pwCache={la2fdoci:'',naver:'',okpos:''};
 var authUser=null,pinInput='';
 var selExp='exp1',selExpDate=new Date().toISOString().split('T')[0];
-var selRentalType='all',selRentalDate=new Date().toISOString().split('T')[0];
+var selRentalType='all',selRentalDate=new Date().toISOString().split('T')[0],rentalViewMode='table',calMonth=new Date().toISOString().slice(0,7);
 var verifiedTk=null;
 var $=function(id){return document.getElementById(id)};
 var _dbg=[];function dbg(m){_dbg.push(new Date().toLocaleTimeString()+' '+m);console.log('[DBG]',m);if(window._diagLog)window._diagLog(m)};
@@ -4636,23 +4636,36 @@ function renderRental(){
     return '<button class="btn" onclick="selRentalType=\''+f[0]+'\';render()" style="padding:5px 14px;border-radius:16px;background:'+(selRentalType===f[0]?'#10b981':'#252540')+';color:'+(selRentalType===f[0]?'#fff':'#888')+';font-size:11px;font-weight:'+(selRentalType===f[0]?'600':'400')+'">'+f[1]+'</button>'
   }).join('');
 
-  // Grid table
-  var gridHtml='<table style="font-size:11px"><thead><tr><th style="min-width:80px">장소</th>';
-  RENTAL_TIMES.forEach(function(t){gridHtml+='<th style="text-align:center;min-width:90px;font-size:10px">'+t+'</th>'});
-  gridHtml+='</tr></thead><tbody>';
-  filtered.forEach(function(r){
-    gridHtml+='<tr><td style="font-weight:600;color:'+r.color+'">'+(r.type==='cabin'?'🏕️':'🪑')+' '+r.name+'<div style="font-size:9px;font-weight:400;color:#888">'+r.price.toLocaleString()+'원</div></td>';
-    RENTAL_TIMES.forEach(function(time){
-      var bk=(S.rentalBookings||[]).find(function(b){return b.rentalId===r.id&&b.date===selRentalDate&&b.time===time&&b.status!=='cancelled'});
-      if(bk){
-        gridHtml+='<td class="rental-cell"><div style="padding:4px;background:rgba(239,68,68,.12);border-radius:6px"><div style="font-size:10px;font-weight:600;color:#ef4444">'+(bk.status==='used'?'이용중':'예약됨')+'</div><div style="font-size:9px;color:#888">'+bk.buyer+'</div></div></td>';
-      }else{
-        gridHtml+='<td class="rental-cell"><button class="btn" onclick="bookRental(\''+r.id+'\',\''+time+'\')" style="padding:5px 6px;background:rgba(16,185,129,.06);border:1px dashed #10b98140;border-radius:6px;color:#10b981;font-size:10px;width:100%'+(verifiedTk?'':';opacity:.4;pointer-events:none')+'">예약</button></td>';
-      }
+  // View mode toggle
+  var viewToggle='<div style="display:flex;gap:4px;margin-left:8px">'
+    +'<button class="btn" onclick="rentalViewMode=\'table\';render()" style="padding:4px 10px;border-radius:8px;background:'+(rentalViewMode==='table'?'#3b82f6':'#252540')+';color:'+(rentalViewMode==='table'?'#fff':'#888')+';font-size:10px">📋 테이블</button>'
+    +'<button class="btn" onclick="rentalViewMode=\'calendar\';render()" style="padding:4px 10px;border-radius:8px;background:'+(rentalViewMode==='calendar'?'#3b82f6':'#252540')+';color:'+(rentalViewMode==='calendar'?'#fff':'#888')+';font-size:10px">📅 캘린더</button>'
+    +'</div>';
+
+  var contentHtml='';
+
+  if(rentalViewMode==='calendar'){
+    contentHtml=renderRentalCalendar(filtered,RENTAL_TIMES);
+  } else {
+    // Grid table (original)
+    var gridHtml='<table style="font-size:11px"><thead><tr><th style="min-width:80px">장소</th>';
+    RENTAL_TIMES.forEach(function(t){gridHtml+='<th style="text-align:center;min-width:90px;font-size:10px">'+t+'</th>'});
+    gridHtml+='</tr></thead><tbody>';
+    filtered.forEach(function(r){
+      gridHtml+='<tr><td style="font-weight:600;color:'+r.color+'">'+(r.type==='cabin'?'🏕️':'🪑')+' '+r.name+'<div style="font-size:9px;font-weight:400;color:#888">'+r.price.toLocaleString()+'원</div></td>';
+      RENTAL_TIMES.forEach(function(time){
+        var bk=(S.rentalBookings||[]).find(function(b){return b.rentalId===r.id&&b.date===selRentalDate&&b.time===time&&b.status!=='cancelled'});
+        if(bk){
+          gridHtml+='<td class="rental-cell"><div style="padding:4px;background:rgba(239,68,68,.12);border-radius:6px"><div style="font-size:10px;font-weight:600;color:#ef4444">'+(bk.status==='used'?'이용중':'예약됨')+'</div><div style="font-size:9px;color:#888">'+bk.buyer+'</div></div></td>';
+        }else{
+          gridHtml+='<td class="rental-cell"><button class="btn" onclick="bookRental(\''+r.id+'\',\''+time+'\')" style="padding:5px 6px;background:rgba(16,185,129,.06);border:1px dashed #10b98140;border-radius:6px;color:#10b981;font-size:10px;width:100%'+(verifiedTk?'':';opacity:.4;pointer-events:none')+'">예약</button></td>';
+        }
+      });
+      gridHtml+='</tr>';
     });
-    gridHtml+='</tr>';
-  });
-  gridHtml+='</tbody></table>';
+    gridHtml+='</tbody></table>';
+    contentHtml='<div class="card" style="overflow-x:auto;margin-bottom:16px;'+(verifiedTk?'':'opacity:.5')+'">'+gridHtml+'</div>';
+  }
 
   // Today's summary
   var todayBks=(S.rentalBookings||[]).filter(function(b){return b.date===selRentalDate});
@@ -4661,10 +4674,122 @@ function renderRental(){
     return '<div class="card" style="padding:8px 12px;display:flex;align-items:center;gap:10px;border-left:3px solid '+r.color+'"><div style="flex:1"><span style="font-weight:600;color:'+r.color+'">'+b.rentalName+'</span><span style="font-size:11px;color:#888;margin-left:6px">'+b.time+'</span><div style="font-size:11px;color:#888">'+b.buyer+' · '+b.phone+' · '+b.price.toLocaleString()+'원</div></div><span style="font-size:10px;padding:2px 7px;border-radius:8px;background:'+(b.status==='used'?'rgba(136,136,136,.12);color:#888':'rgba(16,185,129,.12);color:#10b981')+'">'+( b.status==='used'?(b.autoUsed?'⏰이용중':'✅완료'):'확정')+'</span></div>'
   }).join(''):'<div style="text-align:center;padding:24px;color:#555;font-size:12px">예약 없음</div>';
 
-  return '<div style="max-width:750px;margin:0 auto;animation:fadeIn .3s">'+verifyHtml
-    +'<div style="display:flex;gap:6px;margin-bottom:12px;align-items:center">'+filters+'<div style="margin-left:auto"><input type="date" value="'+selRentalDate+'" onchange="selRentalDate=this.value;render()" style="width:auto;padding:5px 8px;font-size:11px"></div></div>'
-    +'<div class="card" style="overflow-x:auto;margin-bottom:16px;'+(verifiedTk?'':'opacity:.5')+'">'+gridHtml+'</div>'
-    +'<div style="font-size:13px;font-weight:600;color:#fff;margin-bottom:8px">📋 오늘 현황 ('+todayBks.length+'건)</div>'+summaryHtml+'</div>';
+  var dateControl=rentalViewMode==='calendar'
+    ?'<div style="margin-left:auto;display:flex;align-items:center;gap:4px"><button class="btn" onclick="calNavMonth(-1)" style="padding:4px 8px;background:#252540;color:#aaa;font-size:12px">◀</button><span style="font-size:12px;font-weight:600;color:#fff;min-width:90px;text-align:center">'+calMonth+'</span><button class="btn" onclick="calNavMonth(1)" style="padding:4px 8px;background:#252540;color:#aaa;font-size:12px">▶</button></div>'
+    :'<div style="margin-left:auto"><input type="date" value="'+selRentalDate+'" onchange="selRentalDate=this.value;render()" style="width:auto;padding:5px 8px;font-size:11px"></div>';
+
+  return '<div style="max-width:950px;margin:0 auto;animation:fadeIn .3s">'+verifyHtml
+    +'<div style="display:flex;gap:6px;margin-bottom:12px;align-items:center;flex-wrap:wrap">'+filters+viewToggle+dateControl+'</div>'
+    +contentHtml
+    +'<div style="font-size:13px;font-weight:600;color:#fff;margin-bottom:8px">📋 '+(rentalViewMode==='calendar'?selRentalDate:'')+' 현황 ('+todayBks.length+'건)</div>'+summaryHtml+'</div>';
+}
+
+function calNavMonth(dir){
+  var d=new Date(calMonth+'-01');
+  d.setMonth(d.getMonth()+dir);
+  calMonth=d.toISOString().slice(0,7);
+  render();
+}
+
+function renderRentalCalendar(filteredRentals,RENTAL_TIMES){
+  var year=parseInt(calMonth.split('-')[0]);
+  var month=parseInt(calMonth.split('-')[1])-1;
+  var firstDay=new Date(year,month,1).getDay();
+  var daysInMonth=new Date(year,month+1,0).getDate();
+  var today=new Date().toISOString().split('T')[0];
+  var allBookings=S.rentalBookings||[];
+
+  var calHtml='';
+  filteredRentals.forEach(function(rental){
+    var rBks=allBookings.filter(function(b){return b.rentalId===rental.id&&b.date&&b.date.startsWith(calMonth)&&b.status!=='cancelled'});
+    var bkByDate={};
+    rBks.forEach(function(b){
+      if(!bkByDate[b.date])bkByDate[b.date]=[];
+      bkByDate[b.date].push(b);
+    });
+
+    calHtml+='<div class="card" style="margin-bottom:12px;overflow-x:auto">'
+      +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">'
+      +'<span style="font-size:16px">'+(rental.type==='cabin'?'🏕️':'🪑')+'</span>'
+      +'<span style="font-size:14px;font-weight:700;color:'+rental.color+'">'+rental.name+'</span>'
+      +'<span style="font-size:10px;color:#888">'+rental.price.toLocaleString()+'원</span>'
+      +'<span style="font-size:10px;padding:2px 8px;border-radius:8px;background:rgba(59,130,246,.1);color:#60a5fa;margin-left:auto">이번달 '+rBks.length+'건</span>'
+      +'</div>';
+
+    calHtml+='<table style="width:100%;font-size:10px;border-collapse:collapse">'
+      +'<thead><tr>';
+    ['일','월','화','수','목','금','토'].forEach(function(d,i){
+      var col=i===0?'#ef4444':i===6?'#3b82f6':'#aaa';
+      calHtml+='<th style="padding:4px;text-align:center;color:'+col+';font-weight:600;font-size:10px;border-bottom:1px solid #252540">'+d+'</th>';
+    });
+    calHtml+='</tr></thead><tbody><tr>';
+
+    for(var i=0;i<firstDay;i++){
+      calHtml+='<td style="padding:2px;vertical-align:top;height:60px;border:1px solid #151528"></td>';
+    }
+
+    for(var day=1;day<=daysInMonth;day++){
+      var dateStr=calMonth+'-'+String(day).padStart(2,'0');
+      var dayBks=bkByDate[dateStr]||[];
+      var isToday=dateStr===today;
+      var isSel=dateStr===selRentalDate;
+      var dow=(firstDay+day-1)%7;
+      var dayColor=dow===0?'#ef4444':dow===6?'#3b82f6':'#ccc';
+      var totalSlots=RENTAL_TIMES.length;
+      var bookedSlots=dayBks.length;
+      var ratio=bookedSlots/totalSlots;
+
+      var bgColor='transparent';
+      if(bookedSlots>0&&ratio<0.5)bgColor='rgba(245,158,11,.08)';
+      else if(ratio>=0.5&&ratio<1)bgColor='rgba(239,68,68,.08)';
+      else if(ratio>=1)bgColor='rgba(239,68,68,.15)';
+
+      calHtml+='<td onclick="selRentalDate=\''+dateStr+'\';render()" style="padding:3px;vertical-align:top;height:60px;border:1px solid '+(isSel?'#3b82f6':'#151528')+';cursor:pointer;background:'+bgColor+';transition:all .15s" onmouseover="this.style.background=\'rgba(59,130,246,.1)\'" onmouseout="this.style.background=\''+bgColor+'\'">';
+      calHtml+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px">';
+      calHtml+='<span style="font-size:11px;font-weight:'+(isToday?'800':'500')+';color:'+(isToday?'#10b981':dayColor)+';'+(isToday?'background:rgba(16,185,129,.15);padding:1px 5px;border-radius:4px':'')+'">'+day+'</span>';
+      if(bookedSlots>0){
+        calHtml+='<span style="font-size:8px;padding:1px 4px;border-radius:4px;background:'+(ratio>=1?'rgba(239,68,68,.2);color:#ef4444':'rgba(245,158,11,.2);color:#f59e0b')+';font-weight:700">'+bookedSlots+'/'+totalSlots+'</span>';
+      }
+      calHtml+='</div>';
+
+      if(dayBks.length>0){
+        dayBks.slice(0,2).forEach(function(bk){
+          var statusColor=bk.status==='used'?'#888':'#10b981';
+          calHtml+='<div style="font-size:8px;padding:1px 3px;margin-bottom:1px;border-radius:3px;background:rgba(16,185,129,.08);color:'+statusColor+';overflow:hidden;white-space:nowrap;text-overflow:ellipsis" title="'+bk.time+' '+bk.buyer+'">'
+            +(bk.time?bk.time.split('~')[0]:'')+'<span style="color:#888"> '+bk.buyer+'</span></div>';
+        });
+        if(dayBks.length>2){
+          calHtml+='<div style="font-size:8px;color:#888;text-align:center">+'+(dayBks.length-2)+'건</div>';
+        }
+      } else {
+        calHtml+='<div style="font-size:8px;color:#333;text-align:center;margin-top:6px">-</div>';
+      }
+
+      calHtml+='</td>';
+
+      if(dow===6&&day<daysInMonth)calHtml+='</tr><tr>';
+    }
+
+    var lastDow=(firstDay+daysInMonth-1)%7;
+    for(var i=lastDow+1;i<7;i++){
+      calHtml+='<td style="padding:2px;vertical-align:top;height:60px;border:1px solid #151528"></td>';
+    }
+    calHtml+='</tr></tbody></table>';
+
+    calHtml+='<div style="display:flex;gap:10px;margin-top:8px;font-size:9px;color:#888;justify-content:flex-end">'
+      +'<span>⬜ 여유</span>'
+      +'<span style="color:#f59e0b">🟨 일부예약</span>'
+      +'<span style="color:#ef4444">🟥 마감임박</span>'
+      +'<span style="color:#ef4444;font-weight:700">🔴 전체예약</span>'
+      +'</div>';
+    calHtml+='</div>';
+  });
+
+  if(filteredRentals.length===0){
+    calHtml='<div class="card" style="text-align:center;padding:30px;color:#555">등록된 대여 시설이 없습니다</div>';
+  }
+
+  return calHtml;
 }
 
 function bookRental(rentalId,time){

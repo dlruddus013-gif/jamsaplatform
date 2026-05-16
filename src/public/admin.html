@@ -4640,11 +4640,14 @@ function renderRental(){
   var viewToggle='<div style="display:flex;gap:4px;margin-left:8px">'
     +'<button class="btn" onclick="rentalViewMode=\'table\';render()" style="padding:4px 10px;border-radius:8px;background:'+(rentalViewMode==='table'?'#3b82f6':'#252540')+';color:'+(rentalViewMode==='table'?'#fff':'#888')+';font-size:10px">📋 테이블</button>'
     +'<button class="btn" onclick="rentalViewMode=\'calendar\';render()" style="padding:4px 10px;border-radius:8px;background:'+(rentalViewMode==='calendar'?'#3b82f6':'#252540')+';color:'+(rentalViewMode==='calendar'?'#fff':'#888')+';font-size:10px">📅 캘린더</button>'
+    +'<button class="btn" onclick="rentalViewMode=\'satmap\';render()" style="padding:4px 10px;border-radius:8px;background:'+(rentalViewMode==='satmap'?'#03C75A':'#252540')+';color:'+(rentalViewMode==='satmap'?'#fff':'#888')+';font-size:10px">🛰️ 위성지도</button>'
     +'</div>';
 
   var contentHtml='';
 
-  if(rentalViewMode==='calendar'){
+  if(rentalViewMode==='satmap'){
+    contentHtml=renderRentalSatMap(filtered);
+  } else if(rentalViewMode==='calendar'){
     contentHtml=renderRentalCalendar(filtered,RENTAL_TIMES);
   } else {
     // Grid table (original)
@@ -4790,6 +4793,120 @@ function renderRentalCalendar(filteredRentals,RENTAL_TIMES){
   }
 
   return calHtml;
+}
+
+function renderRentalSatMap(filteredRentals){
+  var RENTAL_TIMES=['09:00~12:00','12:00~15:00','15:00~18:00','09:00~18:00(종일)'];
+  var allBks=S.rentalBookings||[];
+  var savedKey=typeof localStorage!=='undefined'?localStorage.getItem('__naver_map_key')||'':'';
+  var mapId='rentalSatMap';
+
+  var spotCoords=[
+    {id:'cabin-A',name:'오두막 A',type:'cabin',lat:36.56920,lng:127.45310,color:'#f59e0b'},
+    {id:'cabin-B',name:'오두막 B',type:'cabin',lat:36.56925,lng:127.45340,color:'#f59e0b'},
+    {id:'cabin-C',name:'오두막 C',type:'cabin',lat:36.56930,lng:127.45370,color:'#f59e0b'},
+    {id:'bench-1',name:'평상 1',type:'bench',lat:36.56900,lng:127.45320,color:'#3b82f6'},
+    {id:'bench-2',name:'평상 2',type:'bench',lat:36.56895,lng:127.45350,color:'#3b82f6'},
+    {id:'bench-3',name:'평상 3',type:'bench',lat:36.56905,lng:127.45380,color:'#3b82f6'},
+    {id:'bench-4',name:'평상 4',type:'bench',lat:36.56890,lng:127.45330,color:'#3b82f6'},
+    {id:'bench-5',name:'평상 5',type:'bench',lat:36.56885,lng:127.45360,color:'#3b82f6'}
+  ];
+
+  // Match spot coords with server rentals
+  var spots=filteredRentals.map(function(r){
+    var coord=spotCoords.find(function(c){return r.name&&r.name.includes(c.name.split(' ')[1]||c.name)});
+    var dayBks=allBks.filter(function(b){return b.rentalId===r.id&&b.date===selRentalDate&&b.status!=='cancelled'});
+    return {id:r.id,name:r.name,type:r.type,price:r.price,color:r.color||'#888',lat:coord?coord.lat:36.56905+Math.random()*0.0005,lng:coord?coord.lng:127.45345+Math.random()*0.0005,bookings:dayBks};
+  });
+
+  var html='<div class="card" style="padding:0;overflow:hidden;margin-bottom:12px">';
+
+  if(!savedKey){
+    html+='<div id="'+mapId+'" style="width:100%;height:400px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#0a0a25;gap:8px">'
+      +'<div style="font-size:32px">🛰️</div>'
+      +'<div style="font-size:14px;font-weight:700;color:#10b981">네이버 Maps API 키 설정</div>'
+      +'<div style="font-size:11px;color:#888;text-align:center;line-height:1.8;max-width:300px">'
+      +'1. <a href="https://console.ncloud.com/naver-service/application" target="_blank" style="color:#03C75A">네이버 클라우드 콘솔</a> 접속<br>'
+      +'2. Application 등록 → Maps Web Dynamic Map 사용<br>'
+      +'3. Web 서비스 URL에 <b style="color:#fff">'+location.origin+'</b> 등록<br>'
+      +'4. Client ID를 아래 입력</div>'
+      +'<div style="display:flex;gap:6px;align-items:center;margin-top:4px">'
+      +'<input id="satMapKeyInp" placeholder="NCP Client ID" style="padding:8px 12px;width:200px;background:#1a1a3a;border:2px solid #333;border-radius:8px;color:#fff;text-align:center;font-size:12px">'
+      +'<button class="btn" onclick="var k=document.getElementById(\'satMapKeyInp\').value.trim();if(!k){toast(\'키를 입력하세요\',\'warning\');return;}localStorage.setItem(\'__naver_map_key\',k);render();loadNaverMapScript()" style="padding:8px 16px;background:#03C75A;color:#fff;font-size:12px;border-radius:8px">적용</button>'
+      +'</div></div>';
+  } else {
+    html+='<div id="'+mapId+'" style="width:100%;height:400px;background:#0a0a25"></div>';
+  }
+  html+='</div>';
+
+  // Spot list with booking status
+  html+='<div class="card"><div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:10px">📍 시설 목록 <span style="font-size:10px;color:#888;font-weight:400">'+spots.length+'개 스팟</span></div>';
+  var filterBtns=[['all','전체'],['cabin','🏕️ 오두막'],['bench','🪑 평상']];
+  html+='<div style="display:flex;gap:4px;margin-bottom:10px">';
+  filterBtns.forEach(function(f){
+    html+='<button class="btn" onclick="selRentalType=\''+f[0]+'\';render()" style="padding:4px 10px;border-radius:12px;background:'+(selRentalType===f[0]?'#10b981':'#252540')+';color:'+(selRentalType===f[0]?'#fff':'#888')+';font-size:10px">'+f[1]+'</button>';
+  });
+  html+='</div>';
+
+  spots.forEach(function(s){
+    var bkCount=s.bookings.length;
+    var statusLabel=bkCount===0?'비어있음':bkCount+'건 예약';
+    var statusColor=bkCount===0?'#10b981':'#ef4444';
+    var statusBg=bkCount===0?'rgba(16,185,129,.12)':'rgba(239,68,68,.12)';
+    html+='<div style="padding:8px 10px;border-bottom:1px solid #151528;display:flex;align-items:center;gap:10px">'
+      +'<span style="font-size:14px">'+(s.type==='cabin'?'🏕️':'🪑')+'</span>'
+      +'<div style="flex:1"><div style="font-weight:600;color:'+s.color+';font-size:12px">'+s.name+'</div>'
+      +'<div style="font-size:10px;color:#888">'+s.price.toLocaleString()+'원 · ('+s.lat.toFixed(5)+', '+s.lng.toFixed(5)+')</div></div>'
+      +'<span style="font-size:10px;padding:3px 8px;border-radius:8px;background:'+statusBg+';color:'+statusColor+';font-weight:600">'+statusLabel+'</span></div>';
+    if(s.bookings.length>0){
+      s.bookings.forEach(function(b){
+        html+='<div style="padding:4px 10px 4px 38px;font-size:10px;color:#888;border-bottom:1px solid #0e0e20">'
+          +'<span style="color:'+s.color+'">'+b.time+'</span> · '+b.buyer+' · '+b.phone+'</div>';
+      });
+    }
+  });
+  html+='</div>';
+
+  // Schedule map init after render
+  if(savedKey){
+    setTimeout(function(){
+      loadNaverMapScript(function(){
+        if(typeof naver==='undefined'||!naver.maps)return;
+        try{
+          var center=new naver.maps.LatLng(36.56905,127.45345);
+          var m=new naver.maps.Map(mapId,{center:center,zoom:19,mapTypeId:naver.maps.MapTypeId.SATELLITE,zoomControl:true,zoomControlOptions:{position:naver.maps.Position.RIGHT_CENTER}});
+          spots.forEach(function(s){
+            var bkCount=s.bookings.length;
+            var mk=new naver.maps.Marker({position:new naver.maps.LatLng(s.lat,s.lng),map:m,icon:{content:'<div style="padding:3px 8px;background:'+(bkCount>0?'rgba(239,68,68,.9)':'rgba(16,185,129,.9)')+';color:#fff;border-radius:8px;font-size:10px;font-weight:700;white-space:nowrap;box-shadow:0 2px 6px rgba(0,0,0,.3);border:2px solid #fff">'+(s.type==='cabin'?'🏕️':'🪑')+' '+s.name+(bkCount>0?' ('+bkCount+'건)':' 여유')+'</div>',anchor:new naver.maps.Point(40,16)}});
+            naver.maps.Event.addListener(mk,'click',function(){
+              var info='<b>'+s.name+'</b><br>'+s.price.toLocaleString()+'원<br>';
+              if(s.bookings.length>0)s.bookings.forEach(function(b){info+=b.time+' '+b.buyer+'<br>';});
+              else info+='예약 없음';
+              toast(s.name+': '+(bkCount>0?bkCount+'건 예약':'여유'),'info');
+            });
+          });
+        }catch(e){
+          document.getElementById(mapId).innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#ef4444;font-size:12px">지도 로드 실패: '+e.message+'</div>';
+        }
+      });
+    },100);
+  }
+
+  return html;
+}
+
+var _naverMapLoaded=false;
+function loadNaverMapScript(cb){
+  if(_naverMapLoaded&&typeof naver!=='undefined'&&naver.maps){if(cb)cb();return;}
+  var key=localStorage.getItem('__naver_map_key')||'';
+  if(!key)return;
+  var existing=document.querySelector('script[src*="oapi.map.naver"]');
+  if(existing&&typeof naver!=='undefined'&&naver.maps){_naverMapLoaded=true;if(cb)cb();return;}
+  var s=document.createElement('script');
+  s.src='https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId='+key+'&submodules=geocoder';
+  s.onload=function(){_naverMapLoaded=true;if(cb)cb();};
+  s.onerror=function(){toast('네이버 지도 스크립트 로드 실패','error');};
+  document.head.appendChild(s);
 }
 
 function bookRental(rentalId,time){

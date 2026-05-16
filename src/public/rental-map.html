@@ -4,7 +4,19 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>잠사박물관 시설 배치도</title>
-<script src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=YOUR_NCP_KEY_ID&submodules=geocoder"></script>
+<script>
+// API 키를 localStorage에서 불러오거나 동적으로 로드
+(function(){
+  var savedKey = localStorage.getItem('__naver_map_key') || '';
+  if(savedKey){
+    var s = document.createElement('script');
+    s.src = 'https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=' + savedKey + '&submodules=geocoder';
+    s.onload = function(){ if(typeof naver !== 'undefined' && naver.maps){ naver.maps.onJSContentLoaded = initMap; }};
+    s.onerror = function(){ showApiKeyPrompt('API 키가 유효하지 않습니다. 다시 입력해주세요.'); };
+    document.head.appendChild(s);
+  }
+})();
+</script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Malgun Gothic',sans-serif;background:#080815;color:#eef;overflow:hidden;height:100vh}
@@ -396,34 +408,50 @@ function renderTimeSlots() {
 }
 
 // ═══ 초기화 ═══
-if (typeof naver !== 'undefined' && naver.maps) {
-  naver.maps.onJSContentLoaded = initMap;
-} else {
-  // 네이버 Maps API 없을 때 안내
+function showApiKeyPrompt(msg) {
+  var savedKey = localStorage.getItem('__naver_map_key') || '';
   document.getElementById('map').innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:10px">'
     + '<div style="font-size:40px">🗺️</div>'
-    + '<div style="font-size:16px;font-weight:800;color:#10b981">네이버 Maps API 키 필요</div>'
-    + '<div style="font-size:11px;color:#888;text-align:center;max-width:300px;line-height:1.6">'
-    + '1. <a href="https://console.ncloud.com/naver-service/application" target="_blank" style="color:#03C75A">네이버 클라우드 콘솔</a> 접속<br>'
-    + '2. Application 등록 → Maps Web Dynamic Map 사용 설정<br>'
-    + '3. 발급받은 Client ID를 아래 입력<br>'
-    + '<input id="apiKeyInput" placeholder="NCP Client ID" style="margin-top:6px;padding:8px;width:200px;background:#1a1a3a;border:1px solid #333;border-radius:6px;color:#fff;text-align:center;font-size:12px">'
-    + '<br><button onclick="applyApiKey()" style="margin-top:6px;padding:6px 20px;background:#03C75A;color:#fff;border:none;border-radius:6px;font-weight:700;cursor:pointer">적용</button>'
+    + '<div style="font-size:16px;font-weight:800;color:#10b981">네이버 Maps API 키 설정</div>'
+    + (msg ? '<div style="font-size:12px;color:#ef4444;margin-bottom:4px">'+msg+'</div>' : '')
+    + '<div style="font-size:11px;color:#888;text-align:center;max-width:320px;line-height:1.8">'
+    + '1. <a href="https://console.ncloud.com/naver-service/application" target="_blank" style="color:#03C75A;font-weight:700">네이버 클라우드 콘솔</a> 접속<br>'
+    + '2. Application 등록 → <b>Maps</b> > <b>Web Dynamic Map</b> 사용<br>'
+    + '3. <b>Web 서비스 URL</b>에 현재 도메인 등록<br>'
+    + '4. 발급받은 <b>Client ID</b>를 아래 입력<br>'
+    + '<input id="apiKeyInput" placeholder="NCP Client ID (예: a1b2c3d4e5)" value="'+savedKey+'" style="margin-top:8px;padding:10px;width:240px;background:#1a1a3a;border:2px solid #333;border-radius:8px;color:#fff;text-align:center;font-size:13px">'
+    + '<br><button onclick="applyApiKey()" style="margin-top:8px;padding:8px 24px;background:#03C75A;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:13px">✅ 적용 및 저장</button>'
+    + '<div style="margin-top:10px;font-size:10px;color:#555">※ Web 서비스 URL에 <b>' + location.origin + '</b> 를 등록해야 합니다</div>'
     + '</div></div>';
-  
-  // 패널 렌더링은 지도 없이도 실행
-  renderList();
-  renderTimeSlots();
-  document.getElementById('spotCount').textContent = SPOTS.length + '개 스팟';
-  document.getElementById('dateSelect').value = new Date().toISOString().substring(0, 10);
 }
+
+if (typeof naver !== 'undefined' && naver.maps) {
+  naver.maps.onJSContentLoaded = initMap;
+} else if (!localStorage.getItem('__naver_map_key')) {
+  showApiKeyPrompt();
+}
+
+// 패널 렌더링은 지도 없이도 실행
+renderList();
+renderTimeSlots();
+document.getElementById('spotCount').textContent = SPOTS.length + '개 스팟';
+document.getElementById('dateSelect').value = new Date().toISOString().substring(0, 10);
 
 function applyApiKey() {
   var key = document.getElementById('apiKeyInput').value.trim();
   if (!key) { alert('API 키를 입력하세요'); return; }
+  localStorage.setItem('__naver_map_key', key);
   var script = document.createElement('script');
   script.src = 'https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=' + key + '&submodules=geocoder';
-  script.onload = function() { initMap(); };
+  script.onload = function() {
+    if(typeof naver !== 'undefined' && naver.maps) {
+      document.getElementById('map').innerHTML = '';
+      initMap();
+    }
+  };
+  script.onerror = function() {
+    showApiKeyPrompt('스크립트 로드 실패. 키를 확인해주세요.');
+  };
   document.head.appendChild(script);
 }
 </script>

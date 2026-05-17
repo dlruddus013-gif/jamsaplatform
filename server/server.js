@@ -733,12 +733,18 @@ async function getPage(key) {
   
   log(key, '브라우저 시작...');
   if (!puppeteer) { log(key, '⚠️ Puppeteer 없음 (Vercel 모드) — 크롤링 불가', 'warning'); return false; }
+  var useHeadless = process.env.NO_BROWSER === '1' || process.env.NODE_ENV === 'production';
+  if (!useHeadless) {
+    try { var { execSync } = require('child_process'); execSync('xdpyinfo', { stdio: 'ignore' }); } catch(e) { useHeadless = true; log(key, '디스플레이 없음 → headless 모드', 'info'); }
+  }
+  try {
   STATE.browsers[key] = await puppeteer.launch({
-    headless: process.env.NO_BROWSER === '1' || process.env.NODE_ENV === 'production' ? 'new' : false,
+    headless: useHeadless ? 'new' : false,
     executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
     args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--disable-gpu', '--window-size=1366,900', '--disable-blink-features=AutomationControlled', '--disable-infobars', '--disable-notifications', '--lang=ko-KR'],
     defaultViewport: null,
   });
+  } catch(launchErr) { log(key, '❌ 브라우저 실행 실패: ' + launchErr.message, 'error'); return false; }
   STATE.pages[key] = await STATE.browsers[key].newPage();
   await STATE.pages[key].setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36');
   await STATE.pages[key].setViewport({ width: 1366, height: 900 });
@@ -7377,7 +7383,7 @@ async function crawlCycle(channels) {
       try {
         checkAbort();
         if (STATE.pages.naver) { try { await STATE.pages.naver.title(); } catch(e) { STATE.sessions.naver=false; STATE.pages.naver=null; if(STATE.browsers.naver){try{await STATE.browsers.naver.close()}catch(e2){}} STATE.browsers.naver=null; } }
-        var nvR = await Promise.race([naverCrawl(), new Promise(function(_,rej){setTimeout(function(){rej(new Error('naver 타임아웃'))},90000)})]);
+        var nvR = await Promise.race([naverCrawl(), new Promise(function(_,rej){setTimeout(function(){rej(new Error('naver 타임아웃'))},300000)})]);
         STATE.crawlStatus.naver = 'idle';
         log('naver', '✅ 완료 (' + (Array.isArray(nvR)?nvR.length:0) + '건)', 'success');
       } catch(e) {
@@ -11272,7 +11278,7 @@ app.post('/api/crawl/naver-only', async function(req, res) {
   STATE.crawlStatus.naver = 'crawling';
   sendState();
   try {
-    var result = await la2fWithTimeout(naverCrawl(), 90000, 'naver');
+    var result = await la2fWithTimeout(naverCrawl(), 300000, 'naver');
     var cnt = Array.isArray(result) ? result.length : 0;
     STATE.crawlStatus.naver = 'idle';
     log('naver', '✅ 네이버 크롤링 완료: ' + cnt + '건', 'success');

@@ -1,7 +1,7 @@
 {
   "version": 2,
   "builds": [
-    { "src": "server.js", "use": "@vercel/node" }
+    { "src": "server.js", "use": "@vercel/node", "config": { "maxDuration": 300, "memory": 1024 } }
   ],
   "routes": [
     { "src": "/kiosk", "dest": "/server.js" },
@@ -17,11 +17,5 @@
       "path": "/api/cron/crawl-la2f",
       "schedule": "*/30 * * * *"
     }
-  ],
-  "functions": {
-    "server.js": {
-      "maxDuration": 300,
-      "memory": 1024
-    }
-  }
+  ]
 }

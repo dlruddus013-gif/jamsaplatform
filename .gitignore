@@ -4,3 +4,4 @@ node_modules/
 .env.local
 _sales_data.json
 test
+server/.data/

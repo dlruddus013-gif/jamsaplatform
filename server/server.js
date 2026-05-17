@@ -6907,6 +6907,119 @@ function okposHttpGet(urlPath, _depth) {
   });
 }
 
+// ── OKPOS HTTP POST 헬퍼 ──
+function okposHttpPost(urlPath, postData, _depth) {
+  _depth = _depth || 0;
+  var body = typeof postData === 'string' ? postData : Object.keys(postData).map(function(k) { return encodeURIComponent(k) + '=' + encodeURIComponent(postData[k]); }).join('&');
+  return new Promise(function(resolve, reject) {
+    var req = https.request({
+      hostname: 'nice.okpos.co.kr', port: 443,
+      path: urlPath, method: 'POST',
+      headers: {
+        'Cookie': STATE._okposCookies || '',
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Content-Length': Buffer.byteLength(body),
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        'Referer': 'https://nice.okpos.co.kr/login/login_form.jsp',
+      },
+      timeout: 15000,
+    }, function(res) {
+      var sc = res.headers['set-cookie'];
+      if (sc) {
+        var existing = {};
+        (STATE._okposCookies || '').split('; ').forEach(function(c) { var p = c.split('='); if (p[0]) existing[p[0]] = p.slice(1).join('='); });
+        sc.forEach(function(c) { var p = c.split(';')[0].split('='); if (p[0]) existing[p[0].trim()] = p.slice(1).join('='); });
+        STATE._okposCookies = Object.keys(existing).map(function(k) { return k + '=' + existing[k]; }).join('; ');
+      }
+      if ((res.statusCode === 302 || res.statusCode === 301) && res.headers.location && _depth < 5) {
+        var rPath = (res.headers.location || '').replace(/https?:\/\/nice\.okpos\.co\.kr/g, '');
+        if (rPath.indexOf('/') !== 0) rPath = '/' + rPath;
+        res.resume();
+        return okposHttpGet(rPath, _depth + 1).then(resolve).catch(reject);
+      }
+      var chunks = [];
+      res.on('data', function(ch) { chunks.push(ch); });
+      res.on('end', function() { resolve(Buffer.concat(chunks).toString('utf8')); });
+    });
+    req.on('error', function() { resolve(''); });
+    req.on('timeout', function() { req.destroy(); resolve(''); });
+    req.write(body);
+    req.end();
+  });
+}
+
+// ── OKPOS HTTP 로그인 (Puppeteer 불필요) ──
+async function okposHttpLogin() {
+  var c = STATE.config.okpos;
+  if (!c.id || !c.pw) { log('okpos', 'ID/PW 미설정', 'warning'); return false; }
+  try {
+    log('okpos', 'HTTP 로그인 시도: ' + c.id);
+    STATE._okposCookies = '';
+    // 1) 로그인 페이지 GET → 세션 쿠키 획득
+    await okposHttpGet('/login/login_form.jsp');
+    // 2) 로그인 POST
+    var loginResult = await okposHttpPost('/login/login_ok.jsp', { user_id: c.id, user_pwd: c.pw });
+    // 3) 로그인 성공 확인: top_frame 접근
+    var topPage = await okposHttpGet('/login/top_frame.jsp');
+    if (topPage.indexOf('login_form') >= 0 || topPage.length < 100) {
+      log('okpos', 'HTTP 로그인 실패 (리다이렉트)', 'error');
+      return false;
+    }
+    log('okpos', 'HTTP 로그인 성공', 'success');
+    STATE.sessions.okpos = true;
+    return true;
+  } catch(e) {
+    log('okpos', 'HTTP 로그인 오류: ' + e.message, 'error');
+    return false;
+  }
+}
+
+// ── OKPOS HTTP 매출 크롤링 (Puppeteer 불필요) ──
+async function okposHttpSalesCrawl(dateFrom, dateTo) {
+  var today = new Date().toISOString().split('T')[0];
+  dateFrom = dateFrom || today;
+  dateTo = dateTo || dateFrom;
+  var df = dateFrom.replace(/-/g, '');
+  var dt = dateTo.replace(/-/g, '');
+  log('okpos', 'HTTP 매출 크롤링: ' + dateFrom + ' ~ ' + dateTo);
+  try {
+    // 상품별 매출 페이지 직접 접근
+    var salesHtml = await okposHttpPost('/sales/prod011_ok.jsp', { sdate: df, edate: dt, sttl_fg: '1' });
+    if (!salesHtml || salesHtml.indexOf('login_form') >= 0) {
+      log('okpos', '세션 만료 → 재로그인', 'warning');
+      if (!(await okposHttpLogin())) return null;
+      salesHtml = await okposHttpPost('/sales/prod011_ok.jsp', { sdate: df, edate: dt, sttl_fg: '1' });
+    }
+    var rows = parseSheetResponse(salesHtml);
+    log('okpos', 'HTTP 파싱: ' + rows.length + '행');
+    if (rows.length === 0) {
+      var salesHtml2 = await okposHttpGet('/sales/prod011.jsp?sdate=' + df + '&edate=' + dt);
+      rows = parseSheetResponse(salesHtml2);
+      log('okpos', 'HTTP GET 파싱: ' + rows.length + '행');
+    }
+    // 상품별 데이터 정리
+    var items = [];
+    rows.forEach(function(r) {
+      var name = r[0] || r['상품명'] || r['품목'] || '';
+      var qty = parseInt(r[1] || r['수량'] || r['판매수량'] || '0') || 0;
+      var amt = parseInt((r[2] || r['금액'] || r['매출액'] || r['판매금액'] || '0').toString().replace(/[,원]/g, '')) || 0;
+      if (name && (qty > 0 || amt > 0)) items.push({ name: name, qty: qty, amount: amt });
+    });
+    if (items.length > 0) {
+      var grandTotal = { qty: 0, total_sales: 0 };
+      items.forEach(function(it) { grandTotal.qty += it.qty; grandTotal.total_sales += it.amount; });
+      STATE.salesData = { items: items, grandTotal: grandTotal, crawledAt: new Date().toISOString(), dateRange: dateFrom + '~' + dateTo };
+      log('okpos', 'HTTP 매출: ' + items.length + '개 상품, 총 ' + grandTotal.total_sales.toLocaleString() + '원', 'success');
+      return STATE.salesData;
+    }
+    log('okpos', 'HTTP 매출 데이터 없음 (파싱 0건)', 'warning');
+    return null;
+  } catch(e) {
+    log('okpos', 'HTTP 매출 크롤링 오류: ' + e.message, 'error');
+    return null;
+  }
+}
+
 // ═══ POS ↔ 티켓 시간대별 대조 + 카톡 알림 ═══
 async function posTicketCompare(forceAlert) {
   try {
@@ -7395,30 +7508,49 @@ async function crawlCycle(channels) {
     }
   }
 
-  // ─── OKPOS (Puppeteer, 독립) ───
-  if (doOk && puppeteer && STATE.config.okpos.id && STATE.config.okpos.pw && STATE.config.okpos.auto) {
-    STATE.crawlStatus.okpos = 'crawling'; sendState();
-    try {
-      checkAbort();
-      if (STATE.pages.okpos) { try { await STATE.pages.okpos.title(); } catch(e) { STATE.sessions.okpos=false; STATE.pages.okpos=null; if(STATE.browsers.okpos){try{await STATE.browsers.okpos.close()}catch(e2){}} STATE.browsers.okpos=null; } }
-      if (!STATE.sessions.okpos) await okposLogin();
-      if (STATE.sessions.okpos) {
-        await okposSalesCrawl();
-        await okposTimeSalesCrawl();
-        STATE.crawlStatus.okpos = 'connected';
-        log('okpos', '✅ OKPOS 완료', 'success');
-      } else {
-        STATE.crawlStatus.okpos = 'error';
-        log('okpos', '❌ 로그인 실패', 'error');
+  // ─── OKPOS (Puppeteer 또는 HTTP) ───
+  if (doOk && STATE.config.okpos.id && STATE.config.okpos.pw) {
+    if (puppeteer && STATE.config.okpos.auto) {
+      STATE.crawlStatus.okpos = 'crawling'; sendState();
+      try {
+        checkAbort();
+        if (STATE.pages.okpos) { try { await STATE.pages.okpos.title(); } catch(e) { STATE.sessions.okpos=false; STATE.pages.okpos=null; if(STATE.browsers.okpos){try{await STATE.browsers.okpos.close()}catch(e2){}} STATE.browsers.okpos=null; } }
+        if (!STATE.sessions.okpos) await okposLogin();
+        if (STATE.sessions.okpos) {
+          await okposSalesCrawl();
+          await okposTimeSalesCrawl();
+          STATE.crawlStatus.okpos = 'connected';
+          log('okpos', '✅ OKPOS 완료', 'success');
+        } else {
+          STATE.crawlStatus.okpos = 'error';
+          log('okpos', '❌ 로그인 실패', 'error');
+        }
+      } catch(e) {
+        STATE.crawlStatus.okpos = e.name==='CrawlAbortError'?'idle':'error';
+        log('okpos', e.name==='CrawlAbortError'?'⏹ 중단':'❌ '+e.message, e.name==='CrawlAbortError'?'warning':'error');
       }
-    } catch(e) {
-      STATE.crawlStatus.okpos = e.name==='CrawlAbortError'?'idle':'error';
-      log('okpos', e.name==='CrawlAbortError'?'⏹ 중단':'❌ '+e.message, e.name==='CrawlAbortError'?'warning':'error');
+      sendState();
+    } else if (!puppeteer) {
+      // Vercel 모드: HTTP 기반 OKPOS
+      STATE.crawlStatus.okpos = 'crawling'; sendState();
+      try {
+        if (!STATE.sessions.okpos) await okposHttpLogin();
+        if (STATE.sessions.okpos) {
+          await okposHttpSalesCrawl();
+          STATE.crawlStatus.okpos = 'connected';
+          log('okpos', '✅ OKPOS HTTP 완료', 'success');
+        } else {
+          STATE.crawlStatus.okpos = 'error';
+        }
+      } catch(e) {
+        STATE.crawlStatus.okpos = 'error';
+        log('okpos', '❌ HTTP OKPOS 오류: ' + e.message, 'error');
+      }
+      sendState();
+    } else if (!STATE.config.okpos.auto) {
+      log('okpos', 'OKPOS 자동연동 꺼짐', 'info');
+      STATE.crawlStatus.okpos = 'idle';
     }
-    sendState();
-  } else if (doOk && !STATE.config.okpos.auto) {
-    log('okpos', 'OKPOS 자동연동 꺼짐', 'info');
-    STATE.crawlStatus.okpos = 'idle';
   }
 
   // ═══ 후처리 ═══
@@ -11321,20 +11453,30 @@ app.post('/api/crawl/okpos-only', async function(req, res) {
       sendState();
       return res.json({ ok: false, error: 'OKPOS 계정 미설정' });
     }
-    // 로그인
-    if (!STATE.sessions.okpos) {
-      log('okpos', '로그인 시도...');
-      await okposLogin();
-    }
-    // 매출 크롤링
-    if (STATE.sessions.okpos) {
-      await okposSalesCrawl();
-      await okposTimeSalesCrawl();
-      STATE.crawlStatus.okpos = 'connected';
-      log('okpos', '✅ OKPOS 크롤링 완료', 'success');
+    if (puppeteer) {
+      // Puppeteer 모드
+      if (!STATE.sessions.okpos) { log('okpos', '로그인 시도...'); await okposLogin(); }
+      if (STATE.sessions.okpos) {
+        await okposSalesCrawl();
+        await okposTimeSalesCrawl();
+        STATE.crawlStatus.okpos = 'connected';
+        log('okpos', '✅ OKPOS 크롤링 완료', 'success');
+      } else {
+        STATE.crawlStatus.okpos = 'error';
+        log('okpos', '❌ OKPOS 로그인 실패', 'error');
+      }
     } else {
-      STATE.crawlStatus.okpos = 'error';
-      log('okpos', '❌ OKPOS 로그인 실패', 'error');
+      // HTTP 모드 (Vercel)
+      log('okpos', 'HTTP 모드로 크롤링');
+      if (!STATE.sessions.okpos) await okposHttpLogin();
+      if (STATE.sessions.okpos) {
+        await okposHttpSalesCrawl();
+        STATE.crawlStatus.okpos = 'connected';
+        log('okpos', '✅ OKPOS HTTP 크롤링 완료', 'success');
+      } else {
+        STATE.crawlStatus.okpos = 'error';
+        log('okpos', '❌ OKPOS HTTP 로그인 실패', 'error');
+      }
     }
   } catch(e) {
     STATE.crawlStatus.okpos = 'error';

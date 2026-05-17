@@ -1,0 +1,23 @@
+{
+  "name": "jamsabak-ticket-system",
+  "version": "3.0.0",
+  "description": "한국잠사박물관 QR+POS 통합시스템",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "vercel-build": "echo 'no build needed'"
+  },
+  "dependencies": {
+    "cheerio": "^1.2.0",
+    "dotenv": "^16.4.0",
+    "exceljs": "^4.4.0",
+    "express": "^4.18.0",
+    "iconv-lite": "^0.6.3",
+    "puppeteer": "^22.0.0",
+    "ws": "^8.16.0",
+    "@supabase/supabase-js": "^2.45.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

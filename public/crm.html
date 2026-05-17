@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>잠사박물관 고객관리</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Malgun Gothic',sans-serif;background:#080815;color:#eef;height:100vh;overflow:hidden}
+.app{display:flex;height:100vh;flex-direction:column}
+.topbar{background:linear-gradient(135deg,#1a1040,#2a1050);padding:10px 20px;display:flex;align-items:center;gap:12px;border-bottom:1px solid #252550;flex-shrink:0}
+.topbar h1{font-size:16px;font-weight:800}
+.topbar .cnt{font-size:12px;color:#e91e7a;font-weight:700}
+.topbar input{padding:8px 12px;background:#1a1a3a;border:1px solid #333;border-radius:8px;color:#fff;font-size:13px;width:240px;outline:none}
+.topbar input:focus{border-color:#e91e7a}
+.topbar a{color:#888;font-size:11px;text-decoration:none;margin-left:auto}
+.main{display:flex;flex:1;overflow:hidden}
+/* 좌측 고객 목록 */
+.sidebar{width:300px;border-right:1px solid #252550;display:flex;flex-direction:column;flex-shrink:0}
+.clist{flex:1;overflow-y:auto}
+.citem{padding:10px 14px;border-bottom:1px solid #151530;cursor:pointer;transition:background .1s}
+.citem:hover{background:#1a1a3a}
+.citem.active{background:#e91e7a12;border-left:3px solid #e91e7a}
+.citem .nm{font-size:13px;font-weight:700}
+.citem .ph{font-size:10px;color:#888}
+.citem .meta{display:flex;gap:6px;margin-top:3px;font-size:9px;color:#666}
+.citem .meta b{color:#e91e7a}
+/* 우측 상세 */
+.detail{flex:1;overflow-y:auto;padding:16px 20px}
+.empty{display:flex;align-items:center;justify-content:center;height:100%;color:#555;font-size:14px}
+/* 프로필 카드 */
+.profile{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+.pcard{background:#111128;border:1px solid #252550;border-radius:12px;padding:14px}
+.pcard h3{font-size:12px;font-weight:700;color:#888;margin-bottom:8px}
+.pcard .big{font-size:28px;font-weight:800;color:#e91e7a}
+.pcard .sub{font-size:10px;color:#888;margin-top:2px}
+.pcard .row{display:flex;justify-content:space-between;padding:4px 0;font-size:11px;border-bottom:1px solid #1a1a3a}
+.pcard .row:last-child{border:none}
+.pcard .row .k{color:#888}
+.pcard .row .v{color:#fff;font-weight:600}
+/* 도넛 차트 (CSS) */
+.donut{width:80px;height:80px;border-radius:50%;position:relative;display:flex;align-items:center;justify-content:center;margin:0 auto 6px}
+.donut .center{font-size:18px;font-weight:800;z-index:1}
+.donut .label{font-size:8px;color:#888;z-index:1}
+/* 탭 */
+.tabs{display:flex;border-bottom:1px solid #252550;margin-bottom:12px}
+.tab{padding:8px 16px;font-size:11px;font-weight:600;cursor:pointer;color:#666;border-bottom:2px solid transparent}
+.tab.on{color:#e91e7a;border-bottom-color:#e91e7a}
+/* 테이블 */
+.tbl{width:100%;border-collapse:collapse;font-size:11px}
+.tbl th{background:#1a1a3a;color:#888;padding:6px 8px;text-align:left;font-weight:600;border-bottom:1px solid #252550}
+.tbl td{padding:6px 8px;border-bottom:1px solid #151530;color:#ccc}
+.tbl tr:hover td{background:#1a1a3a}
+.tag{display:inline-block;font-size:8px;padding:1px 5px;border-radius:3px;font-weight:600;margin-right:2px}
+.tag-nv{background:#03C75A18;color:#03C75A}
+.tag-la{background:#6366f118;color:#6366f1}
+.tag-wk{background:#f59e0b18;color:#f59e0b}
+.tag-ok{background:#10b98118;color:#10b981}
+.tag-fail{background:#ef444418;color:#ef4444}
+.tag-use{background:#3b82f618;color:#3b82f6}
+.note-box{margin-top:12px;display:flex;gap:6px}
+.note-box input{flex:1;padding:8px;background:#1a1a3a;border:1px solid #333;border-radius:6px;color:#fff;font-size:12px;outline:none}
+.note-box select{padding:8px;background:#1a1a3a;border:1px solid #333;border-radius:6px;color:#aaa;font-size:11px}
+.note-box button{padding:8px 14px;background:#e91e7a;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:700;font-size:11px}
+.bar{height:14px;border-radius:3px;display:flex;align-items:center;padding:0 4px;font-size:7px;color:#fff;font-weight:700}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <h1>👤 고객관리</h1>
+    <span class="cnt" id="totalCnt">0명</span>
+    <input id="searchInput" placeholder="이름 또는 전화번호 검색" oninput="loadCustomers()">
+    <label style="margin-left:8px;padding:6px 12px;background:#6366f1;color:#fff;border-radius:6px;cursor:pointer;font-size:11px;font-weight:700">
+      📥 파일 업로드
+      <input type="file" accept=".xlsx,.xls,.csv,.tsv" style="display:none" onchange="uploadFile(this)">
+    </label>
+    <span id="uploadStatus" style="font-size:10px;color:#888"></span>
+    <a href="/">← 대시보드</a>
+  </div>
+  <div class="main">
+    <div class="sidebar">
+      <div class="clist" id="customerList"></div>
+    </div>
+    <div class="detail" id="detailArea">
+      <div class="empty">← 고객을 선택하세요</div>
+    </div>
+  </div>
+</div>
+
+<script>
+var customers=[];
+var selectedPhone=null;
+
+async function loadCustomers(){
+  var q=document.getElementById('searchInput').value.trim();
+  var r=await fetch('/api/crm/customers?q='+encodeURIComponent(q));
+  var d=await r.json();
+  if(!d.ok)return;
+  customers=d.customers;
+  document.getElementById('totalCnt').textContent=d.total+'명';
+  renderList();
+}
+
+function renderList(){
+  var box=document.getElementById('customerList');
+  box.innerHTML=customers.map(function(c){
+    var active=selectedPhone===c.phone?'active':'';
+    var srcTag=Object.keys(c.sources||{}).map(function(s){
+      return s==='naver'?'<span class="tag tag-nv">NV</span>':s==='la2fdoci'?'<span class="tag tag-la">LA</span>':'<span class="tag tag-wk">'+s+'</span>';
+    }).join('');
+    return '<div class="citem '+active+'" onclick="selectCustomer(\''+c.phone.replace(/'/g,"\\'")+'\')">'
+      +'<div style="display:flex;align-items:center;gap:6px"><div class="nm">'+c.buyer+'</div>'+srcTag+'</div>'
+      +'<div class="ph">'+c.phone+'</div>'
+      +'<div class="meta"><span>구매 <b>'+c.totalPurchases+'</b>건</span><span>방문 <b>'+c.visits+'</b>회</span><span>'+c.totalSpent.toLocaleString()+'원</span><span style="margin-left:auto;color:#555">'+c.lastDate+'</span></div>'
+    +'</div>';
+  }).join('');
+}
+
+async function selectCustomer(phone){
+  selectedPhone=phone;
+  renderList();
+  var box=document.getElementById('detailArea');
+  box.innerHTML='<div class="empty">로딩 중...</div>';
+  var ph=phone.replace(/[^0-9]/g,'');
+  var r=await fetch('/api/crm/customer/'+encodeURIComponent(ph));
+  var d=await r.json();
+  if(!d.ok){box.innerHTML='<div class="empty">고객 정보를 불러올 수 없습니다</div>';return;}
+  renderDetail(d.customer,d.purchases,d.notes);
+}
+
+function renderDetail(c,purchases,notes){
+  var box=document.getElementById('detailArea');
+  var srcList=Object.keys(c.sources||{}).map(function(s){return s+'('+c.sources[s]+')'}).join(', ');
+  var prodList=Object.keys(c.products||{}).sort(function(a,b){return c.products[b]-c.products[a]}).slice(0,5);
+  var complete=c.visits, noshow=0, cancel=c.cancel;
+
+  // 월별 방문 차트 데이터
+  var months=Object.keys(c.monthlyVisits||{}).sort().slice(-6);
+  var maxV=Math.max.apply(null,months.map(function(m){return c.monthlyVisits[m]}));
+
+  var h='';
+  // ═══ 프로필 상단 ═══
+  h+='<div style="display:flex;align-items:center;gap:14px;margin-bottom:16px">';
+  h+='<div style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#e91e7a,#6366f1);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:800">'+c.buyer[0]+'</div>';
+  h+='<div><div style="font-size:18px;font-weight:800">'+c.buyer+'</div>';
+  h+='<div style="font-size:11px;color:#aaa">'+c.phone+'</div></div>';
+  h+='<div style="margin-left:auto;text-align:right"><div style="font-size:10px;color:#888">등록경로</div><div style="font-size:12px;font-weight:600">'+srcList+'</div></div>';
+  h+='</div>';
+
+  // ═══ 통계 카드 4개 ═══
+  h+='<div class="profile">';
+  // 예매내역
+  h+='<div class="pcard"><h3>📋 예매내역</h3>';
+  h+='<div style="display:flex;align-items:center;gap:16px">';
+  h+='<div style="width:90px;height:90px;border-radius:50%;border:6px solid #3b82f6;display:flex;flex-direction:column;align-items:center;justify-content:center">';
+  h+='<div style="font-size:10px;color:#888">총 예매</div><div style="font-size:24px;font-weight:800">'+c.totalPurchases+'</div></div>';
+  h+='<div style="font-size:11px;line-height:2"><span style="color:#3b82f6">■</span> 완료 <b>'+complete+'</b>회<br><span style="color:#ef4444">■</span> 취소 <b>'+cancel+'</b>회</div>';
+  h+='</div></div>';
+
+  // 결제금액
+  h+='<div class="pcard"><h3>💰 결제금액</h3>';
+  h+='<div style="display:flex;gap:20px">';
+  h+='<div><div style="font-size:24px;font-weight:800;color:#e91e7a">'+c.avgSpent.toLocaleString()+'<span style="font-size:12px">원</span></div><div style="font-size:10px;color:#888">평균 결제금액</div></div>';
+  h+='<div><div style="font-size:24px;font-weight:800">'+c.totalSpent.toLocaleString()+'<span style="font-size:12px">원</span></div><div style="font-size:10px;color:#888">총 결제금액</div></div>';
+  h+='</div></div>';
+
+  // 재방문주기
+  h+='<div class="pcard"><h3>🔄 재방문주기</h3>';
+  if(c.visits>=2){
+    h+='<div style="font-size:24px;font-weight:800;color:#10b981">'+c.revisitDays+'<span style="font-size:12px">일</span></div>';
+    h+='<div style="font-size:10px;color:#888">평균 재방문 간격</div>';
+  }else{
+    h+='<div style="font-size:12px;color:#666">'+(c.visits===1?'첫 방문 고객':'방문 기록 없음')+'</div>';
+  }
+  h+='<div style="font-size:10px;color:#888;margin-top:4px">최초: '+c.firstDate+' · 최근: '+c.lastDate+'</div>';
+  h+='</div>';
+
+  // 선호 상품
+  h+='<div class="pcard"><h3>🏷️ 선호 상품</h3>';
+  prodList.forEach(function(p){
+    var cnt=c.products[p];
+    var pct=Math.round(cnt/c.totalPurchases*100);
+    h+='<div style="margin-bottom:4px"><div style="display:flex;justify-content:space-between;font-size:10px;margin-bottom:2px"><span>'+p+'</span><span style="color:#e91e7a">'+cnt+'건 ('+pct+'%)</span></div>';
+    h+='<div class="bar" style="width:'+Math.max(pct,8)+'%;background:#e91e7a">'+pct+'%</div></div>';
+  });
+  h+='</div>';
+  h+='</div>';
+
+  // ═══ 월별 방문 ═══
+  if(months.length>1){
+    h+='<div class="pcard" style="margin-bottom:16px"><h3>📊 월별 방문</h3>';
+    h+='<div style="display:flex;gap:4px;align-items:flex-end;height:60px">';
+    months.forEach(function(m){
+      var v=c.monthlyVisits[m];
+      var pct=Math.round(v/maxV*100);
+      h+='<div style="flex:1;text-align:center"><div class="bar" style="height:'+Math.max(pct,10)+'%;background:#3b82f6;width:100%">'+v+'</div><div style="font-size:8px;color:#666;margin-top:2px">'+m.substring(5)+'</div></div>';
+    });
+    h+='</div></div>';
+  }
+
+  // ═══ 탭: 예매이력 / 상담이력 ═══
+  h+='<div class="tabs"><div class="tab on" onclick="switchCrmTab(this,\'purchaseTable\',\'noteTable\')">📦 예매이력 ('+purchases.length+')</div>';
+  h+='<div class="tab" onclick="switchCrmTab(this,\'noteTable\',\'purchaseTable\')">💬 상담이력 ('+notes.length+')</div></div>';
+
+  // 예매이력 테이블
+  h+='<div id="purchaseTable"><table class="tbl"><tr><th>날짜</th><th>상품</th><th>수량</th><th>금액</th><th>출처</th><th>상태</th><th>진행이력</th></tr>';
+  purchases.forEach(function(p){
+    var sc=p.source==='naver'?'tag-nv':p.source==='la2fdoci'?'tag-la':'tag-wk';
+    var stc=p.status==='사용완료'?(p.adminOk?'tag-ok':'tag-fail'):p.status==='사용가능'?'tag-use':'tag-fail';
+    var hist=(p.history||[]).map(function(h){return h.action}).join(' → ');
+    h+='<tr><td>'+p.date+'</td><td>'+p.product+'</td><td>'+p.qty+'</td><td style="text-align:right">'+p.price.toLocaleString()+'</td>';
+    h+='<td><span class="tag '+sc+'">'+p.source+'</span></td>';
+    h+='<td><span class="tag '+stc+'">'+(p.status==='사용완료'&&!p.adminOk?'NV미완료':p.status)+'</span></td>';
+    h+='<td style="font-size:9px;color:#666">'+hist+'</td></tr>';
+  });
+  h+='</table></div>';
+
+  // 상담이력
+  h+='<div id="noteTable" style="display:none">';
+  if(notes.length===0){h+='<div style="padding:20px;text-align:center;color:#555">상담 이력이 없습니다</div>';}
+  else{
+    h+='<table class="tbl"><tr><th>일시</th><th>유형</th><th>내용</th><th>담당</th><th>관련상품</th></tr>';
+    notes.forEach(function(n){
+      h+='<tr><td style="white-space:nowrap">'+(n.time||'').substring(0,16)+'</td>';
+      h+='<td><span class="tag" style="background:#6366f118;color:#6366f1">'+(n.type||'memo')+'</span></td>';
+      h+='<td>'+n.text+'</td><td>'+(n.by||'')+'</td><td style="font-size:9px;color:#888">'+(n.product||'')+'</td></tr>';
+    });
+    h+='</table>';
+  }
+  h+='</div>';
+
+  // 메모 입력
+  h+='<div class="note-box">';
+  h+='<select id="noteType"><option value="memo">메모</option><option value="call">전화상담</option><option value="complaint">불만</option><option value="request">요청</option></select>';
+  h+='<input id="noteText" placeholder="상담 내용을 입력하세요...">';
+  h+='<button onclick="addCrmNote()">저장</button>';
+  h+='</div>';
+
+  box.innerHTML=h;
+}
+
+function switchCrmTab(el,show,hide){
+  el.parentElement.querySelectorAll('.tab').forEach(function(t){t.classList.remove('on');});
+  el.classList.add('on');
+  document.getElementById(show).style.display='';
+  document.getElementById(hide).style.display='none';
+}
+
+async function addCrmNote(){
+  var text=document.getElementById('noteText').value.trim();
+  if(!text){alert('내용을 입력하세요');return;}
+  var type=document.getElementById('noteType').value;
+  var ph=selectedPhone.replace(/[^0-9]/g,'');
+  await fetch('/api/customer/note',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({phone:ph,text:text,type:type,by:'직원'})});
+  document.getElementById('noteText').value='';
+  selectCustomer(selectedPhone);
+}
+
+function uploadFile(input){
+  var file=input.files[0];
+  if(!file)return;
+  var status=document.getElementById('uploadStatus');
+  status.textContent='📤 업로드 중: '+file.name+'...';
+  status.style.color='#f59e0b';
+  var reader=new FileReader();
+  reader.onload=function(e){
+    var base64=btoa(String.fromCharCode.apply(null,new Uint8Array(e.target.result)));
+    fetch('/api/crm/upload',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({data:base64,filename:file.name})
+    }).then(function(r){return r.json()}).then(function(d){
+      if(d.ok){
+        status.textContent='✅ '+d.imported+'건 반영 완료! (전체 '+d.total+'건)';
+        status.style.color='#10b981';
+        loadCustomers();
+      }else{
+        status.textContent='❌ '+d.error;
+        status.style.color='#ef4444';
+      }
+      input.value='';
+    }).catch(function(err){
+      status.textContent='❌ 업로드 실패';
+      status.style.color='#ef4444';
+    });
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+loadCustomers();
+</script>
+</body>
+</html>

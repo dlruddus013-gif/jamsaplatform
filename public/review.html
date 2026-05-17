@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>한국잠사박물관 | 리뷰 이벤트</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#f7f5f0;--card:#fff;--border:#e4ddd3;
+  --text:#2d2a26;--sub:#8a8478;--muted:#b8b0a4;
+  --green:#2e7d32;--orange:#e65100;--purple:#7b1fa2;
+  --shadow:0 2px 16px rgba(0,0,0,.06);
+  --radius:16px;
+}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);
+  min-height:100dvh;display:flex;flex-direction:column;-webkit-font-smoothing:antialiased}
+
+.header{background:linear-gradient(135deg,#e65100,#f57c00);color:#fff;
+  padding:24px 16px 32px;text-align:center;position:relative;overflow:hidden}
+.header::before{content:'';position:absolute;top:-30px;right:-30px;width:120px;height:120px;
+  background:rgba(255,255,255,.08);border-radius:50%}
+.header::after{content:'';position:absolute;bottom:-20px;left:-10%;width:120%;height:40px;
+  background:var(--bg);border-radius:50% 50% 0 0}
+.header h1{font-size:22px;font-weight:800;letter-spacing:-.5px;margin-bottom:4px;position:relative}
+.header p{font-size:13px;opacity:.9;position:relative}
+
+.main{flex:1;padding:16px;max-width:480px;margin:0 auto;width:100%}
+
+.card{background:var(--card);border-radius:var(--radius);padding:20px;
+  box-shadow:var(--shadow);border:1px solid var(--border);margin-bottom:16px}
+.card-title{font-size:15px;font-weight:800;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+
+/* 폼 */
+label{display:block;font-size:12px;font-weight:600;color:var(--sub);margin-bottom:6px;margin-top:12px}
+label:first-child{margin-top:0}
+input[type="text"],input[type="tel"],input[type="url"],textarea{
+  width:100%;padding:14px 16px;border:2px solid var(--border);border-radius:12px;
+  font-size:15px;font-family:inherit;outline:none;background:#fff;color:var(--text);transition:border .2s}
+input:focus,textarea:focus{border-color:var(--orange)}
+textarea{resize:vertical;min-height:60px}
+input::placeholder,textarea::placeholder{color:var(--muted)}
+
+/* 플랫폼 선택 */
+.platform-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.platform-btn{padding:16px 8px;border:2px solid var(--border);border-radius:14px;background:#fff;
+  cursor:pointer;text-align:center;transition:all .2s;font-family:inherit}
+.platform-btn:active{transform:scale(.97)}
+.platform-btn.selected{border-color:var(--orange);background:#fff5f0}
+.platform-btn .icon{font-size:28px;margin-bottom:4px}
+.platform-btn .name{font-size:12px;font-weight:700;color:var(--text)}
+.platform-btn .desc{font-size:10px;color:var(--sub);margin-top:2px}
+
+/* 리워드 선택 */
+.reward-grid{display:flex;flex-direction:column;gap:10px}
+.reward-btn{padding:16px;border:2px solid var(--border);border-radius:14px;background:#fff;
+  cursor:pointer;display:flex;align-items:center;gap:14px;transition:all .2s;font-family:inherit;text-align:left}
+.reward-btn:active{transform:scale(.98)}
+.reward-btn.selected{border-color:var(--green);background:#f0fdf4}
+.reward-btn .emoji{font-size:32px;flex-shrink:0}
+.reward-btn .info .name{font-size:15px;font-weight:700;color:var(--text)}
+.reward-btn .info .desc{font-size:11px;color:var(--sub);margin-top:2px}
+.reward-btn .check{margin-left:auto;width:24px;height:24px;border-radius:12px;
+  border:2px solid var(--border);display:flex;align-items:center;justify-content:center;
+  font-size:14px;color:#fff;flex-shrink:0;transition:all .2s}
+.reward-btn.selected .check{background:var(--green);border-color:var(--green)}
+
+/* 제출 버튼 */
+.submit-btn{width:100%;padding:18px;border:none;border-radius:14px;font-size:17px;
+  font-weight:800;cursor:pointer;font-family:inherit;transition:all .15s;
+  background:linear-gradient(135deg,#e65100,#f57c00);color:#fff;
+  box-shadow:0 6px 20px rgba(230,81,0,.25)}
+.submit-btn:active{transform:scale(.97)}
+.submit-btn:disabled{background:#ccc;box-shadow:none;cursor:not-allowed}
+
+/* 스텝 */
+.steps{display:flex;justify-content:center;gap:8px;margin-bottom:20px}
+.step{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted)}
+.step.active{color:var(--orange);font-weight:700}
+.step .num{width:22px;height:22px;border-radius:11px;background:var(--border);color:#fff;
+  display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800}
+.step.active .num{background:var(--orange)}
+.step.done .num{background:var(--green)}
+.step-line{width:20px;height:2px;background:var(--border);align-self:center}
+
+/* 완료 화면 */
+.done-card{text-align:center;animation:scaleIn .5s ease}
+.done-emoji{font-size:64px;margin-bottom:8px}
+.done-title{font-size:22px;font-weight:800;color:var(--green);margin-bottom:6px}
+.done-sub{font-size:13px;color:var(--sub);line-height:1.6;margin-bottom:20px}
+.reward-code-box{background:#f0fdf4;border:2px dashed var(--green);border-radius:14px;
+  padding:20px;margin-bottom:16px}
+.reward-code-box .label{font-size:11px;color:var(--green);font-weight:600;margin-bottom:6px}
+.reward-code-box .code{font-size:28px;font-weight:800;color:var(--green);letter-spacing:2px;font-family:monospace}
+.reward-code-box .name{font-size:14px;color:var(--text);margin-top:6px;font-weight:600}
+
+/* 리워드 확인 (매표소용) */
+.verify-card{text-align:center;animation:slideUp .4s}
+.verify-status{font-size:18px;font-weight:800;margin-bottom:6px}
+.verify-status.ok{color:var(--green)}
+.verify-status.used{color:var(--orange)}
+.verify-status.expired{color:#d32f2f}
+.use-reward-btn{width:100%;padding:16px;border:none;border-radius:14px;font-size:16px;
+  font-weight:800;cursor:pointer;font-family:inherit;
+  background:linear-gradient(135deg,#2e7d32,#43a047);color:#fff;
+  box-shadow:0 4px 16px rgba(46,125,50,.3);margin-top:16px}
+.use-reward-btn:active{transform:scale(.97)}
+
+/* 이벤트 배너 */
+.event-banner{background:linear-gradient(135deg,#fff8e1,#fff3e0);
+  border:2px solid #ffe0b2;border-radius:14px;padding:16px;margin-bottom:16px;text-align:center}
+.event-banner .title{font-size:16px;font-weight:800;color:var(--orange);margin-bottom:6px}
+.event-banner .desc{font-size:12px;color:var(--sub);line-height:1.6}
+
+/* 토스트 */
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+  padding:12px 24px;border-radius:12px;color:#fff;font-size:13px;font-weight:600;
+  z-index:999;animation:toastIn .3s;box-shadow:0 4px 16px rgba(0,0,0,.15)}
+.toast.success{background:var(--green)}
+.toast.error{background:#d32f2f}
+.toast.info{background:#1565c0}
+
+.footer{text-align:center;padding:16px;font-size:11px;color:var(--sub);
+  border-top:1px solid var(--border);margin-top:auto}
+.footer a{color:var(--green);text-decoration:none;font-weight:600}
+
+@keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes scaleIn{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:scale(1)}}
+@keyframes toastIn{from{opacity:0;transform:translate(-50%,10px)}to{opacity:1;transform:translate(-50%,0)}}
+.loading{display:flex;align-items:center;justify-content:center;gap:8px;padding:30px;font-size:14px;color:var(--sub)}
+.spinner{width:20px;height:20px;border:3px solid var(--border);border-top-color:var(--orange);
+  border-radius:50%;animation:spin .6s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🎁 리뷰 이벤트</h1>
+  <p>한국잠사박물관 · 리뷰 남기고 리워드 받기!</p>
+</div>
+
+<div class="main">
+  <!-- 리워드 확인 모드 (/reward/:code) -->
+  <div id="verifyView" style="display:none"></div>
+  
+  <!-- 이벤트 참여 모드 -->
+  <div id="eventView">
+    <div class="event-banner">
+      <div class="title">📸 리뷰 남기고 선물 받으세요!</div>
+      <div class="desc">네이버 리뷰 · 맘카페 · SNS에 방문 후기를 올리고<br>매표소에서 바로 교환할 수 있는 리워드를 받으세요</div>
+    </div>
+
+    <div class="steps">
+      <div class="step active" id="s1"><span class="num">1</span>정보입력</div>
+      <div class="step-line"></div>
+      <div class="step" id="s2"><span class="num">2</span>리뷰등록</div>
+      <div class="step-line"></div>
+      <div class="step" id="s3"><span class="num">3</span>리워드선택</div>
+    </div>
+
+    <!-- STEP 1: 기본 정보 -->
+    <div id="step1" class="card">
+      <div class="card-title">📱 기본 정보</div>
+      <label>이름</label>
+      <input id="inpName" type="text" placeholder="이름을 입력해주세요">
+      <label>전화번호</label>
+      <input id="inpPhone" type="tel" placeholder="010-0000-0000" inputmode="tel">
+      <div style="margin-top:16px">
+        <button class="submit-btn" onclick="goStep(2)">다음 →</button>
+      </div>
+    </div>
+
+    <!-- STEP 2: 리뷰 플랫폼 & 인증 -->
+    <div id="step2" class="card" style="display:none">
+      <div class="card-title">📝 리뷰 등록</div>
+      <label>리뷰를 올린 곳을 선택해주세요</label>
+      <div class="platform-grid">
+        <button class="platform-btn" onclick="selectPlatform('naver')" id="pf-naver">
+          <div class="icon">🟢</div>
+          <div class="name">네이버</div>
+          <div class="desc">네이버 플레이스 리뷰</div>
+        </button>
+        <button class="platform-btn" onclick="selectPlatform('momcafe')" id="pf-momcafe">
+          <div class="icon">👩‍👧</div>
+          <div class="name">맘카페</div>
+          <div class="desc">네이버 카페 후기</div>
+        </button>
+        <button class="platform-btn" onclick="selectPlatform('sns')" id="pf-sns">
+          <div class="icon">📷</div>
+          <div class="name">SNS</div>
+          <div class="desc">인스타/블로그 등</div>
+        </button>
+      </div>
+      <label>리뷰 링크 또는 닉네임 <span style="color:var(--muted);font-weight:400">(선택)</span></label>
+      <input id="inpUrl" type="text" placeholder="리뷰 URL 또는 닉네임">
+      <label>한마디 <span style="color:var(--muted);font-weight:400">(선택)</span></label>
+      <textarea id="inpNote" placeholder="리뷰 내용을 간단히 알려주세요" rows="2"></textarea>
+      <div style="margin-top:16px;display:flex;gap:8px">
+        <button onclick="goStep(1)" style="flex:1;padding:14px;border:2px solid var(--border);border-radius:12px;background:#fff;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;color:var(--sub)">← 이전</button>
+        <button class="submit-btn" style="flex:2" onclick="goStep(3)">다음 →</button>
+      </div>
+    </div>
+
+    <!-- STEP 3: 리워드 선택 -->
+    <div id="step3" class="card" style="display:none">
+      <div class="card-title">🎁 리워드 선택</div>
+      <label>원하시는 리워드를 선택해주세요</label>
+      <div class="reward-grid">
+        <button class="reward-btn" onclick="selectReward('juice')" id="rw-juice">
+          <span class="emoji">🧃</span>
+          <div class="info"><div class="name">오디쥬스</div><div class="desc">신선한 오디쥬스 1잔</div></div>
+          <span class="check">✓</span>
+        </button>
+        <button class="reward-btn" onclick="selectReward('jelly')" id="rw-jelly">
+          <span class="emoji">🍬</span>
+          <div class="info"><div class="name">오디젤리</div><div class="desc">수제 오디젤리 1봉</div></div>
+          <span class="check">✓</span>
+        </button>
+        <button class="reward-btn" onclick="selectReward('ticket')" id="rw-ticket">
+          <span class="emoji">🎫</span>
+          <div class="info"><div class="name">재방문 입장권</div><div class="desc">다음날부터 본인만 사용가능 입장권 1매</div></div>
+          <span class="check">✓</span>
+        </button>
+      </div>
+      <div style="margin-top:16px;display:flex;gap:8px">
+        <button onclick="goStep(2)" style="flex:1;padding:14px;border:2px solid var(--border);border-radius:12px;background:#fff;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;color:var(--sub)">← 이전</button>
+        <button class="submit-btn" style="flex:2" id="submitBtn" onclick="submitReview()" disabled>리워드 받기 🎁</button>
+      </div>
+    </div>
+
+    <!-- 완료 -->
+    <div id="doneView" style="display:none"></div>
+  </div>
+</div>
+
+<div class="footer">
+  한국잠사박물관 · 충북 청주시 흥덕구 강내면 청주역로 213-52<br>
+  ☎ 043-235-1267
+</div>
+
+<script>
+var state = { step: 1, platform: '', reward: '', name: '', phone: '' };
+
+// ── 라우팅: /reward/:code 인 경우 리워드 확인 모드 ──
+(function(){
+  var m = location.pathname.match(/\/reward\/([A-Za-z0-9]+)/);
+  if (m) {
+    document.getElementById('eventView').style.display = 'none';
+    document.getElementById('verifyView').style.display = 'block';
+    loadReward(m[1]);
+  }
+})();
+
+async function loadReward(code) {
+  var el = document.getElementById('verifyView');
+  el.innerHTML = '<div class="card loading"><div class="spinner"></div>조회 중...</div>';
+  
+  try {
+    var r = await fetch('/api/review/reward/' + code);
+    var d = await r.json();
+    if (!d.ok) { el.innerHTML = errorCard(d.error); return; }
+    showRewardVerify(d.reward);
+  } catch(e) {
+    el.innerHTML = errorCard('서버 연결에 실패했습니다');
+  }
+}
+
+function showRewardVerify(rw) {
+  var el = document.getElementById('verifyView');
+  var rewards = {juice:{emoji:'🧃',name:'오디쥬스'},jelly:{emoji:'🍬',name:'오디젤리'},ticket:{emoji:'🎫',name:'재방문 입장권'}};
+  var info = rewards[rw.rewardId] || {emoji:'🎁',name:rw.name};
+  var pfName = {naver:'네이버 리뷰',momcafe:'맘카페 후기',sns:'SNS 리뷰'}[rw.platform]||rw.platform;
+  var expire = new Date(rw.expiresAt).toLocaleDateString('ko-KR');
+  
+  if (rw.status === 'issued') {
+    el.innerHTML = '<div class="card verify-card">'
+      +'<div style="font-size:56px;margin-bottom:8px">'+info.emoji+'</div>'
+      +'<div class="verify-status ok">✅ 사용 가능</div>'
+      +'<div style="font-size:13px;color:var(--sub);margin-bottom:16px">매표소 직원에게 이 화면을 보여주세요</div>'
+      +'<div class="reward-code-box">'
+      +'<div class="label">리워드 코드</div>'
+      +'<div class="code">'+rw.code+'</div>'
+      +'<div class="name">'+info.emoji+' '+info.name+'</div>'
+      +'</div>'
+      +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;text-align:center">'
+      +'<div style="background:#f5f3ef;border-radius:10px;padding:10px"><div style="font-size:10px;color:var(--sub)">고객명</div><div style="font-size:14px;font-weight:700">'+(rw.customerName||'-')+'</div></div>'
+      +'<div style="background:#f5f3ef;border-radius:10px;padding:10px"><div style="font-size:10px;color:var(--sub)">리뷰 플랫폼</div><div style="font-size:14px;font-weight:700">'+pfName+'</div></div>'
+      +'</div>'
+      +'<div style="font-size:11px;color:var(--muted);margin-bottom:16px">유효기간: '+expire+'까지</div>'
+      +'<button class="use-reward-btn" onclick="useReward(\''+rw.code+'\')">✓ 사용처리 (직원용)</button>'
+      +'</div>';
+  } else if (rw.status === 'used') {
+    el.innerHTML = '<div class="card verify-card">'
+      +'<div style="font-size:56px;margin-bottom:8px">⚠️</div>'
+      +'<div class="verify-status used">이미 사용된 리워드</div>'
+      +'<div style="font-size:13px;color:var(--sub);margin-bottom:12px">'+info.emoji+' '+info.name+'</div>'
+      +'<div style="font-size:12px;color:var(--muted)">사용일시: '+new Date(rw.usedAt).toLocaleString('ko-KR')+'</div>'
+      +'</div>';
+  } else {
+    el.innerHTML = '<div class="card verify-card">'
+      +'<div style="font-size:56px;margin-bottom:8px">❌</div>'
+      +'<div class="verify-status expired">만료된 리워드</div>'
+      +'<div style="font-size:13px;color:var(--sub)">유효기간이 지났습니다</div>'
+      +'</div>';
+  }
+}
+
+async function useReward(code) {
+  if (!confirm('이 리워드를 사용처리 하시겠습니까?')) return;
+  try {
+    var r = await fetch('/api/review/use', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({code:code})
+    });
+    var d = await r.json();
+    if (d.ok) {
+      showToast('✅ 리워드 사용 완료!','success');
+      loadReward(code);
+    } else {
+      showToast(d.error||'처리 실패','error');
+    }
+  } catch(e) { showToast('서버 오류','error'); }
+}
+
+function errorCard(msg) {
+  return '<div class="card" style="text-align:center;animation:slideUp .4s">'
+    +'<div style="font-size:48px;margin-bottom:8px">😔</div>'
+    +'<div style="font-size:15px;font-weight:700;color:#d32f2f;margin-bottom:4px">'+msg+'</div>'
+    +'<div style="font-size:12px;color:var(--sub)">코드를 다시 확인해주세요</div>'
+    +'</div>';
+}
+
+// ── 이벤트 참여 흐름 ──
+function goStep(n) {
+  if (n === 2) {
+    var name = document.getElementById('inpName').value.trim();
+    var phone = document.getElementById('inpPhone').value.trim().replace(/[^0-9]/g,'');
+    if (!phone || phone.length < 10) { showToast('전화번호를 정확히 입력해주세요','error'); return; }
+    state.name = name;
+    state.phone = phone;
+  }
+  if (n === 3 && !state.platform) { showToast('리뷰 플랫폼을 선택해주세요','error'); return; }
+  
+  state.step = n;
+  document.getElementById('step1').style.display = n===1?'block':'none';
+  document.getElementById('step2').style.display = n===2?'block':'none';
+  document.getElementById('step3').style.display = n===3?'block':'none';
+  
+  for(var i=1;i<=3;i++){
+    var el=document.getElementById('s'+i);
+    el.className='step'+(i<n?' done':'')+(i===n?' active':'');
+  }
+}
+
+function selectPlatform(p) {
+  state.platform = p;
+  ['naver','momcafe','sns'].forEach(function(id){
+    document.getElementById('pf-'+id).className='platform-btn'+(id===p?' selected':'');
+  });
+}
+
+function selectReward(r) {
+  state.reward = r;
+  ['juice','jelly','ticket'].forEach(function(id){
+    document.getElementById('rw-'+id).className='reward-btn'+(id===r?' selected':'');
+  });
+  document.getElementById('submitBtn').disabled = false;
+}
+
+async function submitReview() {
+  if (!state.reward) { showToast('리워드를 선택해주세요','error'); return; }
+  
+  document.getElementById('submitBtn').disabled = true;
+  document.getElementById('submitBtn').textContent = '처리 중...';
+  
+  try {
+    var r = await fetch('/api/review/submit', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        name: state.name,
+        phone: state.phone,
+        platform: state.platform,
+        rewardId: state.reward,
+        reviewUrl: document.getElementById('inpUrl').value.trim(),
+        reviewNote: document.getElementById('inpNote').value.trim()
+      })
+    });
+    var d = await r.json();
+    if (d.ok) {
+      showDone(d.review);
+    } else {
+      showToast(d.error||'제출 실패','error');
+      document.getElementById('submitBtn').disabled = false;
+      document.getElementById('submitBtn').textContent = '리워드 받기 🎁';
+    }
+  } catch(e) {
+    showToast('서버 연결 오류','error');
+    document.getElementById('submitBtn').disabled = false;
+    document.getElementById('submitBtn').textContent = '리워드 받기 🎁';
+  }
+}
+
+function showDone(review) {
+  document.getElementById('step3').style.display = 'none';
+  document.querySelectorAll('.steps')[0].style.display = 'none';
+  document.querySelector('.event-banner').style.display = 'none';
+  
+  var el = document.getElementById('doneView');
+  el.style.display = 'block';
+  el.innerHTML = '<div class="card done-card">'
+    +'<div class="done-emoji">🎉</div>'
+    +'<div class="done-title">리워드가 발급되었습니다!</div>'
+    +'<div class="done-sub">문자로 교환 링크가 전송됩니다.<br>매표소에서 링크를 보여주시면 교환됩니다.</div>'
+    +'<div class="reward-code-box">'
+    +'<div class="label">리워드</div>'
+    +'<div style="font-size:36px;margin:6px 0">'+review.rewardEmoji+'</div>'
+    +'<div class="name">'+review.rewardName+'</div>'
+    +'<div class="code" style="font-size:20px;margin-top:8px">'+review.rewardCode+'</div>'
+    +'</div>'
+    +'<div style="font-size:12px;color:var(--sub);margin-bottom:16px;line-height:1.6">'
+    +'📱 문자로 교환 링크가 발송됩니다<br>'
+    +'매표소에서 링크를 열어 직원에게 보여주세요<br>'
+    +'유효기간: 30일'
+    +'</div>'
+    +'<a href="'+review.rewardUrl+'" style="display:block;padding:14px;background:var(--green);color:#fff;'
+    +'border-radius:12px;text-decoration:none;font-weight:700;font-size:15px;text-align:center;margin-bottom:10px">'
+    +'🎫 교환 화면 바로가기</a>'
+    +'<button onclick="location.reload()" style="width:100%;padding:14px;border:2px solid var(--border);'
+    +'border-radius:12px;background:#fff;font-size:14px;font-weight:600;cursor:pointer;'
+    +'font-family:inherit;color:var(--sub)">다른 플랫폼으로 참여하기</button>'
+    +'</div>';
+}
+
+function showToast(msg, type) {
+  var t = document.createElement('div');
+  t.className = 'toast ' + (type||'info');
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(function(){t.remove()},2500);
+}
+</script>
+</body>
+</html>

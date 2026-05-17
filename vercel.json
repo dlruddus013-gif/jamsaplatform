@@ -1,0 +1,27 @@
+{
+  "version": 2,
+  "builds": [
+    { "src": "server.js", "use": "@vercel/node" }
+  ],
+  "routes": [
+    { "src": "/kiosk", "dest": "/server.js" },
+    { "src": "/closing", "dest": "/server.js" },
+    { "src": "/crm", "dest": "/server.js" },
+    { "src": "/c", "dest": "/server.js" },
+    { "src": "/api/(.*)", "dest": "/server.js" },
+    { "src": "/overlay.js", "dest": "/public/overlay.js" },
+    { "src": "/(.*)", "dest": "/public/$1" }
+  ],
+  "crons": [
+    {
+      "path": "/api/cron/crawl-la2f",
+      "schedule": "*/30 * * * *"
+    }
+  ],
+  "functions": {
+    "server.js": {
+      "maxDuration": 300,
+      "memory": 1024
+    }
+  }
+}

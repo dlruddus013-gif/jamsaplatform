@@ -118,7 +118,7 @@ function connectWS(){
       var ovEl=document.getElementById('liveOv_'+msg.key);
       if(ovEl){
         if(msg.img){ovEl.style.display='none';}
-        else{ovEl.style.display='flex';ovEl.innerHTML='<div style="font-size:11px;color:#10b981;font-weight:700">'+msg.step+'</div><div style="font-size:9px;color:#666;margin-top:4px">'+(msg.url||'HTTP 모드')+'</div>';}
+        else{ovEl.style.display='flex';ovEl.innerHTML='<div style="font-size:20px;margin-bottom:6px">🔄</div><div style="font-size:12px;color:#10b981;font-weight:700">'+(msg.step||'진행 중...')+'</div><div style="font-size:9px;color:#666;margin-top:4px">'+(msg.url||'HTTP 모드')+'</div>';}
       }
       var stepEl=document.getElementById('liveStep_'+msg.key);
       if(stepEl)stepEl.textContent=msg.step;
@@ -3943,13 +3943,42 @@ function renderCrawl(){
     h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px">';
     [{k:'la2fdoci',l:'LA',c:'#6366f1'},{k:'naver',l:'NV',c:'#03C75A'}].forEach(function(ch){
       var lv=live[ch.k];
-      h+='<div class="card" style="padding:6px;border-color:'+ch.c+'20">';
-      h+='<div style="font-size:10px;font-weight:700;color:'+ch.c+';margin-bottom:4px">'+ch.l+' 실시간</div>';
+      var cs3=S.crawlStatus[ch.k]||'idle';
+      var isActive=cs3==='crawling';
+      h+='<div class="card" style="padding:6px;border-color:'+(isActive?ch.c+'60':ch.c+'20')+'">';
+      h+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">';
+      h+='<span style="font-size:10px;font-weight:700;color:'+ch.c+'">'+ch.l+' 실시간</span>';
+      if(isActive) h+='<span style="font-size:8px;padding:2px 6px;background:'+ch.c+'20;color:'+ch.c+';border-radius:4px;font-weight:700;animation:pulse 2s infinite">● 크롤링 중</span>';
+      h+='</div>';
       h+='<div style="background:#000;border-radius:4px;overflow:hidden;aspect-ratio:16/10;position:relative">';
       if(lv&&lv.img) h+='<img id="liveImg_'+ch.k+'" src="data:image/jpeg;base64,'+lv.img+'" style="width:100%;height:100%;object-fit:contain;cursor:pointer" onclick="openLiveFullscreen(\''+ch.k+'\')">';
       else h+='<img id="liveImg_'+ch.k+'" src="/debug_'+ch.k+'.png?t='+Date.now()+'" style="width:100%;height:100%;object-fit:contain;cursor:pointer" onclick="openLiveFullscreen(\''+ch.k+'\')" onerror="this.style.display=\'none\'">';
-      h+='<div id="liveOv_'+ch.k+'" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;'+(lv&&lv.img?'display:none':'')+'"><div style="font-size:11px;color:'+(lv&&lv.step?'#10b981':'#444')+';font-weight:700">'+(lv&&lv.step?lv.step:'크롤링 시작 시 표시')+'</div></div>';
-      h+='</div></div>';
+      // 오버레이: 스크린샷 없으면 로그 기반 진행상태 표시
+      var ovStep=lv&&lv.step?lv.step:'';
+      if(!ovStep&&isActive) ovStep='연결 중...';
+      h+='<div id="liveOv_'+ch.k+'" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(0,0,0,.7);'+(lv&&lv.img?'display:none':'')+'">';
+      if(ovStep){
+        h+='<div style="font-size:20px;margin-bottom:6px">'+(isActive?'🔄':'⏸')+'</div>';
+        h+='<div style="font-size:12px;color:#10b981;font-weight:700">'+ovStep+'</div>';
+        if(lv&&lv.url) h+='<div style="font-size:9px;color:#666;margin-top:4px;max-width:90%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+lv.url+'</div>';
+      } else {
+        h+='<div style="font-size:20px;margin-bottom:6px">📡</div>';
+        h+='<div style="font-size:11px;color:#555;font-weight:600">대기 중</div>';
+        h+='<div style="font-size:9px;color:#444;margin-top:4px">▶ 버튼을 눌러 크롤링 시작</div>';
+      }
+      h+='</div>';
+      h+='</div>';
+      // LA 전용: HTTP 로그 미니 피드
+      var chLogs=S.logs.filter(function(l){return l&&l.c===ch.k}).slice(0,5);
+      if(chLogs.length>0){
+        h+='<div id="liveLogs_'+ch.k+'" style="margin-top:4px;max-height:80px;overflow-y:auto;font-size:9px;line-height:1.5">';
+        chLogs.forEach(function(l){
+          var icon2=l.s==='success'?'✅':l.s==='error'?'❌':l.s==='warning'?'⚠️':'ℹ️';
+          h+='<div style="color:'+(l.s==='success'?'#10b981':l.s==='error'?'#ef4444':'#888')+';overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+icon2+' '+((l.m||'').substring(0,60))+'</div>';
+        });
+        h+='</div>';
+      }
+      h+='</div>';
     });
     h+='</div>';
     
@@ -3994,13 +4023,34 @@ function renderCrawl(){
     h+='<div><span style="font-size:14px;font-weight:800;color:'+chColor+'">'+chLabel+'</span> <span style="font-size:9px;padding:2px 6px;border-radius:6px;background:'+(conn?chColor+'20':'#33333360')+';color:'+(conn?chColor:'#666')+'">'+(conn?'✓ 연결':'○ 대기')+'</span></div>';
     h+='<div style="display:flex;gap:4px"><button onclick="refreshLive(\''+chKey+'\');return false" class="btn" style="padding:4px 8px;border-radius:4px;background:#252540;color:#888;font-size:9px;border:1px solid #333">📸</button>';
     h+='<button onclick="crawlOnce(\''+chKey+'\');return false" class="btn" style="padding:4px 8px;border-radius:4px;background:'+chColor+'15;color:'+chColor+';font-size:9px;border:1px solid '+chColor+'30">🔄 1회</button></div></div>';
+    var cs4=S.crawlStatus[chKey]||'idle';var isAct4=cs4==='crawling';
     h+='<div style="background:#000;border-radius:6px;overflow:hidden;aspect-ratio:16/10;position:relative;margin-bottom:8px">';
     if(lv&&lv.img) h+='<img id="liveImg_'+chKey+'" src="data:image/jpeg;base64,'+lv.img+'" style="width:100%;height:100%;object-fit:contain;cursor:pointer" onclick="openLiveFullscreen(\''+chKey+'\');">';
     else h+='<img id="liveImg_'+chKey+'" src="/debug_'+chKey+'.png?t='+Date.now()+'" style="width:100%;height:100%;object-fit:contain;cursor:pointer" onerror="this.style.display=\'none\'">';
-    h+='<div id="liveOv_'+chKey+'" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;'+(lv&&lv.img?'display:none':'')+'"><div style="font-size:13px;color:'+(lv&&lv.step?'#10b981':'#444')+';font-weight:700">'+(lv&&lv.step?lv.step:'크롤링 시작 시 표시')+'</div>'+(lv&&lv.url?'<div style="font-size:9px;color:#666;margin-top:4px">'+lv.url+'</div>':'')+'</div>';
-    h+='</div>';
-    h+='<div id="liveStep_'+chKey+'" style="font-size:9px;color:'+chColor+';margin-bottom:2px">'+(lv?lv.step:'대기')+'</div>';
-    h+='<div id="liveUrl_'+chKey+'" style="font-size:8px;color:#555;margin-bottom:8px">'+(lv?(lv.url||'').substring(0,80):'')+'</div>';
+    var ov4Step=lv&&lv.step?lv.step:(isAct4?'연결 중...':'');
+    h+='<div id="liveOv_'+chKey+'" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(0,0,0,.7);'+(lv&&lv.img?'display:none':'')+'">';
+    if(ov4Step){
+      h+='<div style="font-size:24px;margin-bottom:8px">'+(isAct4?'🔄':'📡')+'</div>';
+      h+='<div style="font-size:14px;color:#10b981;font-weight:700">'+ov4Step+'</div>';
+      if(lv&&lv.url) h+='<div style="font-size:9px;color:#666;margin-top:6px;max-width:90%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+lv.url+'</div>';
+    } else {
+      h+='<div style="font-size:24px;margin-bottom:8px">📡</div>';
+      h+='<div style="font-size:13px;color:#555;font-weight:600">대기 중</div>';
+      h+='<div style="font-size:10px;color:#444;margin-top:6px">🔄 1회 버튼으로 크롤링을 시작하세요</div>';
+    }
+    h+='</div></div>';
+    h+='<div id="liveStep_'+chKey+'" style="font-size:9px;color:'+chColor+';margin-bottom:2px">'+(lv?lv.step:(isAct4?'크롤링 중...':'대기'))+'</div>';
+    h+='<div id="liveUrl_'+chKey+'" style="font-size:8px;color:#555;margin-bottom:4px">'+(lv?(lv.url||'').substring(0,80):'')+'</div>';
+    // 해당 채널 로그 미니피드
+    var chLogs2=S.logs.filter(function(l){return l&&l.c===chKey}).slice(0,8);
+    if(chLogs2.length>0){
+      h+='<div style="background:#0a0a20;border-radius:6px;padding:6px 8px;margin-bottom:8px;max-height:120px;overflow-y:auto;font-size:9px;line-height:1.6">';
+      chLogs2.forEach(function(l){
+        var ic3=l.s==='success'?'✅':l.s==='error'?'❌':l.s==='warning'?'⚠️':'ℹ️';
+        h+='<div style="color:'+(l.s==='success'?'#10b981':l.s==='error'?'#ef4444':'#888')+';overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+ic3+' '+(l.m||'').substring(0,80)+'</div>';
+      });
+      h+='</div>';
+    }
     h+='<div style="display:flex;gap:4px">';
     h+='<button onclick="testConn(\''+chKey+'\');return false" class="btn" style="flex:1;padding:6px;border-radius:6px;background:'+chColor+'15;color:'+chColor+';font-size:10px;border:1px solid '+chColor+'20">🔗 테스트</button>';
     h+='<button onclick="openStepEditor(\''+chKey+'\');return false" class="btn" style="flex:1;padding:6px;border-radius:6px;background:#f59e0b15;color:#f59e0b;font-size:10px;border:1px solid #f59e0b20">⚙ 설정</button>';

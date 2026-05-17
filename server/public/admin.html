@@ -409,9 +409,9 @@ function renderTickets(){
     }
     h+='</div>';
   }
-  h+='<div style="border-radius:8px;overflow:hidden;border:1px solid #151528"><div style="overflow-x:auto"><table style="min-width:1050px"><thead><tr style="font-size:10px"><th>출처</th><th>주문번호 / 쿠폰코드</th><th>구매자</th><th>상품</th><th>매수</th><th>금액</th><th>구매일</th><th>유효기간</th><th>상태</th><th>문자</th><th>관리</th></tr></thead><tbody>';
+  h+='<div style="border-radius:8px;overflow:hidden;border:1px solid #151528"><div style="overflow-x:auto"><table style="min-width:1250px"><thead><tr style="font-size:10px"><th>출처</th><th>주문번호 / 쿠폰코드</th><th>구매자</th><th>상품</th><th>매수</th><th>금액</th><th>구매일</th><th>유효기간</th><th>상태</th><th>사용일시</th><th>수정로그</th><th>문자</th><th>관리</th></tr></thead><tbody>';
   if(!S.tickets.length){
-    h+='<tr><td colspan="11" style="text-align:center;padding:30px;color:#444">티켓 없음</td></tr>';
+    h+='<tr><td colspan="13" style="text-align:center;padding:30px;color:#444">티켓 없음</td></tr>';
   } else {
     S.tickets.slice(0,80).forEach(function(t){
       var sC='';
@@ -450,6 +450,8 @@ function renderTickets(){
         +'<td style="font-size:8px;color:#8b8ba0;white-space:nowrap">'+(t.bookDate||t.detectedAt&&t.detectedAt.slice(0,10)||'-')+'</td>'
         +'<td style="font-size:8px;white-space:nowrap;color:'+(t.validDate?(new Date(t.validDate.replace(/\./g,'-'))<=new Date()?'#ef4444':'#10b981'):'#555')+'">'+(t.validDate||'-')+'</td>'
         +'<td>'+stBadge(t.status)+(t.naverStatus&&t.source==='naver'?'<div style="font-size:7px;margin-top:1px"><span style="padding:1px 4px;border-radius:3px;font-weight:600;background:'+(t.naverStatus==='이용완료'||t.naverStatus==='완료'?'rgba(16,185,129,.12);color:#10b981':t.naverStatus==='확정'?'rgba(59,130,246,.12);color:#3b82f6':t.naverStatus==='예매취소'||t.naverStatus==='취소'?'rgba(239,68,68,.12);color:#ef4444':'rgba(245,158,11,.12);color:#f59e0b')+'">NV:'+t.naverStatus+'</span></div>':'')+(t.forcedUse?'<div style="font-size:7px;color:#f97316">임의처리</div>':'')+(t.status==='사용완료'&&t.adminVerified===true?'<div style="font-size:7px;color:#10b981">✅사이트확인</div>':t.status==='사용완료'&&t.adminVerified===false?'<div style="font-size:7px;color:#ef4444">❌미반영 <button onclick="retryAdmin(\''+t.id+'\',\''+t.buyer+'\')" style="font-size:6px;padding:1px 4px;border-radius:3px;background:#ef444420;color:#ef4444;border:1px solid #ef444440;cursor:pointer">🔄재처리</button></div>':t.status==='사용완료'&&t.adminOk===true&&t.adminVerified==null?'<div style="font-size:7px;color:#888">처리됨·미확인</div>':t.status==='사용완료'&&!t.adminOk&&!t.forcedUse?'<div style="font-size:7px;color:#f59e0b">⚠️처리실패 <button onclick="retryAdmin(\''+t.id+'\',\''+t.buyer+'\')" style="font-size:6px;padding:1px 4px;border-radius:3px;background:#f59e0b20;color:#f59e0b;border:1px solid #f59e0b40;cursor:pointer">🔄재처리</button></div>':'')+'</td>'
+        +'<td style="font-size:8px;white-space:nowrap;color:#8b8ba0">'+(t.usedAt?'<div style="color:#10b981;font-weight:600">'+t.usedAt.slice(0,10)+'</div><div style="font-size:7px;color:#888">'+t.usedAt.slice(11,19)+'</div>':'<span style="color:#444">-</span>')+'</td>'
+        +'<td style="font-size:7px;max-width:100px">'+(t.editLog&&t.editLog.length>0?t.editLog.slice(-3).map(function(l){return '<div style="color:#a78bfa;margin-bottom:1px" title="'+l.at+'"><span style="color:#555">'+l.at.slice(5,16).replace('T',' ')+'</span> '+l.fields.join(',')+'</div>'}).join('')+(t.editLog.length>3?'<div style="color:#555;font-style:italic">...외 '+(t.editLog.length-3)+'건</div>':''):'<span style="color:#444">-</span>')+'</td>'
         +'<td>'+sC+'</td>'
         +'<td>'+mgmt+'</td></tr>';
     });

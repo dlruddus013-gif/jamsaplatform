@@ -8452,6 +8452,9 @@ app.post('/api/ticket/edit', function(req, res) {
   if (b.price !== undefined && parseInt(b.price) !== tk.price) { tk.price = parseInt(b.price); tk.items = [{ n: tk.product, p: tk.price }]; changed.push('금액'); }
   if (b.status !== undefined && b.status !== tk.status) { tk.status = b.status; changed.push('상태→' + b.status); }
   if (changed.length > 0) {
+    if (!tk.editLog) tk.editLog = [];
+    tk.editLog.push({ at: new Date().toISOString(), fields: changed.slice() });
+    if (tk.editLog.length > 20) tk.editLog = tk.editLog.slice(-20);
     log('ticket', '✏️ ' + tk.buyer + ' 수정: ' + changed.join(', '));
     broadcast({ type: 'ticketUpdate', data: tk });
   }

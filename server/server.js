@@ -2053,6 +2053,201 @@ async function naverLoadCookies(page) {
   } catch(e) { log('naver', '쿠키 로드 실패: ' + e.message, 'warning'); return false; }
 }
 
+// ═══ 네이버 HTTP 크롤링 (쿠키 기반, Puppeteer 불필요) ═══
+var NAVER_HTTP_COOKIE_FILE = path.join(__dirname, 'naver_http_cookies.txt');
+
+function naverHttpGet(urlPath) {
+  var cookie = STATE._naverHttpCookie || '';
+  if (!cookie) {
+    try { cookie = fs.readFileSync(NAVER_HTTP_COOKIE_FILE, 'utf8').trim(); STATE._naverHttpCookie = cookie; } catch(e) {}
+  }
+  return new Promise(function(resolve, reject) {
+    var parsedUrl = new URL(urlPath.indexOf('http') === 0 ? urlPath : 'https://partner.booking.naver.com' + urlPath);
+    var req = https.request({
+      hostname: parsedUrl.hostname, port: 443,
+      path: parsedUrl.pathname + parsedUrl.search, method: 'GET',
+      headers: {
+        'Cookie': cookie,
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+        'Accept': 'application/json, text/html, */*',
+        'Referer': 'https://partner.booking.naver.com/',
+      },
+      timeout: 20000,
+    }, function(res) {
+      if (res.statusCode === 302 || res.statusCode === 301) {
+        var loc = res.headers.location || '';
+        res.resume();
+        if (loc.indexOf('nidlogin') >= 0 || loc.indexOf('login') >= 0) { resolve({ status: 401, data: '' }); return; }
+        naverHttpGet(loc).then(resolve).catch(reject);
+        return;
+      }
+      var chunks = [];
+      res.on('data', function(ch) { chunks.push(ch); });
+      res.on('end', function() { resolve({ status: res.statusCode, data: Buffer.concat(chunks).toString('utf8'), headers: res.headers }); });
+    });
+    req.on('error', function(e) { reject(e); });
+    req.on('timeout', function() { req.destroy(); reject(new Error('타임아웃')); });
+    req.end();
+  });
+}
+
+async function naverHttpCrawl() {
+  var cookie = STATE._naverHttpCookie || '';
+  if (!cookie) {
+    try { cookie = fs.readFileSync(NAVER_HTTP_COOKIE_FILE, 'utf8').trim(); STATE._naverHttpCookie = cookie; } catch(e) {}
+  }
+  if (!cookie) { log('naver', 'HTTP 쿠키 미설정 → 설정탭에서 쿠키를 입력하세요', 'error'); return []; }
+
+  var cfg = STATE.config.naver;
+  var pbid = cfg.partnerBizId || '784618';
+  var bizId = cfg.bizId || '507900';
+  var dateFrom = cfg.dateFrom || STATE.config.crawlDateFrom || new Date().toISOString().split('T')[0];
+  var dateTo = cfg.dateTo || STATE.config.crawlDateTo || new Date().toISOString().split('T')[0];
+
+  log('naver', 'HTTP 크롤링 시작: ' + dateFrom + ' ~ ' + dateTo);
+
+  // 네이버 파트너센터 내부 API 호출 시도
+  var apiPaths = [
+    '/bizes/' + pbid + '/bookings?businessId=' + bizId + '&startDate=' + dateFrom + '&endDate=' + dateTo + '&size=200&page=0',
+    '/api/bookings?bizesId=' + pbid + '&bookingBusinessId=' + bizId + '&startDateTime=' + dateFrom + 'T00:00:00&endDateTime=' + dateTo + 'T23:59:59&size=200',
+    '/bizes/' + pbid + '/booking-list-view/api/bookings?bookingBusinessId=' + bizId + '&dateFilter=USEDATE&startDateTime=' + dateFrom + 'T00:00:00&endDateTime=' + dateTo + 'T23:59:59&bookingStatusCodes=RC01&bookingStatusCodes=RC05&bookingStatusCodes=RC08&size=200',
+  ];
+
+  var bookings = [];
+  var apiFound = false;
+
+  for (var ai = 0; ai < apiPaths.length; ai++) {
+    try {
+      var resp = await naverHttpGet(apiPaths[ai]);
+      if (resp.status === 401) { log('naver', 'HTTP 쿠키 만료 → 재입력 필요', 'error'); STATE.sessions.naver = false; return []; }
+      if (resp.status === 200 && resp.data) {
+        try {
+          var json = JSON.parse(resp.data);
+          var items = json.items || json.bookings || json.content || json.data || json.list || (Array.isArray(json) ? json : []);
+          if (items.length > 0) {
+            log('naver', 'HTTP API 성공: ' + items.length + '건 (경로 #' + (ai+1) + ')', 'success');
+            items.forEach(function(item) {
+              bookings.push({
+                orderNo: item.bookingNo || item.bookingId || item.id || '',
+                buyer: item.bookerName || item.userName || item.name || '',
+                phone: item.bookerTel || item.phone || item.tel || '',
+                product: item.productName || item.itemName || item.name || '',
+                useDate: (item.useStartDate || item.startDate || item.bookingDate || '').split('T')[0],
+                status: item.bookingStatusName || item.statusName || item.status || '',
+                qty: item.qty || item.quantity || item.personCount || 1,
+                price: item.paymentAmount || item.totalAmount || item.price || 0,
+              });
+            });
+            apiFound = true;
+            break;
+          }
+        } catch(je) {}
+      }
+    } catch(e) {
+      log('naver', 'API #' + (ai+1) + ' 실패: ' + e.message, 'warning');
+    }
+  }
+
+  // API 실패 시 HTML 페이지 파싱 시도
+  if (!apiFound) {
+    log('naver', 'API 미발견 → HTML 페이지 파싱 시도');
+    var qp = 'dateFilter=USEDATE&dateDropdownType=PERIOD&startDateTime=' + dateFrom + 'T00:00:00&endDateTime=' + dateTo + 'T23:59:59';
+    ['RC01','RC02','RC03','RC05','RC08','RC09','RC10'].forEach(function(c) { qp += '&bookingStatusCodes=' + c; });
+    if (bizId) qp += '&bookingBusinessId=' + bizId;
+    try {
+      var pageResp = await naverHttpGet('/bizes/' + pbid + '/booking-list-view?' + qp);
+      if (pageResp.status === 401) { log('naver', 'HTTP 쿠키 만료', 'error'); STATE.sessions.naver = false; return []; }
+      if (pageResp.data && cheerio) {
+        var $ = cheerio.load(pageResp.data);
+        // SSR 데이터 추출: __NEXT_DATA__ 또는 window.__INITIAL_STATE__
+        $('script').each(function() {
+          var txt = $(this).html() || '';
+          var dataMatch = txt.match(/window\.__INITIAL_STATE__\s*=\s*({.+?});/) || txt.match(/"bookings"\s*:\s*(\[.+?\])/) || txt.match(/__NEXT_DATA__.*?"bookings"\s*:\s*(\[.+?\])/);
+          if (dataMatch) {
+            try {
+              var d = JSON.parse(dataMatch[1]);
+              var arr = d.bookings || d.items || (Array.isArray(d) ? d : []);
+              arr.forEach(function(item) {
+                bookings.push({
+                  orderNo: item.bookingNo || item.id || '',
+                  buyer: item.bookerName || '',
+                  phone: item.bookerTel || '',
+                  product: item.productName || '',
+                  useDate: (item.useStartDate || '').split('T')[0],
+                  status: item.bookingStatusName || '',
+                  qty: item.qty || 1,
+                  price: item.paymentAmount || 0,
+                });
+              });
+            } catch(pe) {}
+          }
+        });
+        // HTML 테이블 파싱
+        if (bookings.length === 0) {
+          $('table tr').each(function() {
+            var tds = $(this).find('td');
+            if (tds.length < 5) return;
+            var cells = [];
+            tds.each(function() { cells.push($(this).text().trim()); });
+            var phoneMatch = cells.join(' ').match(/01[016789][-\s]?\d{3,4}[-\s]?\d{4}/);
+            var orderMatch = cells.join(' ').match(/\d{9,}/);
+            if (phoneMatch || orderMatch) {
+              bookings.push({
+                orderNo: orderMatch ? orderMatch[0] : '',
+                buyer: (cells.find(function(c) { return c.match(/^[가-힣]{2,5}$/); }) || ''),
+                phone: phoneMatch ? phoneMatch[0].replace(/\s/g, '-') : '',
+                product: cells.find(function(c) { return c.length > 3 && c.length < 30 && !c.match(/^\d/); }) || '',
+                useDate: '',
+                status: cells.find(function(c) { return ['확정','이용완료','예매취소','노쇼'].indexOf(c) >= 0; }) || '',
+                qty: 1,
+                price: 0,
+              });
+            }
+          });
+        }
+        log('naver', 'HTML 파싱: ' + bookings.length + '건');
+      }
+    } catch(e) {
+      log('naver', 'HTML 파싱 오류: ' + e.message, 'error');
+    }
+  }
+
+  if (bookings.length === 0) {
+    log('naver', 'HTTP 크롤링 결과 0건 (쿠키 확인 또는 기간 변경 필요)', 'warning');
+    return [];
+  }
+
+  // 티켓 등록
+  var newCount = 0;
+  bookings.forEach(function(b) {
+    if (!b.orderNo && !b.phone) return;
+    var exists = STATE.tickets.find(function(t) { return t.source === 'naver' && (t.orderNo === b.orderNo || (t.buyer === b.buyer && t.phone === b.phone)); });
+    if (!exists) {
+      var statusMap = { '이용완료': '사용완료', '예매취소': '예매취소', '노쇼': '취소' };
+      STATE.tickets.push({
+        id: 'NV-' + (b.orderNo || Date.now()),
+        source: 'naver',
+        orderNo: b.orderNo,
+        buyer: b.buyer,
+        phone: b.phone,
+        product: b.product || '네이버 예약',
+        qty: b.qty || 1,
+        price: b.price || 0,
+        bookDate: b.useDate || new Date().toISOString().split('T')[0],
+        validDate: '',
+        status: statusMap[b.status] || '사용가능',
+        naverStatus: b.status,
+        detectedAt: new Date().toISOString(),
+        createdAt: new Date().toISOString(),
+      });
+      newCount++;
+    }
+  });
+  log('naver', 'HTTP 크롤링 완료: ' + bookings.length + '건 조회, ' + newCount + '건 신규', 'success');
+  if (newCount > 0) sendState();
+  return bookings;
+}
+
 function naverPartnerUrl(subPath) {
   var pbid = STATE.config.naver.partnerBizId || '784618';
   return 'https://partner.booking.naver.com/bizes/' + pbid + '/' + (subPath || 'booking-list-view');
@@ -7488,24 +7683,26 @@ async function crawlCycle(channels) {
     sendState();
   }
 
-  // ─── 네이버 (Puppeteer, 독립) ───
+  // ─── 네이버 (Puppeteer 또는 HTTP) ───
   if (doNv) {
-    if (!puppeteer) { log('naver', '⚠️ Puppeteer 없음 (Vercel 모드)', 'warning'); }
-    else {
-      STATE.crawlStatus.naver = 'crawling'; sendState();
-      try {
-        checkAbort();
+    STATE.crawlStatus.naver = 'crawling'; sendState();
+    try {
+      checkAbort();
+      var nvR;
+      if (puppeteer) {
         if (STATE.pages.naver) { try { await STATE.pages.naver.title(); } catch(e) { STATE.sessions.naver=false; STATE.pages.naver=null; if(STATE.browsers.naver){try{await STATE.browsers.naver.close()}catch(e2){}} STATE.browsers.naver=null; } }
-        var nvR = await Promise.race([naverCrawl(), new Promise(function(_,rej){setTimeout(function(){rej(new Error('naver 타임아웃'))},300000)})]);
-        STATE.crawlStatus.naver = 'idle';
-        log('naver', '✅ 완료 (' + (Array.isArray(nvR)?nvR.length:0) + '건)', 'success');
-      } catch(e) {
-        STATE.crawlStatus.naver = e.name==='CrawlAbortError'?'idle':'error';
-        if(e.name!=='CrawlAbortError') STATE.sessions.naver=false;
-        log('naver', e.name==='CrawlAbortError'?'⏹ 중단':'❌ '+e.message+' → OKPOS 계속 진행', e.name==='CrawlAbortError'?'warning':'error');
+        nvR = await Promise.race([naverCrawl(), new Promise(function(_,rej){setTimeout(function(){rej(new Error('naver 타임아웃'))},300000)})]);
+      } else {
+        nvR = await naverHttpCrawl();
       }
-      sendState();
+      STATE.crawlStatus.naver = 'idle';
+      log('naver', '✅ 완료 (' + (Array.isArray(nvR)?nvR.length:0) + '건)', 'success');
+    } catch(e) {
+      STATE.crawlStatus.naver = e.name==='CrawlAbortError'?'idle':'error';
+      if(e.name!=='CrawlAbortError') STATE.sessions.naver=false;
+      log('naver', e.name==='CrawlAbortError'?'⏹ 중단':'❌ '+e.message, e.name==='CrawlAbortError'?'warning':'error');
     }
+    sendState();
   }
 
   // ─── OKPOS (Puppeteer 또는 HTTP) ───
@@ -11404,13 +11601,41 @@ app.get('/api/ticket/search-all', function(req, res) {
 });
 
 // ─── 개별 크롤링 API (완전 독립 실행) ───
+// ═══ 네이버 쿠키 관리 API ═══
+app.post('/api/naver/cookie', function(req, res) {
+  var cookie = (req.body.cookie || '').trim();
+  if (!cookie) return res.json({ ok: false, error: '쿠키가 비어 있습니다' });
+  STATE._naverHttpCookie = cookie;
+  try { fs.writeFileSync(NAVER_HTTP_COOKIE_FILE, cookie, 'utf8'); } catch(e) {}
+  log('naver', 'HTTP 쿠키 저장 완료 (' + cookie.length + '자)', 'success');
+  res.json({ ok: true, length: cookie.length });
+});
+app.get('/api/naver/cookie', function(req, res) {
+  var cookie = STATE._naverHttpCookie || '';
+  if (!cookie) { try { cookie = fs.readFileSync(NAVER_HTTP_COOKIE_FILE, 'utf8').trim(); } catch(e) {} }
+  res.json({ ok: true, hasCoookie: !!cookie, length: cookie.length });
+});
+app.post('/api/naver/cookie-test', async function(req, res) {
+  try {
+    var resp = await naverHttpGet('/bizes/' + (STATE.config.naver.partnerBizId || '784618') + '/booking-list-view');
+    if (resp.status === 401) return res.json({ ok: false, error: '쿠키 만료 - 재입력 필요' });
+    var isLoggedIn = resp.data && resp.data.indexOf('nidlogin') < 0 && resp.data.length > 1000;
+    res.json({ ok: isLoggedIn, status: resp.status, size: resp.data.length });
+  } catch(e) { res.json({ ok: false, error: e.message }); }
+});
+
 app.post('/api/crawl/naver-only', async function(req, res) {
   log('system', '🔄 네이버 단독 크롤링 시작');
   STATE.crawlAborted = false;
   STATE.crawlStatus.naver = 'crawling';
   sendState();
   try {
-    var result = await la2fWithTimeout(naverCrawl(), 300000, 'naver');
+    var result;
+    if (puppeteer) {
+      result = await la2fWithTimeout(naverCrawl(), 300000, 'naver');
+    } else {
+      result = await naverHttpCrawl();
+    }
     var cnt = Array.isArray(result) ? result.length : 0;
     STATE.crawlStatus.naver = 'idle';
     log('naver', '✅ 네이버 크롤링 완료: ' + cnt + '건', 'success');

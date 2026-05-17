@@ -3871,7 +3871,21 @@ function renderCrawl(){
   var csub=S._crawlSub||'all';
   
   var h='<div style="animation:fadeIn .3s">';
-  
+
+  // 환경 모드 표시
+  h+='<div id="crawlModeBar"></div>';
+  setTimeout(function(){
+    fetch('/api/health').then(function(r){return r.json()}).then(function(d){
+      var el=document.getElementById('crawlModeBar');
+      if(!el)return;
+      if(d.mode==='full'){
+        el.innerHTML='<div style="padding:8px 12px;background:rgba(16,185,129,.08);border:1px solid #10b98130;border-radius:8px;margin-bottom:8px;display:flex;align-items:center;gap:6px"><span style="font-size:12px">✅</span><span style="font-size:11px;color:#10b981;font-weight:700">Full 모드</span><span style="font-size:10px;color:#888">Puppeteer 사용 가능 — LA + 네이버 + OKPOS 크롤링 가능</span></div>';
+      } else {
+        el.innerHTML='<div style="padding:8px 12px;background:rgba(239,68,68,.08);border:1px solid #ef444430;border-radius:8px;margin-bottom:8px"><div style="display:flex;align-items:center;gap:6px;margin-bottom:4px"><span style="font-size:12px">⚠️</span><span style="font-size:11px;color:#ef4444;font-weight:700">Vercel 모드 (Puppeteer 없음)</span></div><div style="font-size:10px;color:#888;line-height:1.6">LA(HTTP) 크롤링만 가능합니다. 네이버/OKPOS는 로컬 PC에서 서버를 실행해야 합니다.<br><code style="background:#1a1a3a;padding:2px 6px;border-radius:4px;color:#f59e0b;font-size:9px">cd server && npm install && node server.js</code></div></div>';
+      }
+    }).catch(function(){});
+  },300);
+
   // 상단: 타이머 + 시작/중지
   h+='<div class="card" style="text-align:center;border-color:rgba(16,185,129,.1);padding:10px">';
   h+='<div style="font-family:monospace;font-size:28px;font-weight:800;color:'+(S.isRunning?'#10b981':'#333')+'">'+(S.isRunning?Math.floor(countdown/60)+':'+String(countdown%60).padStart(2,'0'):'--:--')+'</div>';
@@ -3882,7 +3896,8 @@ function renderCrawl(){
     h+='<div style="display:flex;gap:4px">';
     h+='<button class="btn" onclick="startCrawl(\'all\')" style="flex:1;padding:8px;background:linear-gradient(135deg,#10b981,#059669);color:#fff;font-size:11px;font-weight:600">▶ 전체</button>';
     h+='<button class="btn" onclick="startCrawl(\'la2fdoci\')" style="flex:1;padding:8px;background:#6366f1;color:#fff;font-size:11px;font-weight:600">▶ LA</button>';
-    h+='<button class="btn" onclick="startCrawl(\'naver\')" style="flex:1;padding:8px;background:#03C75A;color:#fff;font-size:11px;font-weight:600">▶ NV</button></div>';
+    h+='<button class="btn" onclick="startCrawl(\'naver\')" style="flex:1;padding:8px;background:#03C75A;color:#fff;font-size:11px;font-weight:600">▶ NV</button>';
+    h+='<button class="btn" onclick="fetch(\'/api/crawl/okpos-only\',{method:\'POST\'}).then(function(){toast(\'POS 크롤링 시작\',\'success\')})" style="flex:1;padding:8px;background:#FF6B35;color:#fff;font-size:11px;font-weight:600">▶ POS</button></div>';
   }
   h+='</div>';
   

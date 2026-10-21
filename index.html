@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="description" content="한국잠사박물관 · 누에와 비단, 오디와 함께하는 체험 박물관 (충북 청주)">
+<meta name="description" content="한국잠사박물관 · 누에와 비단, 오디와 함께하는 체험 박물관 (충북 청주) · 온라인 박물관">
 </head>
 <body>
 <title>한국잠사박물관</title>
@@ -797,6 +797,41 @@ footer .links a{text-decoration:none}
 .storymenu:hover .mx .rp{clip-path:inset(0 0 0 100%)}
 .storymenu .mx .t{position:absolute;top:6px;font-style:normal;font-size:10px;font-family:var(--util);color:#fff;border-radius:999px;padding:1px 6px;background:rgba(107,58,91,.85)}
 .storymenu .mx .t.a{left:6px}.storymenu .mx .t.b{right:6px;background:rgba(20,12,16,.6)}
+/* ===== v21: 온라인 박물관 ===== */
+.ol-start{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-bottom:18px}
+.ol-auto{font-size:14px;color:var(--muted);display:flex;gap:6px;align-items:center}
+.ol-halls{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;margin-bottom:18px}
+.olh{position:relative;border:1px solid var(--line);background:var(--card);border-radius:18px;padding:0 0 12px;overflow:hidden;text-align:left;cursor:pointer;font:inherit;color:inherit;display:grid;gap:3px}
+.olh .th{position:relative;display:block;aspect-ratio:16/9;overflow:hidden}
+.olh .th img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.olh .th .r{clip-path:inset(0 0 0 100%);transition:clip-path 1.2s ease}
+.olh:hover .th .r,.olh.talk .th .r{clip-path:inset(0 0 0 0)}
+.olh .ch{position:absolute;right:10px;top:calc(56.25% - 30px);height:54px;width:auto;filter:drop-shadow(0 4px 6px rgba(0,0,0,.25))}
+.olh.talk .ch{animation:hop .9s ease infinite}
+.olh b,.olh small,.olh em{padding:0 14px}.olh b{margin-top:8px;font-size:16px}.olh small{color:var(--muted);font-size:12.5px}.olh em{font-style:normal;font-size:12.5px;color:var(--plum)}
+.ol-zones{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px}
+.olz{display:flex;gap:8px;align-items:center;border:1px solid var(--line);background:var(--card);border-radius:14px;padding:8px 10px;cursor:pointer;font:inherit;color:inherit;text-align:left}
+.olz .n{width:24px;height:24px;border-radius:50%;background:var(--plum);color:#fff;display:grid;place-items:center;font-size:12px;flex:none}
+.olz img{height:30px;width:auto}.olz b{display:block;font-size:14px}.olz small{color:var(--muted);font-size:11.5px}
+.ol-ticker{display:flex;gap:10px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:8px 14px;margin-bottom:16px;font-size:14px;min-height:42px}
+.ol-ticker span{flex:none;font-weight:700;color:var(--plum)}.ol-ticker b{font-weight:500;flex:1}.ol-ticker a{flex:none;font-size:12px;color:var(--muted)}
+.ol-know{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+.knc{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px 16px;display:grid;gap:6px;align-content:start}
+.knc .tag{justify-self:start;font-size:11.5px;background:var(--plum);color:#fff;border-radius:999px;padding:1px 9px}
+.knc b{font-family:var(--display);font-size:24px;color:var(--plum);font-weight:400}.knc p{margin:0;font-size:14px;line-height:1.55}.knc a{font-size:12px;color:var(--muted)}
+.ol-filter{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.ol-yt{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
+.ytc{display:grid;background:var(--card);border:1px solid var(--line);border-radius:18px;overflow:hidden;text-decoration:none;color:inherit}
+.ytc .th{position:relative;aspect-ratio:16/9;overflow:hidden;background:#222}
+.ytc .th img{width:100%;height:100%;object-fit:cover}
+.ytc .th i{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:56px;height:40px;border-radius:12px;background:rgba(220,30,30,.92);color:#fff;display:grid;place-items:center;font-style:normal;font-size:18px}
+.ytc .tx{padding:12px 14px 14px;display:grid;gap:4px}.ytc em{font-style:normal;font-size:12px;color:var(--leaf-ink)}.ytc b{font-size:15.5px;line-height:1.35}.ytc small{color:var(--muted);font-size:13px;line-height:1.5}
+.ytch{display:grid;gap:6px;align-content:start;background:var(--wash);border:1px dashed var(--line);border-radius:18px;padding:16px}.ytch a{font-size:14px}
+.ol-note{font-size:12.5px;color:var(--muted);margin-top:14px}
+.olbanner{padding-top:20px;padding-bottom:20px}
+.olb{display:flex;gap:16px;align-items:center;background:linear-gradient(110deg,#6B3A5B,#8a5476);color:#fff;border-radius:22px;padding:16px 22px;text-decoration:none;box-shadow:var(--shadow)}
+.olb img{height:64px;width:auto}.olb span{display:grid;gap:2px;flex:1}.olb em{font-style:normal;font-size:12px;opacity:.85}.olb b{font-family:var(--display);font-weight:400;font-size:22px}.olb small{opacity:.9;font-size:13px}.olb i{font-style:normal;background:#fff;color:#6B3A5B;border-radius:999px;padding:6px 14px;font-size:14px;flex:none}
+@media (max-width:640px){.olb{flex-wrap:wrap}.olb i{margin-left:80px}}
 </style>
 
 <div class="util" role="navigation" aria-label="빠른 메뉴">
@@ -817,6 +852,7 @@ footer .links a{text-decoration:none}
       <div><a href="#ar">디지털 체험관</a><div class="sub"><a href="#ar">AR 체험관</a><a href="#theater">3D 영상관</a><a href="#ailab">AI 체험관</a></div></div>
       <div><a href="#products">가공식품</a><div class="sub"><a href="#products">양잠산물 구입처</a></div></div>
       <div><a href="#shop">쇼핑몰 플레이팜</a></div>
+      <div><a href="#online">온라인 박물관</a><div class="sub"><a href="#online">온라인 도슨트</a><a href="#online" data-jump="#ol-know">지식정보 알림</a><a href="#online" data-jump="#ol-yt">추천 영상</a></div></div>
       <div><a href="#news">행사소식</a></div>
     </nav>
     <div class="icons">
@@ -1323,6 +1359,27 @@ footer .links a{text-decoration:none}
 </div>
 </main>
 
+<div class="view" data-view="online" hidden>
+  <div class="subhero"><img class="bg" src="img/bg/museum.jpg" alt=""><img class="guide" src="img/ch/nue.png" alt=""><div class="wrap"><span class="crumb">온라인 박물관</span><h1>집에서 만나는 잠사박물관</h1><p>캐릭터 도슨트의 해설을 듣고, 잠사 지식 알림을 읽고, 믿을 수 있는 방송·기관 영상으로 박물관을 미리 둘러보세요.</p></div></div>
+  <div class="subnav" id="olSub"></div>
+  <section class="band" id="ol-docent"><div class="wrap">
+    <div class="head"><span class="eyebrow">온라인 도슨트</span><h2>누에 친구들이 해설해 줘요</h2><p>시작을 누르면 14개 전시 구역을 차례로 돌아요. 구역마다 그림 이야기와 목소리 해설이 나오고, 끝나면 실제 전시 모습으로 넘어가요.</p></div>
+    <div class="ol-start"><button class="btn" type="button" id="olGo">▶ 온라인 도슨트 시작 (14개 구역 · 약 3분)</button><label class="ol-auto"><input type="checkbox" id="olAuto" checked> 자동으로 다음 구역</label></div>
+    <div class="ol-halls" id="olHalls"></div>
+    <div class="ol-zones" id="olZones"></div>
+  </div></section>
+  <section class="band" id="ol-know" style="background:var(--wash)"><div class="wrap">
+    <div class="head"><span class="eyebrow">온라인 지식정보 알림</span><h2>오늘의 잠사 지식</h2><p>공식 기관·언론 자료로 확인한 내용만 모았어요. 항목마다 출처를 눌러 원문을 볼 수 있어요.</p></div>
+    <div class="ol-ticker" id="olTicker" aria-live="polite"></div>
+    <div class="ol-know" id="olKnow"></div>
+  </div></section>
+  <section class="band" id="ol-yt"><div class="wrap">
+    <div class="head"><span class="eyebrow">공신력 있는 영상</span><h2>방송·기관이 소개한 잠사박물관과 누에</h2><p>방송사·지자체·공공기관·교육기관 채널 영상 위주로 골랐어요. 누르면 유튜브에서 열려요.</p></div>
+    <div class="ol-filter" id="olFilter"></div>
+    <div class="ol-yt" id="olYt"></div>
+    <p class="ol-note">※ 영상의 저작권은 각 채널에 있어요. 정보는 영상 게시 당시 기준이라, 운영 시간·요금은 방문 전 박물관(043-235-1267)으로 확인해 주세요.</p>
+  </div></section>
+</div>
 <footer>
   <div class="wrap">
     <span class="logo" role="img" aria-label="한국잠사박물관 로고"></span>
@@ -1420,7 +1477,7 @@ $('#openMenu').onclick=()=>openEl($('#menuDrawer'));
 $('#openNotice').onclick=()=>openEl($('#noticeModal'));
 $('#openSearch').onclick=()=>{location.hash='#search';setTimeout(()=>$('#sQ').focus(),50)};
 $('#hideToday').onclick=()=>{store.set('jamsa_hide_notice',new Date().toDateString());closeAll();say('오늘 하루 알림을 보지 않아요')};
-$('#mnav').innerHTML=[['잠사박물관',SUBS.park],['양잠이야기',SUBS.story],['방문체험학습',[['learn-visit','체험학습 미리보기'],['learn-craft','공예체험'],['learn-cook','요리체험'],['learn-art','문화예술'],['learn-sci','과학체험'],['learn-eco','자연생태']]],['디지털 체험관',SUBS.digital],['가공식품',[['products','양잠산물 구입처']]],['쇼핑몰 플레이팜',[['shop','DIY 체험키트 쇼핑몰']]],['행사소식',[['news','행사소식']]]].map(([t,l])=>`<details><summary>${t}</summary>${l.map(([k,n])=>`<a href="#${k}">${n}</a>`).join('')}</details>`).join('')+'<a class="btn" style="margin-top:14px;color:var(--paper)" href="https://la2fdoci.com/jamsahome/product/productList.do" target="_blank" rel="noopener">예매하기 ↗</a>';
+$('#mnav').innerHTML=[['잠사박물관',SUBS.park],['온라인 박물관',[['online','온라인 도슨트·지식·영상']]],['양잠이야기',SUBS.story],['방문체험학습',[['learn-visit','체험학습 미리보기'],['learn-craft','공예체험'],['learn-cook','요리체험'],['learn-art','문화예술'],['learn-sci','과학체험'],['learn-eco','자연생태']]],['디지털 체험관',SUBS.digital],['가공식품',[['products','양잠산물 구입처']]],['쇼핑몰 플레이팜',[['shop','DIY 체험키트 쇼핑몰']]],['행사소식',[['news','행사소식']]]].map(([t,l])=>`<details><summary>${t}</summary>${l.map(([k,n])=>`<a href="#${k}">${n}</a>`).join('')}</details>`).join('')+'<a class="btn" style="margin-top:14px;color:var(--paper)" href="https://la2fdoci.com/jamsahome/product/productList.do" target="_blank" rel="noopener">예매하기 ↗</a>';
 
 /* friends */
 const FR={gochi:['고치','박물관 담당','실을 감아 만든 폭신한 집에서 꿈꾸는 친구. 늘 졸려 보이지만 실크 이야기는 제일 잘 알아요.'],boja:['보자기','안내 담당','고치를 땋은 실 보자기로 곱게 감싼 친구. 처음 온 손님에게 길을 알려 줘요.'],nue:['누에','체험학습 담당','뽕잎을 먹고 쑥쑥 자라는 친구. 금빛 실을 꼭 쥐고 체험장에서 기다려요.'],nabi:['나방','쇼핑·공방 담당','고치에서 나와 처음 날개를 편 친구. 만들기 키트와 공방 소식을 전해요.']};
@@ -2183,6 +2240,54 @@ $$('.storymenu').forEach(b=>{const k=b.dataset.story;if(!ODP[k]||b.querySelector
 if(typeof SX!=='undefined'){for(const k in ODP){SX[k]=[B+ODP[k],'실사 이미지(AI 예시) · 실제 메뉴 사진으로 바꿔 넣을 예정']}}
 (()=>{const _s=sInfo;sInfo=function(k){const I=_s(k);return I};const _ls=lbShow;lbShow=function(i){_ls(i);const I=sInfo(LB[lbI]);if(I.real&&I.real.startsWith('/')){$('#lbImg').src=I.real}};})();
 /* /v20 */
+/* v21: 온라인 박물관 (도슨트 · 지식 알림 · 공신력 영상) */
+VIEWS.push('online');SUBS.online=[['online','온라인 박물관']];
+[$('#olSub')].forEach(n=>{n.innerHTML='<div class="wrap">'+[['#ol-docent','온라인 도슨트'],['#ol-know','지식정보 알림'],['#ol-yt','추천 영상']].map(([h,l])=>`<a href="#online" data-jump="${h}">${l}</a>`).join('')+'</div>'});
+document.addEventListener('click',e=>{const a=e.target.closest('[data-jump]');if(!a)return;e.preventDefault();if((location.hash||'')!=='#online')location.hash='#online';setTimeout(()=>{const t=document.querySelector(a.dataset.jump);if(t)t.scrollIntoView({behavior:'smooth'})},120)});
+const OLK=[
+ ['박물관','1995','1995년 10월 27일, 대한잠사회 창립 75주년을 기념해 전문 박물관으로 문을 열었어요.','청주시 강내면 문화관광','https://www.cheongju.go.kr/gangnae/contents.do?key=2301'],
+ ['박물관','2004','2004년 10월 15일, 국비 등 24억 원을 들여 지상 2층·연면적 약 1,300㎡의 새 건물로 개관했어요.','충청매일 (2004.10.16)','https://www.ccdn.co.kr/news/articleView.html?idxno=49929'],
+ ['박물관','소장품','민속품 등 약 1,300점을 소장하고, 뽕 재배부터 고치 생산·비단 짜기까지 단계별 실물로 보여 줘요.','청주시 강내면 문화관광','https://www.cheongju.go.kr/gangnae/contents.do?key=2301'],
+ ['박물관','체험','누에 사육 시기에는 뽕을 따고 누에를 직접 길러 보는 현장 실습을 운영해요.','청주시 강내면 문화관광','https://www.cheongju.go.kr/gangnae/contents.do?key=2301'],
+ ['누에','1.6km','누에 한 마리가 고치를 지을 때 약 1.6km의 실을 뽑아요. 실 450g을 얻으려면 누에 약 2,000마리가 필요해요.','내셔널지오그래픽 코리아 「실크의 탄생」','https://www.youtube.com/watch?v=cs-7tiIS-Uc'],
+ ['연구','홍잠','뽕잎을 먹고 자란 누에를 쪄서 말린 가루 \'홍잠\'이 파킨슨병 억제에 효과가 있다는 국내 연구 결과가 나왔어요. 농촌진흥청이 논문과 특허를 냈어요.','YTN (2020.11.26)','https://www.youtube.com/watch?v=wc52S2YWcC4'],
+ ['문화유산','양잠','뽕나무 재배와 누에치기가 \'미래 무형문화유산\' 발굴·육성 사업으로 조명되며, 기록 작업이 진행됐어요.','KBS (2022.06.20)','https://www.youtube.com/watch?v=vZ7mSvXCkOo'],
+ ['오디','신품종','열매가 더 크고 달며 수확량이 많은 오디 신품종이 개발돼 재배 농가가 늘고 있어요.','YTN 사이언스 (2014.06.12)','https://www.youtube.com/watch?v=ZDny5q0QbSw']];
+const OLY=[
+ ['WTzPNv04RTc','잠사문화의 향기 – 한국잠사박물관','YTN 사이언스','2016.06.13','박물관','누에를 직접 보고 만지는 체험부터 삼한시대 양잠 역사, 잠사업의 쇠퇴와 재도약까지 22분 다큐로 소개해요.'],
+ ['b7tZyNTmAws','한국잠사박물관 겨울체험 (눈썰매장·빙어잡기)','청주시','2020.01.19','박물관','청주시 SNS 서포터즈가 겨울 한정 눈썰매와 빙어잡기 체험을 다녀왔어요.'],
+ ['gtce2fTJ6M0','전통사회와 생활문화 11강 클립 – 한국잠사박물관','방송대 지식+','2017.10.19','박물관','한국방송통신대학교 강의 클립으로, 양잠의 역사를 박물관과 함께 알아봐요.'],
+ ['ESYeWgJR1Us','별별박물관 「한국잠사박물관 편」 1/4','Okdab Media','','박물관','작은 박물관을 소개하는 시리즈의 한국잠사박물관 편이에요.'],
+ ['vZ7mSvXCkOo','\'사라지는\' 누에치기…문화재적 가치 조명 시작','KBS News','2022.06.20','양잠','양잠의 쇠퇴와 미래 무형문화유산으로서의 가치를 다룬 뉴스예요.'],
+ ['cs-7tiIS-Uc','실크의 탄생','내셔널지오그래픽 코리아','2017.08.08','누에','누에가 고치를 지으며 1.6km의 실을 뽑아내는 과정을 보여 줘요.'],
+ ['wc52S2YWcC4','누에 단백질 \'홍잠\', 파킨슨병 억제 효과','YTN','2020.11.26','연구','농촌진흥청과 국내 연구진의 홍잠 연구 결과를 전해요.'],
+ ['ZDny5q0QbSw','더 크고 달콤한 \'오디\' 개발','YTN 사이언스','2014.06.12','오디','크고 달고 수확량 많은 오디 신품종 개발 소식이에요.']];
+const OLCH=[['국립농업과학원 유튜브','https://www.youtube.com/channel/UCZYakeMgQdbsXuakMox7V_w'],['KBS충북','https://www.youtube.com/channel/UCgqMjKxRWAKUvgYqgomighw'],['MBC충북 NEWS','https://www.youtube.com/c/MBC%EC%B6%A9%EB%B6%81News']];
+const ytFb={'박물관':'img/bg/museum.jpg','양잠':'img/bg/nue.jpg','누에':'img/dg2/z05.jpg','연구':'img/bg/craft.jpg','오디':'img/bg/ev_odi.jpg'};
+let olCat='전체';
+function olRender(){
+  const cats=['전체',...new Set(OLY.map(v=>v[4]))];
+  $('#olFilter').innerHTML=cats.map(c=>`<button type="button" class="chip" data-olc="${c}" aria-pressed="${c===olCat}">${c}</button>`).join('');
+  $('#olYt').innerHTML=OLY.filter(v=>olCat==='전체'||v[4]===olCat).map(v=>`<a class="ytc" href="https://www.youtube.com/watch?v=${v[0]}" target="_blank" rel="noopener"><span class="th"><img src="https://i.ytimg.com/vi/${v[0]}/hqdefault.jpg" alt="" loading="lazy" onerror="this.onerror=null;this.src='${ytFb[v[4]]||'img/bg/nue.jpg'}'"><i aria-hidden="true">▶</i></span><span class="tx"><em>${v[2]}${v[3]?' · '+v[3]:''}</em><b>${v[1]}</b><small>${v[5]}</small></span></a>`).join('')+`<div class="ytch"><b>믿을 수 있는 채널 더 보기</b>${OLCH.map(c=>`<a href="${c[1]}" target="_blank" rel="noopener">${c[0]} ↗</a>`).join('')}</div>`;
+  $$('#olFilter [data-olc]').forEach(b=>b.onclick=()=>{olCat=b.dataset.olc;olRender()});
+  $('#olKnow').innerHTML=OLK.map(k=>`<article class="knc"><span class="tag">${k[0]}</span><b>${k[1]}</b><p>${k[2]}</p><a href="${k[4]}" target="_blank" rel="noopener">출처: ${k[3]} ↗</a></article>`).join('');
+  const hallsIl={lobby:1,hist1:1,hist2:1,hist3:1,mirae1:1,mirae2:1};
+  $('#olHalls').innerHTML=HALLS.map((h,i)=>`<button type="button" class="olh" data-olhall="${h[0]}"><span class="th">${hallsIl[h[0]]?`<img src="img/h_${h[0]}.jpg" alt="" loading="lazy">`:`<img src="img/dg2/${(h[5][0]||'z01')}.jpg" alt="" loading="lazy">`}${h[4]?`<img class="r" src="img/pano/${h[0]}.jpg" alt="" loading="lazy">`:''}</span><img class="ch" src="img/ch/${h[3]}.png" alt=""><b>${i+1}. ${h[1]}</b><small>${h[2]}</small><em>🔊 해설 듣기</em></button>`).join('');
+  $('#olZones').innerHTML=ZONES.map((z,i)=>`<button type="button" class="olz" data-olz="${i}"><span class="n">${i+1}</span><img src="img/ch/${z[3]}.png" alt=""><span><b>${z[2]}</b><small>${z[1]}</small></span></button>`).join('');
+}
+olRender();
+let olOn=false;const olKeys=()=>ZONES.map(z=>'f'+String(z[5]).padStart(3,'0'));
+function olStart(i){olOn=true;lbOpen(olKeys(),olKeys()[i||0]);$('#lbNo').textContent=`도슨트 ${lbI+1} / ${LB.length}`}
+$('#olGo').onclick=()=>olStart(0);
+document.addEventListener('click',e=>{const z=e.target.closest('[data-olz]');if(z){olStart(+z.dataset.olz);return}const h=e.target.closest('[data-olhall]');if(h){hallSay(h.dataset.olhall);h.classList.add('talk');setTimeout(()=>h.classList.remove('talk'),6000)}});
+$('#lbVid').addEventListener('ended',()=>{if(!olOn||!$('#olAuto').checked)return;setTimeout(()=>{if(olOn&&!$('#lbx').hidden&&lbI<LB.length-1){lbShow(lbI+1);$('#lbNo').textContent=`도슨트 ${lbI+1} / ${LB.length}`}},3800)});
+new MutationObserver(()=>{if($('#lbx').hidden)olOn=false}).observe($('#lbx'),{attributes:true,attributeFilter:['hidden']});
+let olT=0;setInterval(()=>{const t=$('#olTicker');if(!t||t.offsetParent===null)return;const k=OLK[olT++%OLK.length];t.innerHTML=`<span>📢 잠사 지식</span><b>${k[2]}</b><a href="${k[4]}" target="_blank" rel="noopener">${k[3]}</a>`},6000);
+(()=>{const k=OLK[0];$('#olTicker').innerHTML=`<span>📢 잠사 지식</span><b>${k[2]}</b><a href="${k[4]}" target="_blank" rel="noopener">${k[3]}</a>`})();
+/* 홈 배너 */
+(()=>{const home=document.querySelector('.view[data-view="home"]');if(!home)return;const s=document.createElement('section');s.className='band olbanner';s.innerHTML=`<div class="wrap"><a class="olb" href="#online"><img src="img/ch/nue.png" alt=""><span><em>NEW · 온라인 박물관</em><b>집에서 만나는 잠사박물관</b><small>캐릭터 도슨트 해설 · 오늘의 잠사 지식 · 방송사가 소개한 박물관 영상</small></span><i>바로가기 ›</i></a></div>`;const first=home.querySelector('section');if(first&&first.nextSibling)home.insertBefore(s,first.nextSibling);else home.appendChild(s)})();
+route();
+/* /v21 */
 </script>
 
 <script>

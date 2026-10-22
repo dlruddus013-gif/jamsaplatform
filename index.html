@@ -835,6 +835,64 @@ footer .links a{text-decoration:none}
 .olb{display:flex;gap:16px;align-items:center;background:linear-gradient(110deg,#6B3A5B,#8a5476);color:#fff;border-radius:22px;padding:16px 22px;text-decoration:none;box-shadow:var(--shadow)}
 .olb img{height:64px;width:auto}.olb span{display:grid;gap:2px;flex:1}.olb em{font-style:normal;font-size:12px;opacity:.85}.olb b{font-family:var(--display);font-weight:400;font-size:22px}.olb small{opacity:.9;font-size:13px}.olb i{font-style:normal;background:#fff;color:#6B3A5B;border-radius:999px;padding:6px 14px;font-size:14px;flex:none}
 @media (max-width:640px){.olb{flex-wrap:wrap}.olb i{margin-left:80px}}
+/* ===== v24 ===== */
+.cast button{position:relative}
+.cast button .say{position:absolute;left:50%;top:-6px;transform:translate(-50%,-6px);white-space:nowrap;font-family:var(--util);font-size:12px;background:#fff;color:var(--plum);border-radius:999px;padding:3px 10px;box-shadow:0 6px 14px -6px rgba(0,0,0,.35);opacity:0;transition:opacity .25s,transform .25s;pointer-events:none}
+.cast button:hover .say,.cast button:focus-visible .say{opacity:1;transform:translate(-50%,-14px)}
+@media (hover:none){.cast button .say{opacity:.95;transform:translate(-50%,-10px);font-size:11px;padding:2px 8px}}
+.cast button.talk img,.fc-av.talk img{animation:fcTalk .42s ease-in-out infinite alternate}
+@keyframes fcTalk{from{transform:translateY(0) scale(1)}to{transform:translateY(-6px) scale(1.04,.98)}}
+.modal.fchat{width:min(620px,calc(100% - 24px));padding:18px 18px 12px;display:grid;gap:10px;max-height:calc(100% - 32px)}
+.fc-hd{display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center}
+.fc-av{width:96px;height:96px;border-radius:50%;background:radial-gradient(circle at 50% 60%,#FFF4D6,#F1E2C8);display:grid;place-items:center;overflow:hidden;box-shadow:inset 0 0 0 3px #fff,0 8px 18px -10px rgba(58,42,49,.6)}
+.fc-av img{height:88%;width:auto}
+.fc-id h3{margin:0;font-size:26px;color:var(--plum);font-family:var(--display);font-weight:400}
+.fc-id p{margin:2px 0 0;color:var(--muted);font-size:13.5px;line-height:1.45}
+.fc-names{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap}
+.fc-nm{display:inline-flex;align-items:center;gap:6px;border:1.5px dashed var(--line);border-radius:12px;padding:5px 12px;font-size:13px;color:var(--muted);background:var(--card)}
+.fc-nm b{font-family:var(--display);font-weight:400;font-size:18px;color:var(--plum)}
+.fc-nm.fcme{border-style:solid;border-color:rgba(107,58,91,.35)}
+.fc-nm.fcyou.on{border-style:solid;border-color:var(--thread);background:rgba(232,196,104,.15);animation:fcPop .5s ease}
+@keyframes fcPop{50%{transform:scale(1.08)}}
+.fc-swap{color:var(--thread);font-size:18px}
+.fc-log{min-height:150px;max-height:min(42vh,340px);overflow:auto;display:grid;align-content:start;gap:8px;padding:10px;border-radius:16px;background:var(--wash)}
+.fc-msg{display:flex;gap:8px;align-items:flex-end;max-width:88%;animation:hrIn .35s ease}
+.fc-msg img{width:34px;height:auto;flex:none}
+.fc-msg p{margin:0;padding:9px 13px;border-radius:16px;font-size:14.5px;line-height:1.5;background:#fff;color:var(--ink);box-shadow:0 4px 10px -8px rgba(0,0,0,.4)}
+.fc-msg.bot p{border-bottom-left-radius:4px}
+.fc-msg.fcu{justify-self:end}
+.fc-msg.fcu p{background:var(--plum);color:#fff;border-bottom-right-radius:4px}
+.fc-msg.think p{color:var(--muted);font-style:italic}
+.fc-chips{display:flex;flex-wrap:wrap;gap:6px}
+.fc-chips button{font:inherit;font-size:13px;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:5px 11px;cursor:pointer}
+.fc-chips button:hover{background:rgba(107,58,91,.08)}
+.fc-in{display:flex;gap:8px}
+.fc-in input{flex:1;min-width:0;font:inherit;font-size:15px;border:1.5px solid var(--line);border-radius:999px;padding:9px 14px;background:#fff;color:#3A2A31}
+.fc-in input:focus{outline:2px solid var(--thread);border-color:transparent}
+.fc-note{margin:0;text-align:center;font-size:11.5px;color:var(--muted)}
+@media (max-width:520px){.fc-av{width:72px;height:72px}.fc-id h3{font-size:22px}.fc-id p{display:none}}
+/* 전시관 파노라마: 마우스 올리면 실물 */
+.pano.hv .pr{transition:clip-path 1.1s cubic-bezier(.6,.05,.3,1)}
+.pano.hv .pd{transition:left 1.1s cubic-bezier(.6,.05,.3,1)}
+.pano .pl{transition:opacity .4s}
+@media (hover:hover){.pano:hover .pl.l{opacity:.35}.pano:not(:hover) .pl.r{opacity:.55}}
+/* 동그란 구역 사진: 마우스 올리면 실물 */
+.tstop .th .rv{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;clip-path:circle(0% at 50% 50%);transition:clip-path .8s cubic-bezier(.6,.05,.3,1)}
+.tstop .th .rvt{position:absolute;left:50%;bottom:10%;transform:translateX(-50%);font-style:normal;font-family:var(--util);font-size:10.5px;color:#fff;background:rgba(20,12,16,.6);border-radius:999px;padding:1px 7px;opacity:0;transition:opacity .4s;pointer-events:none;white-space:nowrap}
+.tstop:hover .th .rv,.tstop:focus-visible .th .rv{clip-path:circle(75% at 50% 50%)}
+.tstop:hover .th .rvt,.tstop:focus-visible .th .rvt{opacity:1}
+/* 움직이는 그림 타일 */
+.fgrid button .ilv{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none}
+.fgrid button .rl,.fgrid button .rev{z-index:1}
+.fgrid button .seam,.fgrid button .tg,.fgrid button>span,.fgrid button .ret{z-index:2}
+.fgrid button .rev{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .8s;pointer-events:none}
+.fgrid button.reon .rev{opacity:1}
+.fgrid button .ret{position:absolute;left:6px;bottom:6px;font-style:normal;font-family:var(--util);font-size:9.5px;color:#fff;background:rgba(192,80,77,.85);border-radius:999px;padding:1px 6px;pointer-events:none}
+.fgrid button.reon .tg.b{opacity:0!important}
+.lbre{position:absolute;right:14px;bottom:14px;width:min(34%,260px);border-radius:14px;overflow:hidden;box-shadow:0 12px 30px -8px rgba(0,0,0,.7);border:2px solid #fff;z-index:3;background:#000}
+.lbre video{display:block;width:100%;aspect-ratio:1;object-fit:cover}
+.lbre span{position:absolute;left:0;right:0;bottom:0;font-size:11px;color:#fff;background:linear-gradient(transparent,rgba(0,0,0,.75));padding:14px 8px 5px;text-align:center}
+@media (max-width:640px){.lbre{width:40%;right:8px;bottom:8px}}
 </style>
 
 <div class="util" role="navigation" aria-label="빠른 메뉴">
@@ -2291,6 +2349,82 @@ let olT=0;setInterval(()=>{const t=$('#olTicker');if(!t||t.offsetParent===null)r
 (()=>{const home=document.querySelector('.view[data-view="home"]');if(!home)return;const s=document.createElement('section');s.className='band olbanner';s.innerHTML=`<div class="wrap"><a class="olb" href="#online"><img src="img/ch/nue.png" alt=""><span><em>NEW · 온라인 박물관</em><b>집에서 만나는 잠사박물관</b><small>캐릭터 도슨트 해설 · 오늘의 잠사 지식 · 방송사가 소개한 박물관 영상</small></span><i>바로가기 ›</i></a></div>`;const first=home.querySelector('section');if(first&&first.nextSibling)home.insertBefore(s,first.nextSibling);else home.appendChild(s)})();
 route();
 /* /v21 */
+/* v24: 친구와 이름 나누고 대화하기 · 그림→실물 호버 · 움직이는 그림 타일 · 옛사람 재현 영상 */
+const V24={"FCL":{"gochi":{"intro":"안녕! 나는 고치야. 박물관 담당이지. 너는 이름이 뭐야? 아래 칸에 써 줘!","nice":"반가워! 이제 우리 친구야. 궁금한 거 있으면 뭐든 물어봐!","like":"나는 폭신한 실 집에서 낮잠 자는 게 제일 좋아. 고치 하나를 풀면 천 미터가 넘는 실이 나온대!","time":"박물관은 오전 10시부터 12시, 오후 1시부터 5시까지 열려. 입장은 4시 30분까지야!","fun":"나는 박물관 역사관이 제일 재밌어. 옛날 베틀이랑 물레, 반짝이는 비단을 꼭 보고 가!","food":"오디 삼겹살, 돈가스, 만두, 김치, 떡만둣국, 국수! 보랏빛 오디 메뉴가 여섯 가지나 있어.","way":"주소는 충북 청주시 흥덕구 강내면 청주역로 213-52야. 경부고속도로 청주IC에서 가까워!"},"boja":{"intro":"반가워! 나는 보자기야. 처음 온 친구한테 길을 알려 주는 안내 담당이야. 네 이름도 알려 줄래?","nice":"와, 예쁜 이름이다! 내가 박물관 구석구석 안내해 줄게.","like":"나는 고치 실로 곱게 땋은 보자기 옷이 제일 좋아. 따뜻하고 포근하거든!","time":"오전 10시부터 12시, 오후 1시부터 5시까지 놀러 올 수 있어. 4시 30분 전에는 들어와야 해!","fun":"씽씽코스터 튜브썰매는 꼭 타 봐! 봄가을엔 롤러 썰매, 여름엔 물썰매, 겨울엔 눈썰매로 바뀌어.","food":"배고프면 오디 메뉴를 먹어 봐! 오디 돈가스랑 보랏빛 오디 국수가 인기야.","way":"청주역로 213-52로 오면 돼! 주차장도 넓어서 차 세우기 편해. 궁금하면 043-235-1267로 전화해 줘."},"nue":{"intro":"안녕안녕! 나는 누에야. 체험학습 담당이지. 너는 이름이 뭐야?","nice":"우와, 반가워! 나랑 같이 체험하러 가자!","like":"나는 뽕잎이 세상에서 제일 맛있어! 냠냠 먹고 쑥쑥 자라서 고치를 지어.","time":"오전 10시부터 12시, 오후 1시부터 5시까지 체험장에서 기다릴게. 4시 30분까지 와 줘!","fun":"나랑 같이 누에고치 실뽑기 해 볼래? 고치 목걸이 만들기랑 달고나 만들기도 재밌어!","food":"나는 뽕잎만 먹지만, 친구들은 오디 만두랑 오디 떡만둣국을 좋아해!","way":"청주역로 213-52에 있어. 청주IC에서 조금만 오면 뽕나무밭이 보여!"},"nabi":{"intro":"안녕! 나는 나방이야. 고치에서 막 나와서 날개를 폈어. 너는 이름이 뭐야?","nice":"반가워! 날개를 활짝 펴고 환영할게!","like":"나는 날개를 하늘하늘 펴고 공방 구경하는 게 좋아. 만들기 키트도 정말 많아!","time":"오전 10시부터 12시, 오후 1시부터 5시까지 열려 있어. 4시 30분까지 입장해!","fun":"양떼정원에 가 봐! 양이랑 염소, 토끼한테 먹이를 줄 수 있어. 디지털 키즈카페도 재밌어!","food":"오디 삼겹살, 돈가스, 만두, 김치, 떡만둣국, 국수! 보랏빛 오디 메뉴 여섯 가지를 먹어 봐.","way":"청주역로 213-52로 날아와! 길이 궁금하면 043-235-1267로 물어봐."}},"FCA":{"boja":{"food":"6dd46f0521079b9d541fb45c21628741","fun":"38dab70bf6d562e1cfc17b2d8ab6a881","intro":"d23492fb0a223327d0eab193a387c51b","like":"271fd87ed70f34999d6277b3ebc7d48c","nice":"89cb65ff43ceacc32c9bdfb62abad39a","time":"0d66d992f78ff66abe858b0e26cfb613","way":"26af54ebe9b2698b2ad0f0d242007a9e"},"gochi":{"food":"e69d7eefd79aea57a66cef5a5252305b","fun":"8ece803a6367c854c4867bd1a90fc678","intro":"6cc9966c7ba308f0a2f3298d82d0f5e1","like":"9834806575e5f2de7e7717b17dc4daf2","nice":"25acbcac4d4eccca3103baf15c2674d5","time":"46c6f5b3171dc021ffee1864a1bb3832","way":"9499dd7ea35f028d5a5ff0397a1e3ffc"},"nabi":{"food":"053b41a0038e5dba83da1a4b63ebd8ce","fun":"e0064d4c3d70ee362ea1f93369fb8df7","intro":"79efb0a737f3a9a6e37ac00c2ddcea8e","like":"cbb00393919574409b5bfc9949c1ba20","nice":"9fa944e3656f1e2fece0251716498c3d","time":"1f305fc131384cfa5d80c020692c03b1","way":"1fab4aca12e1dac013e2d3dba48f8f11"},"nue":{"food":"83a852d6d493e4b13010a3487a494507","fun":"ec66689329fa932068bedd2c4abead59","intro":"2e0d78af66cfc31afb19fb0dfbe80ea0","like":"3365e3b510a3fd877c1a94fe2f87270a","nice":"b143fb7c9c24932fd4fd9540d511f74b","time":"b388bb19788661dd82d0e66ebadb06e3","way":"3aa8c6a88e3ba2cac806abe239039851"}},"TL":{"f001":"878afae3d78d46990444bd008bca23fd","f002":"33c028c152c8aabdaa8546530f9d3eb9","f003":"f6aa23ad71ab1b0e1a27487580b25f20","f004":"dd6fa01708d8395c80987c1dab491fe8","f005":"f39d0eed7d043c4005baf0517809996f","f006":"6a225d9ff4cd9e2d161dd418695024d3","f007":"fdb88298c5e878e8412373318fb8f5d7","f008":"f78734b5702a0debc75fa564f2ee8661","f009":"d9f447aaccf09e293a96e1ea3610455e","f010":"8ff92a4637f91cd5e7186d6e15d305f1","f011":"4032b3f54c17b643c2f235ceb00d50c4","f012":"35182fa5161b2199c7c0e7c211181de4","f013":"815dcb504b7a16e1833037b9adbd7787","f014":"1785655f3ee680fc8283c428a7a10a2f","f015":"f03cf595a09ec0d6792077a6be5c7945","f016":"7f093d3f39164089282ec008d6fad080","f017":"60537e4ca0139811dc61971a2823e4a6","f018":"e439380d621eafef60abcf5f112fc502","f019":"9b44b98ff16d6ab1f4441a4437f18814","f020":"12813e4d9220fd7434d0f1ce8b00b376","f021":"2b07916a7dd9a7dca89e24680d400c90","f022":"7a7e4677726fe0c0a7e26a8ab0f131a1","f023":"825958b6dd29c8237961af8592daa9ac","f024":"059f90e2edf570a2a69312c9e887d316","f025":"936c04e9bf80012878beafd4aee77488","f026":"88f22bdbdde569b79a49bb1fa368b1ea","f027":"2f156afcd8ccc5385a7a0e68dd8f85a4","f028":"988f3d52059c09868b4fcc24e721aefb","f029":"812222ffa14f420c10a10dc58cd4a83d","f030":"2bbb20abe921e7c73a644f06f1bc7d86","f031":"09644817c55d49813b43d6d8322e2940","f032":"86d082481d7e8ffce7dbb1a59fbe42ff","f033":"db7bca3e44f4ac24ea7afd730143e75e","f034":"f8a20bcabb6636e95fa4597a08ff44c5","f035":"370496d6ad1e2d1cbf82769d5cbe6b59","f036":"006996d8214abcc84772629663188f5e","f037":"5d0ad11a22e6be736eacee176d958b73","f038":"0801ce7ef6d6d565f956593669d22013","f039":"92a9af83cc6b89a21dce850632b44dd0","f040":"9f19c4ec540bd61e1bb7d7c4466d50dc","f041":"83673869f752825505340d79251df836","f042":"0132a9dc209e5d0d0110e80f9223fd40","f043":"ef85100eda3331c41ee6c4b7b1ea1e14","f044":"a8dafeac805a175816102b5150a387fa","f045":"de22bc47c0201494775f27f9fb2c5b77","f046":"2c2461cacffdb285557fe0283f389466","f047":"acb4853fd2c76f3da457d78d8b6fa59f","f048":"9c603d2fc3e8e875dfd16b541919ba78","f049":"dbd2a571b7b0ac7fc6067aee1c2461ba","f050":"901de2476583200b2c05cbc0958e281b","f051":"0d2e85115f055fb9b870fcb4948622d7","f052":"9a9c0934d18ccc2c246fc0a25c6e74ba","f053":"3b9cdd1347a2a64ea35a85b34b3a788e","f054":"d116f1e9ed7367538180b61c9b912b60","f055":"b47d53d7058eb95a04c1996727e2f160","f056":"67986f40859abdbf81a8a5598c0b05bc","f057":"70eef0f1210df3f8d02a5e485ecbd9e0","f058":"e86958dcd199feb4b59382791fdd24e3","f059":"2cfb3c3e3e11534dd8473353ac5999ea","f060":"864a407e04e0a0f49637bc7c7c51a37b","f061":"91622ca025b543db19ca1a190c02479a","f062":"4032b8631ecd265753fbdfa2b0afecf4","f063":"94ff693f2b933e78a96858e57ea20659","f064":"4a60ad181b81b3259c982e0eaf5c9c51","f065":"58c79fc08d3cce4a8fc6aa17345b5005","f066":"9e57643c730b44fffb21f2103d777835","f067":"72244e59d44f87289227252fcb8bb0c8","f068":"2100a56c7afda7a74b7bd626433d0b37","f069":"5d8faf88ce5cbb7e3aae6fe217688c6b","f070":"b8e2c8078eb82c6ec9f1bd340a5c5013","f071":"c218536556a13489b750e9d71287f38d","f072":"24408ae6934b48223d62d93f0f25b673","f073":"d65360710a878e1f9ae0f5be7e831a1b","f074":"3c52292ae177fb53d03de502c7ca3837","f075":"eb78154caead7f79200870b9f6cf4b0d","f076":"b50c5ca8376be5f58db07e597d347996","f077":"897bd52c580841948aaeaaf7a16596b5","f078":"485bcbd3ad2af55f0a7ae36ed627df7f","f079":"8316b9d3b6b981b54c46bea1b0da49a4","f080":"2f9b545ecde38ba81b84634a499f2adf","f081":"a98538526abf4ed60824b23de528b297","f082":"a1c87c74ca2e05937dbaba5a181f24dc","f083":"9d8370eb9c94d229a7d05f739da99d72","f084":"6fdb959fca02f3193b3affe82a3cabeb","f085":"e9f4675544f1d0569697184f7dac7305","f086":"273ed5f4ebd585b7a636add298d117ae","f087":"0ffe590db374e4fa10128fd18ef5a955","f088":"7143cbe6dc7afa9f4b6c05d3c841c1ab","f089":"2209b5e33e03d416dc96407ebbc53bbc","f090":"eeba2d5ac52793a8bc65900061724047","f091":"447ce34862b921edcae2a5efbadd8c8f","f092":"0004ca729715ab9f478c30ce214bacf0","f093":"ddeeaa967bec7ff5217eb0f0250a9048","f094":"b7ce86e656c96855f90f5e45c12a42db","f095":"84a9eb17bb03cb0142c2a9d02139fe49","f096":"68199f038a8d0209b7b55a87ed935993","f097":"fbcf0502eff2e66cfc0497e51ee21a63","f098":"99e9abbc964c9a5b29f15ee51a6d213c","f099":"95714a6d00f1385e440865380a64108f","f100":"55b0fc4f203018f3f372840bc1e2a932","f101":"2ae8c6aca62f0a1f6f8873b42afd01af","f102":"e4208b07e4439003baf01b3578d7205e","f103":"3bc1c15ca49c3d519fb782e8b2ca31bf","f104":"c5ed51dd9f113c03007caa34d6f9156a","f105":"79f808433d7f7da2da9c2755bda8a3b6","f106":"4bf06a071ebb1580de9fa6c2a8c78e30","f107":"3ef7207dca12b887891cc4382eedd9b6","f108":"d6b6e92178f46edd71112de76dd13fdd","f109":"f6a45e0ea1ca25ae8e825b5dee2a178b","f110":"78ddd2718cc564ad03c6fca064f963c4","f111":"98b1c04d3f48868427dc1e596c671b13","f112":"0ee380b01aaee5c8d4ee35f78083fd44","f113":"9b54be1c8909f0be7ad41c433045f767","f114":"789d0d752ed9f72b051f06f8520d09d1","f115":"c6f064025e3d4344fc2fb82eccb4d235","f116":"97ed141ffb2ffafab565a3afd656daee","f117":"92dcb8189389c6eccf981a1e5b45d2f7","f118":"5d1e373b71dfbbebc13887e3b5ccc5e6","f119":"8b779eec2592fc22087b41c858443c44","f120":"85bb1bfb81d1301a050dcfa86df425c0","f121":"a122ddbb745022d4da45bb6afbc9c587","f122":"cb284adb92e15782ddd95a9e2c5aea4e","f123":"be35bee0f71e2377c3e89fb97cf8dde3","f124":"11c70b1b37df0ebd9f06e5f7cff38ed4","f125":"c4b81b89e919e047cd667c65b148b5bb","f126":"664f4514ea124f1c9d954db9498d87e0","f127":"6aeb4617953578bd1ae11ebd15e59577","f128":"00d5fe9cc3d1ddada83e1abbb2a08959","f129":"c466ad07e5b01a1aa1903677a18b13fc","f130":"0d628cb742361ff9cb41fbebac30068e","f131":"9e49b205aa63c1513c879ee2519c8308","f132":"860f2b84263762c35d19ee323de688e9","f133":"296a7fe66387382f04b770e673a68296","f134":"995ca8f7e8d8f8b508912570cff395fd","f135":"78befbb5b9fe74c3991114424ebb2e90","f136":"237cb95262ca97c529fa970aa2288b68","f137":"36f593ca6748d4d09c22f55bccc28e59","f138":"f0661f3a5c601a679e7aa9d8ed779377","f139":"dfd96977ef83f602527635487a4d3f2a","f140":"75d4d05c148eb98e3024173be87678a2","f141":"51c95fe6d26c67e9cdf9faf077de4f44","f142":"3fda48708a2ac3e4381324127030565d","f143":"aa7e6dd89b57a91f0b64b48b3135af4e","f144":"2b9191125fe0f7f5716d6e8107e80986","f145":"62420b36d50fee7997c4ed0a9b146f98","f146":"b2682d7ff9f2a2887c8b2d0a713fd441","f147":"2f2f32c90f04babf95212c46f9e9e4f5","f148":"20a41f73c0ea3505b61efe69883e1f30","f149":"0f3d8c9d0486cdb22031e83f3e0e40ec","f150":"40883070db24c447434baaba0e5c8285","f151":"567fdc141241b8a2ee3469db08cf4762","f152":"335ad282fb5133f5526db7ba6c725984","f153":"d79c29bfce3f21d36fb456bd408906ef","f154":"85d5e3e2935f3a8d26306f4ab528d3ff","f155":"0b591fab9f8805a58d6ba399a605302e","f156":"99b279f9ec0ef043536c504f9edce805","f157":"1b83d59c50fd5b14fd19f406b488345e","f158":"013538780ff65b594df74cbe415509e7","f159":"7befa8937e5072e26affe1a9804e4454"},"RE":{"f052":"21d2d48876013e7dd60c5f55d4fd455d","f053":"0bef0ec01a50259819c1a337f89e448b","f062":"7da3aaf2861b17a46815aacfff54505c","f068":"69628cd00044f9cc526b825f9e4acc4e","f076":"03b79e57b0a62db43ec155d36b5d8a7b","f080":"90fe3d2fae1ef6216ba20eac8c884877","f087":"2ca3c6a9e2edfce41fb63f08996c86fa","f089":"2c322155db4072ce322e2f427193b20f","f106":"ca3cd6e4733857f605712142ad586c5d","f112":"5c99a3ba9f10715c9991caa4aaf81dd7","f116":"83a6ab433d8a88f6c177e63b1b8c53dd","f126":"e95defcd5754d3a06771936c0860b1dc"}};
+const BL=id=>'media/'+id+'.mp4';
+/* ---------- 1) 잠사 친구들과 대화 ---------- */
+(()=>{const M=$('#friendModal');if(!M)return;
+  M.classList.add('fchat');
+  M.innerHTML=`<header class="fc-hd"><div class="fc-av" id="fcAv"><img id="fImg" alt=""></div><div class="fc-id"><span class="eyebrow" id="fRole"></span><h3 id="ftitle"></h3><p id="fTxt"></p></div><button class="icon" type="button" data-close aria-label="닫기">✕</button></header>
+  <div class="fc-names"><span class="fc-nm fcme"><i>🎀</i>내 이름 <b id="fcMe"></b></span><span class="fc-swap" aria-hidden="true">⇄</span><span class="fc-nm fcyou"><i>🙂</i>네 이름 <b id="fcYou">?</b></span></div>
+  <div class="fc-log" id="fcLog" aria-live="polite"></div>
+  <div class="fc-chips" id="fcChips"></div>
+  <form class="fc-in" id="fcForm" autocomplete="off"><input id="fcInput" maxlength="120" placeholder="네 이름이나 궁금한 걸 써 봐!" aria-label="친구에게 말하기"><button class="btn sm" type="submit">보내기</button></form>
+  <p class="fc-note">🔊 목소리가 함께 나와요 · 정확한 안내는 ☎ 043-235-1267</p>`;
+  const FR2={gochi:['고치','박물관 담당'],boja:['보자기','안내 담당'],nue:['누에','체험학습 담당'],nabi:['나방','쇼핑·공방 담당']};
+  const CHIPS=[['name','👋 내 이름 알려 줄게'],['like','💛 너는 뭘 좋아해?'],['time','⏰ 언제 문 열어?'],['fun','🎢 뭐가 제일 재밌어?'],['food','🍇 오디 메뉴 알려 줘'],['way','🗺 어떻게 가?']];
+  const KW=[['time',/몇\s?시|시간|열어|여는|닫|운영|언제|휴관|입장\s?마감/],['food',/오디|메뉴|먹|밥|식당|배고|국수|돈가스|만두/],['way',/어디|주소|길|가는|오는|오시는|주차|위치|버스|차로/],['fun',/재밌|재미|놀|체험|뭐\s?해|추천|썰매|양떼|키즈/],['like',/좋아|취미|좋은\s?거/]];
+  const FACTS='잠사박물관(한국잠사박물관) 정보: 충북 청주시 흥덕구 강내면 청주역로 213-52. 관람시간 오전 10:00–12:00, 오후 13:00–17:00, 입장 마감 16:30. 문의 043-235-1267, 단체예약 010-6256-2969. 대한잠사회 창립 75년을 기념해 세운 우리나라 최초의 잠사업 박물관. 입장권 하나로 잠사박물관 관람, 씽씽코스터(사계절 튜브썰매: 봄·가을 롤러썰매, 여름 물썰매, 겨울 눈썰매), 디지털 키즈카페(9가지 모션인식 놀이), 숲속 양떼정원(실내 온실 속 작은 동물원: 양, 염소, 토끼, 기니피그, 비단잉어 등 먹이주기), 누에쉼터(대형 에어바운스 4종). 체험: 누에고치 실뽑기, 누에고치 목걸이 만들기, 추억의 달고나 만들기, 빙어잡기(겨울). 오디 메뉴: 오디 삼겹살, 오디 돈가스, 오디 만두, 오디 김치, 오디 떡만둣국, 오디 국수. 누에는 뽕잎을 먹고 자라 고치를 짓고, 고치 하나에서 1,000m가 넘는 실이 나온다.';
+  let cur='gochi',you=null,wait=false,hist=[],au=null,busy=false,sm=undefined;
+  try{you=localStorage.getItem('jamsa_friend_name')}catch(e){}
+  const josa=n=>{const c=n.charCodeAt(n.length-1);if(c<0xAC00||c>0xD7A3)return '야';return (c-0xAC00)%28?'아':'야'};
+  const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  function stop(){if(au){au.pause();au=null}$('#fcAv').classList.remove('talk');$$('.cast button').forEach(b=>b.classList.remove('talk'))}
+  function play(key){stop();const id=V24.FCA[cur]&&V24.FCA[cur][key];if(!id)return;au=new Audio(BL(id));const av=$('#fcAv'),hb=$(`.cast [data-friend="${cur}"]`);av.classList.add('talk');hb&&hb.classList.add('talk');au.onended=()=>{av.classList.remove('talk');hb&&hb.classList.remove('talk')};au.play().catch(()=>{av.classList.remove('talk');hb&&hb.classList.remove('talk')})}
+  function bubble(who,txt){const d=document.createElement('div');d.className='fc-msg '+who;d.innerHTML=(who==='bot'?`<img src="img/ch/${cur}.png" alt="">`:'')+`<p>${esc(txt)}</p>`;$('#fcLog').appendChild(d);$('#fcLog').scrollTop=1e6;return d.querySelector('p')}
+  function say(key,pre){const t=V24.FCL[cur][key];bubble('bot',(pre||'')+t);play(key);hist.push({role:'assistant',content:t})}
+  function setYou(){$('#fcYou').textContent=you||'?';$('#fcYou').parentElement.classList.toggle('on',!!you)}
+  function chips(){$('#fcChips').innerHTML=CHIPS.filter(c=>!(c[0]==='name'&&you)).map(c=>`<button type="button" data-fq="${c[0]}">${c[1]}</button>`).join('')}
+  function open(c){cur=c;stop();hist=[];const f=FR2[c];$('#fImg').src='img/ch/'+c+'.png';$('#fImg').alt=f[0];$('#ftitle').textContent='나는 '+f[0]+'!';$('#fRole').textContent=f[1];$('#fTxt').textContent=(typeof FR!=='undefined'&&FR[c])?FR[c][2]:'';$('#fcMe').textContent=f[0];setYou();$('#fcLog').innerHTML='';chips();
+    openEl(M);
+    if(you){bubble('bot',`${you}${josa(you)}, 또 왔구나! 나는 ${f[0]}야. 오늘은 뭐가 궁금해?`);play('nice');wait=false}
+    else{say('intro');wait=true}
+    setTimeout(()=>$('#fcInput').focus({preventScroll:true}),60)}
+  $$('[data-friend]').forEach(b=>b.onclick=()=>open(b.dataset.friend));
+  function takeName(t){let m=t.replace(/[.!~?\s]+$/,'').match(/^(?:(?:내|제)\s*이름은|나는|난|저는|전)\s*(.+?)(?:이야|야|이에요|예요|에요|입니다|이라고\s*해|라고\s*해)?$/);let n=m?m[1]:(wait&&t.length<=8&&!/[?？]/.test(t)?t.replace(/[.!~\s]+$/,''):null);if(!n)return null;n=n.replace(/[^가-힣A-Za-z0-9 ]/g,'').trim().slice(0,8);return n||null}
+  async function ask(q){if(busy)return;q=q.trim();if(!q)return;bubble('fcu',q);hist.push({role:'user',content:q});
+    const n=takeName(q);if(n){you=n;try{localStorage.setItem('jamsa_friend_name',n)}catch(e){}wait=false;setYou();chips();bubble('bot',`${n}${josa(n)}! `+V24.FCL[cur].nice);play('nice');return}
+    const k=(KW.find(x=>x[1].test(q))||[])[0];
+    if(sm===undefined){try{sm=window.claude&&await Promise.race([claude.use('sample'),new Promise(r=>setTimeout(()=>r(null),4000))])}catch(e){sm=null}}
+    if(!sm){if(k){say(k)}else if(/이름|누구/.test(q)){say('intro')}else{bubble('bot',`음… 그건 내가 잘 모르겠어. 위의 버튼을 눌러 보거나, 박물관 선생님께 물어봐! ☎ 043-235-1267`)}return}
+    if(k&&q.length<=14){say(k);return}
+    busy=true;const p=bubble('bot','생각하는 중…');p.parentElement.classList.add('think');stop();
+    const f=FR2[cur];const persona=`너는 한국잠사박물관의 귀여운 캐릭터 "${f[0]}"(${f[1]})야. ${(typeof FR!=='undefined'&&FR[cur])?FR[cur][2]:''} 어린이 친구에게 다정한 반말로, 1~2문장으로 짧게 대답해. ${you?`친구 이름은 ${you}야.`:''} 아래 정보에 있는 사실만 말하고, 모르는 것(가격·날짜 등)은 지어내지 말고 "박물관에 전화(043-235-1267)해서 물어봐"라고 해. 이모지는 하나까지만.\n${FACTS}`;
+    const msgs=[{role:'user',content:persona+'\n\n(대화를 시작해 줘)'},{role:'assistant',content:V24.FCL[cur].intro}].concat(hist.slice(-8));
+    if(msgs[msgs.length-1].role!=='user')msgs.push({role:'user',content:q});
+    try{const r=await sm(msgs,{modelTier:'quick',cache:false,onText:({text})=>{p.parentElement.classList.remove('think');p.textContent=text}});p.parentElement.classList.remove('think');p.textContent=r.text.trim();hist.push({role:'assistant',content:r.text.trim()})}
+    catch(e){p.parentElement.classList.remove('think');if(k){p.parentElement.remove();say(k)}else p.textContent='앗, 지금은 대답하기 어려워. 위의 버튼을 눌러 봐! ☎ 043-235-1267';if(e&&e.code==='not_granted')sm=null}
+    busy=false;$('#fcLog').scrollTop=1e6}
+  $('#fcChips').addEventListener('click',e=>{const b=e.target.closest('[data-fq]');if(!b)return;const k=b.dataset.fq;
+    if(k==='name'){bubble('fcu','내 이름 알려 줄게!');bubble('bot','좋아! 아래 칸에 네 이름을 써 줘. 🙂');wait=true;$('#fcInput').placeholder='내 이름은…';$('#fcInput').focus();return}
+    bubble('fcu',b.textContent.replace(/^\S+\s/,''));say(k)});
+  $('#fcForm').addEventListener('submit',e=>{e.preventDefault();const v=$('#fcInput').value;$('#fcInput').value='';$('#fcInput').placeholder='네 이름이나 궁금한 걸 써 봐!';ask(v)});
+  const _ca=closeAll;closeAll=function(){stop();return _ca.apply(this,arguments)};
+  $$('.cast button').forEach(b=>{b.setAttribute('aria-label',b.textContent.trim()+'와 대화하기');if(!b.querySelector('.say'))b.insertAdjacentHTML('beforeend','<span class="say">💬 대화하기</span>')});
+})();
+/* ---------- 2) 전시관 그림 ↔ 실물: 마우스 올리면 실물, 떼면 그림 ---------- */
+(()=>{const hov=matchMedia('(hover:hover)');
+  function bind(pn){if(pn._hv)return;pn._hv=1;const r=pn.querySelector('input');pn._u=1;pn._done=1;pn.style.setProperty('--cut','100%');if(r)r.value=100;
+    pn.addEventListener('mouseenter',()=>{if(!hov.matches)return;pn.classList.add('hv');pn.style.setProperty('--cut','0%');if(r)r.value=0});
+    pn.addEventListener('mouseleave',()=>{if(!hov.matches)return;pn.classList.add('hv');pn.style.setProperty('--cut','100%');if(r)r.value=100});
+    r&&r.addEventListener('input',()=>pn.classList.remove('hv'))}
+  function stops(){$$('.tstop[data-zi]').forEach(b=>{if(b._rv)return;const z=ZONES[+b.dataset.zi];const th=b.querySelector('.th');if(!z||!th||!z[4]||!z[4].length)return;b._rv=1;const n=z[4][0];th.insertAdjacentHTML('beforeend',`<img class="rv" src="img/fac/f${String(n).padStart(3,'0')}.jpg" alt="" loading="lazy"><em class="rvt">📷 실물</em>`)})}
+  const run=()=>{$$('.pano').forEach(bind);stops()};run();setInterval(run,1500)})();
+/* ---------- 3) 움직이는 그림 타일 + 옛사람 재현 영상 ---------- */
+(()=>{const io=new IntersectionObserver(es=>es.forEach(e=>{const v=e.target;if(e.isIntersecting){if(!v.src)v.src=v.dataset.src;v.play().catch(()=>{})}else v.pause()}),{rootMargin:'120px'});
+  function deco(){$$('.fgrid button[data-fac]').forEach(b=>{if(b._v24)return;b._v24=1;const k='f'+String(+b.dataset.fac).padStart(3,'0');const il=b.querySelector('.il');
+      if(V24.TL[k]&&il){const v=document.createElement('video');v.className='ilv';v.muted=true;v.loop=true;v.playsInline=true;v.setAttribute('playsinline','');v.setAttribute('aria-hidden','true');v.preload='none';v.dataset.src=BL(V24.TL[k]);il.after(v);io.observe(v)}
+      if(V24.RE[k]){const rl=b.querySelector('.rl');const v=document.createElement('video');v.className='rev';v.muted=true;v.loop=true;v.playsInline=true;v.setAttribute('playsinline','');v.preload='none';v.dataset.src=BL(V24.RE[k]);(rl||b).after(v);b.classList.add('hasre');b.insertAdjacentHTML('beforeend','<em class="ret">🎬 옛사람 재현 · AI</em>');
+        let t=0;b.addEventListener('mouseenter',()=>{t=setTimeout(()=>{if(!v.src)v.src=v.dataset.src;v.currentTime=0;v.play().catch(()=>{});b.classList.add('reon')},900)});
+        b.addEventListener('mouseleave',()=>{clearTimeout(t);b.classList.remove('reon');v.pause()})}})}
+  deco();setInterval(deco,1500);
+  /* 스토리 뷰어 실물 화면에도 재현 영상 */
+  const fig=$('#lbx figure');if(fig){const pip=document.createElement('div');pip.className='lbre';pip.hidden=true;pip.innerHTML='<video muted loop playsinline></video><span>🎬 옛사람이 쓰던 모습 · AI 재현</span>';fig.appendChild(pip);const pv=pip.querySelector('video');
+    const sync=()=>{const k=typeof LB!=='undefined'?LB[lbI]:null;const id=k&&V24.RE[k];if(id&&fig.dataset.st==='1'){if(pv.dataset.k!==k){pv.src=BL(id);pv.dataset.k=k}pip.hidden=false;pv.play().catch(()=>{})}else{pip.hidden=true;pv.pause()}};
+    new MutationObserver(sync).observe(fig,{attributes:true,attributeFilter:['data-st']});new MutationObserver(()=>{if($('#lbx').hidden){pv.pause();pip.hidden=true}}).observe($('#lbx'),{attributes:true,attributeFilter:['hidden']})}
+})();
+/* /v24 */
+
 </script>
 
 <script>

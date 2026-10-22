@@ -901,6 +901,41 @@ footer .links a{text-decoration:none}
 .dg-real .lbre span,.exm-real .lbre span{left:0;right:0;top:auto;bottom:0;opacity:1;transform:none;border:0;border-radius:0;background:linear-gradient(transparent,rgba(0,0,0,.75));padding:14px 8px 5px;font-size:11px;text-align:center}
 .lbx figure>img{transform:none!important;transition:opacity .5s ease!important}
 .exm-real img,.dg-real img{transform:none!important;transition:filter .6s ease!important}
+.storymenu .mx .ov{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .6s;pointer-events:none}
+.storymenu .mx.vid .ov{opacity:1}
+.storymenu .mx .t.c{right:6px;left:auto;opacity:0;transition:opacity .4s;z-index:2}
+.storymenu .mx.vid .t.c{opacity:1}
+.storymenu .mx .t{z-index:2}
+.pic .realpeek .pv{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .6s}
+.pic .realpeek.vid .pv{opacity:1}
+.pic .realpeek b{z-index:2}
+.tser{display:flex;gap:10px;flex-wrap:wrap}
+.tser button{display:flex;flex-direction:column;align-items:flex-start;gap:2px;border:1.5px solid #e4d6c6;background:#fff;border-radius:16px;padding:10px 16px;cursor:pointer;font:inherit;color:#4a3a40}
+.tser button b{font-size:16px}.tser button small{font-size:12px;color:#8a7a70}
+.tser button[aria-selected="true"]{background:#6b3a5b;border-color:#6b3a5b;color:#fff}.tser button[aria-selected="true"] small{color:#f3e4ee}
+.tsd{margin:14px 0 16px;color:#6d5f5a;font-size:14px}
+.teps{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}
+.tep{display:flex;flex-direction:column;gap:6px;text-align:left;border:1px solid #eee2d4;background:#fff;border-radius:18px;padding:10px;cursor:pointer;font:inherit;color:#3c2f34;transition:transform .25s,box-shadow .25s}
+.tep:hover,.tep:focus-visible{transform:translateY(-4px);box-shadow:0 14px 30px -14px rgba(80,40,60,.4)}
+.tep .tth{display:block;aspect-ratio:1;border-radius:12px;background-size:cover;background-position:center}
+.tep em{font-style:normal;font-size:12px;color:#8a6a7a;font-family:var(--util)}.tep b{font-size:17px}
+.tep .tch{display:flex;gap:2px}.tep .tch img{height:28px;width:auto}
+.tview{position:fixed;inset:0;z-index:90;background:rgba(30,18,24,.72);display:grid;place-items:center;padding:16px}
+.tview[hidden]{display:none}
+.tbox{background:#fbf6ee;border-radius:20px;width:min(980px,100%);max-height:calc(100vh - 32px);overflow:auto;padding:16px}
+.tbox header{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}.tbox header .sp{flex:1}
+.tbox header span#tvh{font-size:12px;color:#8a6a7a;font-family:var(--util)}.tbox header b{font-size:20px;color:#6b3a5b}
+.tbox header button{border:0;background:#efe3ea;color:#6b3a5b;border-radius:999px;padding:6px 12px;cursor:pointer;font:inherit}
+.tgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.tp{margin:0;background:#fff;border-radius:14px;overflow:hidden;border:2px solid transparent;transition:border-color .3s}
+.tp.on{border-color:#c8a2bb}
+.tp .tim{aspect-ratio:1;background-image:var(--u);background-size:200% 200%;background-position:var(--x) var(--y)}
+.tp figcaption{display:flex;gap:8px;align-items:center;padding:8px 10px}
+.tp figcaption img{height:38px;width:auto;flex:none}.tp figcaption span{font-size:15px;line-height:1.4}.tp figcaption b{display:block;font-size:11px;color:#8a6a7a;font-family:var(--util)}
+.tbox footer{display:flex;justify-content:space-between;align-items:center;margin-top:12px;gap:8px}
+.tbox footer button{border:1px solid #e0cfc0;background:#fff;border-radius:999px;padding:8px 14px;cursor:pointer;font:inherit;color:#4a3a40}
+.tbox footer .ai{font-size:11px;color:#9a8a80}
+@media (max-width:640px){.tgrid{grid-template-columns:1fr}}
 </style>
 
 <div class="util" role="navigation" aria-label="빠른 메뉴">
@@ -2444,6 +2479,61 @@ const BL=id=>'media/'+id+'.mp4';
 /* v26: 실물 사진 끝부분(흔들리는 줌 장면) 건너뛰기 */
 (function(){const v=$('#lbVid');v.addEventListener('timeupdate',()=>{if($('#lbx figure').dataset.st!=='0')return;const I=sInfo(LB[lbI]);if(!I.real||!v.duration||!isFinite(v.duration))return;if(v.currentTime>=v.duration-3.3){v.pause();lbReal();v.dispatchEvent(new Event('ended'))}})})();
 /* /v26 */
+/* v27: 오디 메뉴 실사 영상(AI) — 카드 호버·이야기 뷰어·대표 그림 */
+(()=>{const OV={"od1": "1dfd314d620acbea5cdf2cf2274293ae", "od2": "8ce9df7a2848b52f7a505798697727fb", "od3": "8a53917224f23713ddbd7e24c080eb79", "od4": "3b5592fe560d40667bcaa0cae22639f8", "od5": "86487645fde2e01a2f82cf7c9e143fad", "od6": "1b04a625f6d54f391b7821fee0819203"};const BV=id=>BL(id);const NM={od1:'오디 삼겹살',od2:'오디 돈가스',od3:'오디 만두',od4:'오디 김치',od5:'오디 떡만둣국',od6:'오디 국수'};
+ /* 카드: 그림 → (호버) 실사 사진 → 실사 영상 */
+ const deco=()=>$$('.storymenu').forEach(b=>{const k=b.dataset.story,m=b.querySelector('.mx');if(!OV[k]||!m||m.querySelector('.ov'))return;
+  m.insertAdjacentHTML('beforeend',`<video class="ov" muted loop playsinline preload="none" aria-hidden="true"></video><em class="t c">🎬 실사 영상(AI)</em>`);
+  const v=m.querySelector('.ov');let t=0;
+  b.addEventListener('mouseenter',()=>{clearTimeout(t);t=setTimeout(()=>{if(!v.src)v.src=BV(OV[k]);v.currentTime=0;v.play().then(()=>m.classList.add('vid')).catch(()=>{})},1000)});
+  b.addEventListener('mouseleave',()=>{clearTimeout(t);m.classList.remove('vid');v.pause()});});
+ deco();setTimeout(deco,1500);
+ /* 이야기 뷰어: 실제 모습 단계에 먹는 모습 영상 */
+ Object.assign(V24.RE,OV);
+ for(const k in OV){if(typeof SX!=='undefined'&&SX[k])SX[k][1]='실사 이미지·영상은 AI 예시예요 · 실제 메뉴 사진으로 바꿔 넣을 예정'}
+ const fig=$('#lbx figure');const cap=()=>{const p=fig&&fig.querySelector('.lbre span');if(!p)return;const k=LB[lbI];p.textContent=OV[k]?`🎬 ${NM[k]} 맛있게 먹는 모습 · AI 영상`:'🎬 옛사람이 쓰던 모습 · AI 재현'};
+ if(fig)new MutationObserver(cap).observe(fig,{attributes:true,attributeFilter:['data-st']});
+ /* 대표 그림의 실사 미리보기: 6가지 메뉴 영상이 차례로 */
+ $$('.split .pic').forEach(p=>{const im=p.querySelector('img.bg');if(!im||im.getAttribute('src')!=='img/bg/food.jpg')return;const rp=p.querySelector('.realpeek');if(!rp)return;
+  const ks=Object.keys(OV);let i=0;const v=document.createElement('video');v.muted=true;v.playsInline=true;v.setAttribute('playsinline','');v.preload='none';v.className='pv';rp.querySelector('img').after(v);const lb=rp.querySelector('b');
+  const nx=()=>{const k=ks[i++%ks.length];v.src=BV(OV[k]);lb.textContent='🎬 '+NM[k]+' · 실사 영상(AI)';v.play().then(()=>rp.classList.add('vid')).catch(()=>{})};
+  v.addEventListener('ended',nx);new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){if(!v.src)nx();else v.play().catch(()=>{})}else v.pause()})).observe(rp)});
+})();
+/* /v27 */
+
+/* v27b: 잠사카툰 — 연령별 3개 시리즈 · 12편 */
+(()=>{const TD={"S": [{"id": "a", "age": "5~7세 유아", "name": "누에야 놀자", "desc": "쉬운 말로 짧게 — 그림만 봐도 알 수 있어요", "eps": ["a1", "a2", "a3", "a4"]}, {"id": "b", "age": "8~10세 초등 저학년", "name": "누에 탐험대", "desc": "관찰하고 실험하며 배우는 누에 과학", "eps": ["b1", "b2", "b3", "b4"]}, {"id": "c", "age": "11세~ 고학년·청소년", "name": "비단길 시간여행", "desc": "역사와 미래로 떠나는 비단 이야기", "eps": ["c1", "c2", "c3", "c4"]}], "E": {"a1": {"t": "알에서 톡!", "p": [["boja", "어? 깨알 같은 게 꼼지락꼼지락!"], ["nue", "톡! 안녕, 나는 아기 누에야."], ["gochi", "반가워! 처음엔 개미만큼 작대."], ["nue", "근데… 배고파요!"]]}, "a2": {"t": "뽕잎 냠냠", "p": [["boja", "누에야, 뽕잎 가져왔어!"], ["nue", "사각사각 냠냠! 뽕잎이 제일 좋아."], ["gochi", "당근은? 과자는?"], ["nue", "나는 뽕잎만 먹어요. 쑥쑥 클 거야!"]]}, "a3": {"t": "쿨쿨 잠꾸러기", "p": [["nue", "쿨쿨… 잠깐 잘게요."], ["boja", "쉿! 누에가 잠을 자요."], ["nue", "영차! 헌 옷을 벗었어."], ["gochi", "네 번 자고 네 번 벗으면 다 큰 누에!"]]}, "a4": {"t": "하얀 집, 고치", "p": [["nue", "이제 실을 뿜뿜! 집을 지을 거야."], ["boja", "우와, 하얗고 폭신한 집이다!"], ["gochi", "이 집을 고치라고 해. 나랑 닮았지?"], ["nabi", "짜잔! 나방이 되어 나왔어요."]]}, "b1": {"t": "뽕나무와 오디", "p": [["boja", "누에 탐험대, 출동! 여기가 뽕나무야."], ["nue", "잎 가장자리가 톱니처럼 삐죽삐죽해."], ["gochi", "초여름엔 보랏빛 열매, 오디가 열려."], ["boja", "잎은 누에 밥, 오디는 우리 간식!"]]}, "b2": {"t": "고치에서 실 뽑기", "p": [["boja", "고치는 실 한 가닥으로 되어 있대!"], ["nue", "따뜻한 물에 불리면 실 끝이 풀려."], ["gochi", "한 가닥이 1,200~1,500m! 운동장 몇 바퀴야?"], ["nabi", "여러 가닥을 합쳐야 튼튼한 생사가 돼."]]}, "b3": {"t": "베틀로 비단 짜기", "p": [["boja", "실에 고운 물을 들여 볼까?"], ["nue", "이게 베틀이야. 날실과 씨실을 엮어."], ["gochi", "북이 왔다 갔다, 한 줄 한 줄 차곡차곡."], ["nabi", "반짝반짝 비단 완성!"]]}, "b4": {"t": "나방은 왜 못 날까?", "p": [["nabi", "훨훨… 어? 왜 안 날아지지?"], ["boja", "사람이 5,000년 넘게 길러서 날 필요가 없어졌대."], ["nabi", "나방이 되면 아무것도 안 먹고 며칠만 살아."], ["gochi", "그 대신 알을 낳아서 다음 누에에게 이어 줘!"]]}, "c1": {"t": "고조선의 누에", "p": [["boja", "비단길 시간여행, 첫 정거장은 아주 먼 옛날!"], ["nue", "고조선 때 이미 누에를 쳤다는 기록이 있어."], ["gochi", "중국 역사책 『한서』 지리지에 나온대."], ["nabi", "그때부터 비단은 우리 생활이 됐구나."]]}, "c2": {"t": "왕비의 친잠례", "p": [["boja", "조선의 왕비는 봄마다 친잠례를 했어."], ["nue", "왕비가 직접 뽕잎을 따서 누에를 먹였대."], ["gochi", "누에신께 제사 지내던 곳이 선잠단이야."], ["nabi", "농사처럼 양잠도 나라의 큰일이었어!"]]}, "c3": {"t": "실크로드를 따라", "p": [["nue", "비단을 싣고 사막을 건너는 길, 실크로드!"], ["boja", "비단은 금만큼 귀한 물건이었대."], ["gochi", "동쪽 끝에서 서쪽 로마까지 이어졌어."], ["nabi", "잠사박물관 2층에서 비단길을 만나 봐!"]]}, "c4": {"t": "미래의 실크", "p": [["boja", "실크는 이제 실험실에서도 활약해!"], ["nue", "몸에 순한 실크 실로 상처를 꿰매."], ["gochi", "화장품, 식품, 첨단 소재까지!"], ["nabi", "작은 누에가 여는 큰 미래, 함께 가자!"]]}}},TI={"a1": "a57d21c0e07482e3d65f52500fa91758", "a2": "279bb7df87780fbf3ae495d329c0cf07", "a3": "8900f65c1ec14d7d6ae0164a60514140", "a4": "ca14fe94d5e037108a4d2fea43f0f2fd", "b1": "172594fc1dec478d124e7fae1dd77ade", "b2": "8560f5b7e74ea619a01595b9243e7546", "b3": "1d328e4201fc51e6ce661d71a65faaec", "b4": "4fa37aefb8d83c7325ed56c3ebb6f846", "c1": "84678135b836142c9777546020632774", "c2": "b5f9d3b59278326b5bdb696618acbfe3", "c3": "48203515c472c2f782b0f5cb6a09ee36", "c4": "a92c422a23c219cdc7923c10485b4b5b"},TB=id=>'media/'+id+'.jpg';const CHN={nue:'누에',gochi:'고치',boja:'보자기',nabi:'나비'};
+ const host=document.querySelector('[data-view="story"] .band');if(!host)return;
+ const sec=document.createElement('section');sec.className='band toon';
+ sec.innerHTML=`<div class="wrap"><div class="head"><span class="eyebrow">잠사카툰</span><h2>누에 친구들의 네 컷 만화</h2><p>누에·고치·보자기·나비가 들려주는 양잠 이야기 12편. 나이에 맞는 시리즈를 골라 보세요.</p></div>
+ <div class="tser" role="tablist">${TD.S.map((s,i)=>`<button type="button" role="tab" data-s="${s.id}" aria-selected="${i?'false':'true'}"><b>${s.name}</b><small>${s.age}</small></button>`).join('')}</div>
+ <p class="tsd" id="tsd"></p><div class="teps" id="teps"></div></div>`;
+ host.after(sec);
+ const render=sid=>{const s=TD.S.find(x=>x.id===sid);$('#tsd').textContent=s.desc;
+  $('#teps').innerHTML=s.eps.map((k,i)=>`<button type="button" class="tep" data-k="${k}"><span class="tth" style="background-image:url(${TB(TI[k])})"></span><em>${s.name} · ${i+1}화</em><b>${TD.E[k].t}</b><span class="tch">${[...new Set(TD.E[k].p.map(p=>p[0]))].map(c=>`<img src="img/ch/${c}.png" alt="${CHN[c]}">`).join('')}</span></button>`).join('');
+  sec.querySelectorAll('.tser button').forEach(b=>b.setAttribute('aria-selected',b.dataset.s===sid?'true':'false'))};
+ sec.addEventListener('click',e=>{const t=e.target.closest('.tser button');if(t)render(t.dataset.s);const p=e.target.closest('.tep');if(p)open(p.dataset.k)});
+ render('a');
+ /* 뷰어 */
+ const M=document.createElement('div');M.className='tview';M.hidden=true;M.setAttribute('role','dialog');M.setAttribute('aria-modal','true');
+ M.innerHTML=`<div class="tbox"><header><span id="tvh"></span><b id="tvt"></b><span class="sp"></span><button type="button" class="tread" id="tvr">🔊 읽어 주기</button><button type="button" class="x" aria-label="닫기">✕</button></header><div class="tgrid" id="tvg"></div><footer><button type="button" id="tvp">‹ 이전 화</button><span class="ai">그림: AI 생성(잠사박물관 캐릭터)</span><button type="button" id="tvn">다음 화 ›</button></footer></div>`;
+ document.body.appendChild(M);let cur=null;
+ const all=()=>TD.S.flatMap(s=>s.eps);
+ function open(k){cur=k;const s=TD.S.find(x=>x.eps.includes(k)),i=s.eps.indexOf(k),ep=TD.E[k];
+  $('#tvh').textContent=`${s.name} · ${s.age} · ${i+1}화`;$('#tvt').textContent=ep.t;
+  $('#tvg').innerHTML=ep.p.map((p,j)=>`<figure class="tp" style="--u:url(${TB(TI[k])});--x:${j%2?100:0}%;--y:${j>1?100:0}%"><div class="tim"></div><figcaption><img src="img/ch/${p[0]}.png" alt=""><span><b>${CHN[p[0]]}</b>${p[1]}</span></figcaption></figure>`).join('');
+  M.hidden=false;M.querySelector('.x').focus()}
+ const stop=()=>{try{speechSynthesis.cancel()}catch(e){}};
+ const close=()=>{stop();M.hidden=true};
+ M.addEventListener('click',e=>{if(e.target===M)close()});M.querySelector('.x').onclick=close;
+ document.addEventListener('keydown',e=>{if(!M.hidden&&e.key==='Escape')close()});
+ $('#tvp').onclick=()=>{stop();const a=all();open(a[(a.indexOf(cur)-1+a.length)%a.length])};
+ $('#tvn').onclick=()=>{stop();const a=all();open(a[(a.indexOf(cur)+1)%a.length])};
+ $('#tvr').onclick=()=>{if(!('speechSynthesis' in window))return;stop();const ep=TD.E[cur];const fs=[...M.querySelectorAll('.tp')];
+  ep.p.forEach((p,j)=>{const u=new SpeechSynthesisUtterance(p[1]);u.lang='ko-KR';u.rate=.95;u.pitch=p[0]==='nue'?1.4:p[0]==='nabi'?1.2:1.05;u.onstart=()=>fs.forEach((f,q)=>f.classList.toggle('on',q===j));u.onend=()=>{if(j===3)fs.forEach(f=>f.classList.remove('on'))};speechSynthesis.speak(u)})};
+ if(typeof INDEX!=='undefined')INDEX.push(['잠사카툰 12편','story','카툰 만화 누에 고치 보자기 나비 유아 초등 청소년 시리즈']);
+})();
+/* /v27b */
 
 
 </script>

@@ -936,6 +936,39 @@ footer .links a{text-decoration:none}
 .tbox footer button{border:1px solid #e0cfc0;background:#fff;border-radius:999px;padding:8px 14px;cursor:pointer;font:inherit;color:#4a3a40}
 .tbox footer .ai{font-size:11px;color:#9a8a80}
 @media (max-width:640px){.tgrid{grid-template-columns:1fr}}
+.vplay{position:fixed;inset:0;z-index:95;background:rgba(14,8,12,.86);display:grid;place-items:center;padding:12px}
+.vplay[hidden]{display:none}
+.vpbox{background:#1d1418;color:#f6eef2;border-radius:18px;width:min(1100px,100%);max-height:calc(100vh - 24px);display:flex;flex-direction:column;overflow:hidden}
+.vpbox header{display:flex;align-items:center;gap:10px;padding:10px 12px;flex-wrap:wrap}
+.vpbox header>b{font-size:18px}
+.vptabs{display:flex;gap:6px;flex-wrap:wrap;flex:1}
+.vptabs button,.vpbox .x,.vpbtn button{border:0;border-radius:999px;padding:8px 14px;font:inherit;font-size:14px;cursor:pointer;background:#3a2a32;color:#f6eef2}
+.vptabs button[aria-pressed="true"]{background:#c9a0bb;color:#2a1520;font-weight:700}
+.vptabs small{opacity:.7}
+.vpmain{display:grid;grid-template-columns:minmax(0,1fr) 260px;gap:14px;padding:0 12px}
+.vpstage{position:relative;background:#000;border-radius:12px;overflow:hidden}
+.vpstage video{display:block;width:100%;max-height:62vh;aspect-ratio:16/10;object-fit:contain;background:#000}
+.vpnav button{position:absolute;top:50%;transform:translateY(-50%);width:52px;height:52px;border-radius:50%;border:0;background:rgba(255,255,255,.85);color:#3a2a32;font-size:30px;line-height:1;cursor:pointer}
+.vpnav #vpP{left:10px}.vpnav #vpN{right:10px}
+.vpinfo span{font-size:12px;opacity:.75}.vpinfo h3{margin:6px 0 4px;font-size:22px}.vpinfo p{margin:0 0 12px;font-size:13px;opacity:.8}
+.vpbtn{display:flex;flex-direction:column;gap:8px;align-items:flex-start}.vpbtn label{font-size:13px;display:flex;gap:6px;align-items:center}
+.vplist{display:flex;gap:8px;overflow-x:auto;padding:12px;scroll-snap-type:x proximity}
+.vplist button{flex:0 0 112px;border:2px solid transparent;border-radius:10px;background:#2a1e24;color:#f6eef2;padding:4px;cursor:pointer;font:inherit;font-size:11px;text-align:left;scroll-snap-align:center}
+.vplist button[aria-current]{border-color:#c9a0bb}
+.vplist img,.vplist .ph{display:grid;place-items:center;width:100%;aspect-ratio:1;object-fit:cover;border-radius:7px;background:#3a2a32}
+.vplist span{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:3px}
+.vpfab{position:fixed;right:16px;bottom:16px;z-index:60;border:0;border-radius:999px;padding:12px 18px;background:#6b3a5b;color:#fff;font:inherit;font-size:15px;font-weight:700;box-shadow:0 10px 24px -8px rgba(60,20,40,.6);cursor:pointer}
+.fgrid button .ret{pointer-events:auto!important;cursor:pointer;font-size:11px!important;padding:3px 9px!important}
+.lbre{cursor:zoom-in}.lbre::after{content:'⤢ 크게 보기';position:absolute;top:6px;right:6px;font-size:11px;color:#fff;background:rgba(0,0,0,.55);border-radius:999px;padding:2px 8px}
+.storymenu .mx .vpgo{position:absolute;left:50%;bottom:8px;transform:translateX(-50%);z-index:3;background:rgba(107,58,91,.92);color:#fff;font-size:12px;border-radius:999px;padding:4px 10px;white-space:nowrap;cursor:pointer}
+.vphall .vpcards{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
+.vphall .vpcards button{display:flex;flex-direction:column;gap:6px;text-align:left;border:1px solid #eee2d4;background:#fff;border-radius:16px;padding:16px;cursor:pointer;font:inherit;color:#3c2f34}
+.vphall .vpcards b{font-size:18px}.vphall .vpcards span{font-size:13px;color:#7a6a70}.vphall .vpcards em{font-style:normal;color:#6b3a5b;font-weight:700}
+@media (max-width:760px){.vpmain{grid-template-columns:1fr}.vpinfo h3{font-size:18px}.vpbtn{flex-direction:row;flex-wrap:wrap}.vpstage video{max-height:46vh}.vpfab{right:12px;bottom:12px;padding:10px 14px;font-size:14px}}
+.vplist{align-items:flex-start}
+.vplist img,.vplist .ph{height:96px!important;width:100%!important;object-fit:cover!important}
+.vplist button{flex:0 0 104px!important;width:104px!important;max-width:104px;min-width:0}
+@media (max-width:760px){.vpbox header{flex-wrap:nowrap}.vptabs{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}.vptabs button{white-space:nowrap;padding:7px 11px;font-size:13px}.vpbox header>b{display:none}.vplist img,.vplist .ph{height:72px!important}.vplist button{flex:0 0 80px!important;width:80px!important;max-width:80px}}
 </style>
 
 <div class="util" role="navigation" aria-label="빠른 메뉴">
@@ -2534,6 +2567,52 @@ const BL=id=>'media/'+id+'.mp4';
  if(typeof INDEX!=='undefined')INDEX.push(['잠사카툰 12편','story','카툰 만화 누에 고치 보자기 나비 유아 초등 청소년 시리즈']);
 })();
 /* /v27b */
+/* v28: 영상관 — 모든 영상을 크게, 손가락 한 번으로 */
+(()=>{const OVK=['od1','od2','od3','od4','od5','od6'];const NM={od1:'오디 삼겹살',od2:'오디 돈가스',od3:'오디 만두',od4:'오디 김치',od5:'오디 떡만둣국',od6:'오디 국수'};
+ const zt=k=>{try{return sInfo(k).title||''}catch(e){return ''}};const ttl=k=>{if(OVK.includes(k))return NM[k];const t=(typeof STXT!=='undefined'&&STXT[k]&&STXT[k][1])||'';const f=t.split(/(?<=[.!?])\s/)[0].replace(/[.!?]$/,'');return f?(f.length>34?f.slice(0,33)+'…':f):zt(k)};
+ const thumb=k=>/^f\d{3}$/.test(k)?'img/fac/'+k+'.jpg':(typeof ODP!=='undefined'&&ODP[k]?B+ODP[k]:'');
+ const G=[
+  ['re','🎬 옛사람이 쓰던 모습',Object.keys(V24.RE).filter(k=>/^f\d{3}$/.test(k)).sort(),k=>BL(V24.RE[k]),'AI 재현 · 15초 · 소리 없음'],
+  ['od','🍇 오디 메뉴 먹는 모습',OVK.filter(k=>V24.RE[k]),k=>BL(V24.RE[k]),'AI 영상 · 15초 · 소리 없음'],
+  ['st','🎨 그림 이야기 (해설)',Object.keys(MEDIA).filter(k=>/^f\d{3}$/.test(k)).sort(),k=>MEDIA[k],'캐릭터 해설 · 소리 있음']];
+ const M=document.createElement('div');M.className='vplay';M.hidden=true;M.setAttribute('role','dialog');M.setAttribute('aria-modal','true');M.setAttribute('aria-label','영상관');
+ M.innerHTML=`<div class="vpbox"><header><b>🎬 영상관</b><div class="vptabs">${G.map(g=>`<button type="button" data-g="${g[0]}">${g[1]} <small>${g[2].length}</small></button>`).join('')}</div><button type="button" class="x" aria-label="닫기">✕</button></header>
+ <div class="vpmain"><div class="vpstage"><video id="vpV" controls playsinline preload="metadata"></video><div class="vpnav"><button type="button" id="vpP" aria-label="이전 영상">‹</button><button type="button" id="vpN" aria-label="다음 영상">›</button></div></div>
+ <div class="vpinfo"><span id="vpNo"></span><h3 id="vpT"></h3><p id="vpS"></p><div class="vpbtn"><button type="button" id="vpFs">⛶ 전체 화면</button><button type="button" id="vpSnd">🔊 소리 켜기</button><label><input type="checkbox" id="vpAuto" checked> 다음 영상 자동 재생</label></div></div></div>
+ <div class="vplist" id="vpL"></div></div>`;
+ document.body.appendChild(M);
+ let g=G[0],i=0;const V=$('#vpV');
+ const list=()=>{$('#vpL').innerHTML=g[2].map((k,j)=>`<button type="button" data-i="${j}"${j===i?' aria-current="true"':''}>${thumb(k)?`<img src="${thumb(k)}" alt="" loading="lazy">`:'<span class="ph">▶</span>'}<span>${ttl(k)}</span></button>`).join('');const c=$('#vpL [aria-current]');if(c)c.scrollIntoView({block:'nearest',inline:'center'})};
+ function show(j,play=true){i=(j+g[2].length)%g[2].length;const k=g[2][i];V.src=g[3](k);V.poster=thumb(k)||'';
+  $('#vpNo').textContent=`${g[1]} · ${i+1} / ${g[2].length}`;$('#vpT').textContent=ttl(k);$('#vpS').textContent=(OVK.includes(k)?'':zt(k)+' · ')+g[4];
+  $('#vpSnd').hidden=g[0]!=='st';V.muted=g[0]!=='st'?true:V.muted;
+  M.querySelectorAll('.vptabs button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.g===g[0]?'true':'false'));list();
+  if(play)V.play().catch(()=>{V.muted=true;V.play().catch(()=>{})})}
+ window.openVP=(gid,k)=>{g=G.find(x=>x[0]===gid)||G[0];const j=k?g[2].indexOf(k):0;M.hidden=false;document.body.style.overflow='hidden';show(j<0?0:j)};
+ const close=()=>{V.pause();M.hidden=true;document.body.style.overflow=''};
+ M.querySelector('.x').onclick=close;M.addEventListener('click',e=>{if(e.target===M)close()});
+ document.addEventListener('keydown',e=>{if(M.hidden)return;if(e.key==='Escape')close();if(e.key==='ArrowRight')show(i+1);if(e.key==='ArrowLeft')show(i-1)});
+ M.querySelector('.vptabs').addEventListener('click',e=>{const b=e.target.closest('button');if(b){g=G.find(x=>x[0]===b.dataset.g);show(0)}});
+ $('#vpL').addEventListener('click',e=>{const b=e.target.closest('button');if(b)show(+b.dataset.i)});
+ $('#vpP').onclick=()=>show(i-1);$('#vpN').onclick=()=>show(i+1);
+ V.addEventListener('ended',()=>{if($('#vpAuto').checked)show(i+1)});
+ $('#vpFs').onclick=()=>{const el=V;(el.requestFullscreen||el.webkitRequestFullscreen||el.webkitEnterFullscreen||(()=>{})).call(el)};
+ $('#vpSnd').onclick=()=>{V.muted=false;V.volume=1;V.play().catch(()=>{})};
+ let sx=0;V.addEventListener('touchstart',e=>{sx=e.touches[0].clientX},{passive:true});V.addEventListener('touchend',e=>{const d=e.changedTouches[0].clientX-sx;if(Math.abs(d)>60)show(i+(d<0?1:-1))});
+ /* 들어가는 곳 ① 화면 아래 고정 버튼 */
+ const fb=document.createElement('button');fb.type='button';fb.className='vpfab';fb.innerHTML='🎬 영상 크게 보기';fb.onclick=()=>openVP('re');document.body.appendChild(fb);
+ /* ② 타일의 'AI 재현' 표시를 누르면 바로 크게 */
+ setInterval(()=>$$('.fgrid button.hasre .ret').forEach(t=>{if(t._vp)return;t._vp=1;t.textContent='▶ 영상 보기';t.setAttribute('role','button');t.setAttribute('tabindex','0');t.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();const b=t.closest('button[data-fac]');openVP('re','f'+String(+b.dataset.fac).padStart(3,'0'))})}),1500);
+ /* ③ 이야기 창·전시 창의 작은 영상 창을 누르면 크게 */
+ document.addEventListener('click',e=>{const p=e.target.closest('.lbre');if(!p)return;e.preventDefault();e.stopPropagation();const v=p.querySelector('video');const src=v&&v.getAttribute('src');if(!src)return;
+  for(const gg of G.slice(0,2)){const k=gg[2].find(k=>src.endsWith(V24.RE[k])||src.includes(V24.RE[k]));if(k){openVP(gg[0],k);return}}},true);
+ /* ④ 오디 메뉴 카드: 영상 버튼 */
+ $$('.storymenu').forEach(b=>{const k=b.dataset.story;if(!V24.RE[k]||b.querySelector('.vpgo'))return;const m=b.querySelector('.mx');if(!m)return;m.insertAdjacentHTML('beforeend','<span class="vpgo" role="button" tabindex="0">▶ 먹는 모습 영상</span>');m.querySelector('.vpgo').addEventListener('click',e=>{e.preventDefault();e.stopPropagation();openVP('od',k)})});
+ /* ⑤ 온라인 박물관에 영상관 소개 */
+ const ol=document.querySelector('[data-view="online"] .band');if(ol){const s=document.createElement('section');s.className='band vphall';s.innerHTML=`<div class="wrap"><div class="head"><span class="eyebrow">영상관</span><h2>영상은 여기서 크게 보세요</h2><p>버튼 하나로 큰 화면에서 차례대로 볼 수 있어요. 휴대폰도 손가락으로 넘기면 돼요.</p></div><div class="vpcards">${G.map(g=>`<button type="button" data-g="${g[0]}"><b>${g[1]}</b><span>${g[2].length}편 · ${g[4]}</span><em>▶ 바로 보기</em></button>`).join('')}</div></div>`;ol.before(s);s.addEventListener('click',e=>{const b=e.target.closest('[data-g]');if(b)openVP(b.dataset.g)})}
+ if(typeof INDEX!=='undefined')INDEX.push(['영상관 (영상 크게 보기)','online','영상 동영상 재현 해설 오디 크게 전체화면']);
+})();
+/* /v28 */
 
 
 </script>

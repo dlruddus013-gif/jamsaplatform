@@ -969,6 +969,42 @@ footer .links a{text-decoration:none}
 .vplist img,.vplist .ph{height:96px!important;width:100%!important;object-fit:cover!important}
 .vplist button{flex:0 0 104px!important;width:104px!important;max-width:104px;min-width:0}
 @media (max-width:760px){.vpbox header{flex-wrap:nowrap}.vptabs{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}.vptabs button{white-space:nowrap;padding:7px 11px;font-size:13px}.vpbox header>b{display:none}.vplist img,.vplist .ph{height:72px!important}.vplist button{flex:0 0 80px!important;width:80px!important;max-width:80px}}
+.mbar{display:none}
+.totop{position:fixed;right:16px;bottom:76px;z-index:58;width:46px;height:46px;border-radius:50%;border:1.5px solid var(--plum);background:rgba(251,247,236,.95);color:var(--plum);font-size:20px;cursor:pointer;box-shadow:var(--shadow)}
+.totop[hidden]{display:none}
+.inforow .box .big{display:block;text-decoration:none;color:var(--plum)}
+.inforow .addr{font-size:14px;margin:0 0 8px;color:var(--ink,#3c2f34)}
+.ibtn{display:flex;flex-wrap:wrap;gap:6px}
+.ibtn a{border:1px solid var(--line);background:#fff;border-radius:999px;padding:7px 12px;font-size:13.5px;text-decoration:none;color:var(--plum)}
+.ibtn a.hl{background:var(--plum);color:#fff;border-color:var(--plum)}
+.gnav a.cur{color:var(--plum);font-weight:700;box-shadow:inset 0 -3px 0 var(--plum)}
+.plmore{display:none}
+.storymenu .mx .vpgo{opacity:0;transition:opacity .3s}
+.storymenu:hover .mx .vpgo,.storymenu:focus-within .mx .vpgo{opacity:1}
+@media (hover:none){.storymenu .mx .vpgo{opacity:1}}
+.fgrid button>span{font-size:max(12px,1em)}
+@media (max-width:760px){
+ body{padding-bottom:calc(64px + env(safe-area-inset-bottom,0px))}
+ .mbar{display:grid;grid-template-columns:repeat(5,1fr);position:fixed;left:0;right:0;bottom:0;z-index:70;background:rgba(251,247,236,.97);backdrop-filter:blur(10px);border-top:1px solid var(--line);padding:6px 4px calc(6px + env(safe-area-inset-bottom,0px))}
+ .mbar a,.mbar button{display:grid;justify-items:center;gap:1px;font:inherit;font-size:11.5px;color:var(--plum);text-decoration:none;background:none;border:0;padding:4px 0;cursor:pointer}
+ .mbar i{font-style:normal;font-size:20px;line-height:1.1}
+ .mbar a.hl{background:var(--plum);color:#fff;border-radius:12px;margin:0 4px}
+ .vpfab{display:none!important}
+ .bgm-btn{bottom:calc(76px + env(safe-area-inset-bottom,0px))!important;left:10px!important;height:38px!important;padding:0 10px!important}
+ .totop{bottom:calc(76px + env(safe-area-inset-bottom,0px));right:10px;width:42px;height:42px}
+ .util .wrap{flex-wrap:nowrap;overflow-x:auto;white-space:nowrap;scrollbar-width:none;gap:16px}
+ .util .wrap::-webkit-scrollbar{display:none}.util .sp{display:none}
+ .olb{display:grid!important;grid-template-columns:48px 1fr;gap:6px 12px;padding:14px 16px}
+ .olb img{height:48px;grid-row:span 2}
+ .olb b{font-size:19px}.olb small{font-size:12.5px}
+ .olb i{margin-left:0!important;grid-column:1/-1;text-align:center}
+ .head.withchar{grid-template-columns:1fr!important}
+ .head.withchar img{height:56px!important;grid-row:auto!important;justify-self:start;margin-bottom:-4px}
+ .quick .wrap{display:flex!important;overflow-x:auto;scrollbar-width:none}
+ .quick a{flex:0 0 24%;font-size:13px!important;padding:12px 4px!important}
+ .plist.fold>li:nth-child(n+7){display:none}
+ .plmore{display:block;width:100%;margin-top:8px}
+}
 </style>
 
 <div class="util" role="navigation" aria-label="빠른 메뉴">
@@ -2613,6 +2649,26 @@ const BL=id=>'media/'+id+'.mp4';
  if(typeof INDEX!=='undefined')INDEX.push(['영상관 (영상 크게 보기)','online','영상 동영상 재현 해설 오디 크게 전체화면']);
 })();
 /* /v28 */
+/* v29: 인터페이스 보완 — 휴대폰 하단 바로가기·맨 위로·정보카드·긴 목록 접기 */
+(()=>{const RES='https://la2fdoci.com/jamsahome/product/productList.do';const ADDR='충북 청주시 흥덕구 강내면 청주역로 213-52';
+ const NMAP='https://map.naver.com/p/search/'+encodeURIComponent('한국잠사박물관');const KMAP='https://map.kakao.com/?q='+encodeURIComponent('한국잠사박물관');
+ /* ① 휴대폰 하단 고정 바로가기 */
+ const mb=document.createElement('nav');mb.className='mbar';mb.setAttribute('aria-label','빠른 실행');
+ mb.innerHTML=`<a href="tel:0432351267"><i>📞</i>전화</a><a href="${RES}" target="_blank" rel="noopener" class="hl"><i>🎟</i>예매</a><a href="${NMAP}" target="_blank" rel="noopener"><i>📍</i>길찾기</a><a href="#group"><i>👥</i>단체</a><button type="button" id="mbVid"><i>🎬</i>영상</button>`;
+ document.body.appendChild(mb);$('#mbVid').onclick=()=>window.openVP&&openVP('re');
+ /* ② 맨 위로 */
+ const tt=document.createElement('button');tt.type='button';tt.className='totop';tt.setAttribute('aria-label','맨 위로');tt.textContent='↑';tt.hidden=true;document.body.appendChild(tt);
+ tt.onclick=()=>scrollTo({top:0,behavior:'smooth'});addEventListener('scroll',()=>{tt.hidden=scrollY<900},{passive:true});
+ /* ③ 관람시간 카드: 주소·길찾기·전화 버튼 */
+ const box=document.querySelector('.inforow .box');if(box&&!box.querySelector('.ibtn')){box.insertAdjacentHTML('beforeend',`<hr class="thread" style="margin:6px 0"><h3>오시는 길</h3><p class="addr">${ADDR}</p><div class="ibtn"><a href="tel:0432351267">📞 전화 걸기</a><a href="${NMAP}" target="_blank" rel="noopener">네이버 지도</a><a href="${KMAP}" target="_blank" rel="noopener">카카오맵</a><a href="${RES}" target="_blank" rel="noopener" class="hl">🎟 입장권 예매</a></div>`);
+  const big=box.querySelector('.big');if(big&&!big.closest('a')){const a=document.createElement('a');a.href='tel:0432351267';a.className='big';a.textContent=big.textContent;big.replaceWith(a)}}
+ /* ④ 휴대폰에서 시설 목록 접기 */
+ const pl=$('#plist');if(pl){const t=document.createElement('button');t.type='button';t.className='btn sm ghost plmore';const set=o=>{pl.classList.toggle('fold',!o);t.textContent=o?'목록 접기 ▲':`시설 ${pl.children.length}곳 모두 보기 ▼`};set(false);pl.after(t);t.onclick=()=>set(pl.classList.contains('fold'));setTimeout(()=>set(false),1500)}
+ /* ⑤ 현재 보고 있는 메뉴 표시 */
+ const mark=()=>{const h=(location.hash||'#home').split(/[?&]/)[0];document.querySelectorAll('.gnav>div').forEach(d=>{const top=d.querySelector(':scope>a');if(!top)return;const on=[...d.querySelectorAll('a')].some(a=>a.getAttribute('href')===h);top.classList.toggle('cur',on);on?top.setAttribute('aria-current','page'):top.removeAttribute('aria-current')})};
+ addEventListener('hashchange',mark);mark();
+})();
+/* /v29 */
 
 
 </script>

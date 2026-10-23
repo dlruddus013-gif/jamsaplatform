@@ -1031,6 +1031,12 @@ footer .links a{text-decoration:none}
 .uinote{font-size:12.5px;color:var(--muted,#7a6a70);margin:12px 0 0}
 #ostat2{margin:4px 0 10px}#ostat2 .ostat{padding:6px 12px}
 @media (max-width:900px){.uigrid{grid-template-columns:1fr}}
+.rvtag{display:none;position:absolute;left:12px;top:12px;z-index:5;background:rgba(20,12,16,.72);color:#fff;font-family:var(--util);font-size:12.5px;border-radius:999px;padding:4px 11px;pointer-events:none}
+.rvtag.on{display:block}
+#howModal .rvtag.hv{position:relative;left:auto;top:auto;margin:8px 0 0;width:max-content}
+#howVideo{position:relative}
+.newexp .dgc{position:relative}
+.newexp .dgc::after{top:28px!important;right:28px!important;bottom:auto!important;left:auto!important;background:rgba(255,255,255,.94)!important;z-index:2}
 </style>
 
 <div class="util" role="navigation" aria-label="빠른 메뉴">
@@ -2575,7 +2581,7 @@ const BL=id=>'media/'+id+'.mp4';
 (function(){const v=$('#lbVid');v.addEventListener('timeupdate',()=>{if($('#lbx figure').dataset.st!=='0')return;const I=sInfo(LB[lbI]);if(!I.real||!v.duration||!isFinite(v.duration))return;if(v.currentTime>=v.duration-3.3){v.pause();lbReal();v.dispatchEvent(new Event('ended'))}})})();
 /* /v26 */
 /* v27: 오디 메뉴 실사 영상(AI) — 카드 호버·이야기 뷰어·대표 그림 */
-(()=>{const OV={"od1": "1dfd314d620acbea5cdf2cf2274293ae", "od2": "8ce9df7a2848b52f7a505798697727fb", "od3": "8a53917224f23713ddbd7e24c080eb79", "od4": "3b5592fe560d40667bcaa0cae22639f8", "od5": "86487645fde2e01a2f82cf7c9e143fad", "od6": "1b04a625f6d54f391b7821fee0819203"};const BV=id=>BL(id);const NM={od1:'오디 삼겹살',od2:'오디 돈가스',od3:'오디 만두',od4:'오디 김치',od5:'오디 떡만둣국',od6:'오디 국수'};
+(()=>{const OV={"od1": "1dfd314d620acbea5cdf2cf2274293ae", "od2": "c22f40725175512da646a554a0ee8521", "od3": "8a53917224f23713ddbd7e24c080eb79", "od4": "3b5592fe560d40667bcaa0cae22639f8", "od5": "86487645fde2e01a2f82cf7c9e143fad", "od6": "1b04a625f6d54f391b7821fee0819203"};const BV=id=>BL(id);const NM={od1:'오디 삼겹살',od2:'오디 돈가스',od3:'오디 만두',od4:'오디 김치',od5:'오디 떡만둣국',od6:'오디 국수'};
  /* 카드: 그림 → (호버) 실사 사진 → 실사 영상 */
  const deco=()=>$$('.storymenu').forEach(b=>{const k=b.dataset.story,m=b.querySelector('.mx');if(!OV[k]||!m||m.querySelector('.ov'))return;
   m.insertAdjacentHTML('beforeend',`<video class="ov" muted loop playsinline preload="none" aria-hidden="true"></video><em class="t c">🎬 실사 영상(AI)</em>`);
@@ -2737,6 +2743,25 @@ const BL=id=>'media/'+id+'.mp4';
  if(typeof INDEX!=='undefined')INDEX.push(['요금표 · 운영시간 · 휴관일','home','요금 가격 입장료 종일권 오후권 휴관 월요일 운영시간 체험비']);
 })();
 /* /v30 */
+/* v31: 체험 애니메이션 다음에 실제 모습 영상(AI 실사, 12초) 이어 붙이기 */
+(()=>{const RV={"ai": "2516e62cb7674e32d0b352bd5f40dafa", "dye": "648bd42733cb109d1aeeadce2d8cc60d", "e1": "c0d5241702edebef1b6b91ec5bdc8a0f", "e10": "594c879e4acd73f99e21bff1b20f37cc", "e11": "01e03eeb00435b00401fdc1cbe19ba62", "e12": "e8fac7c5d8f869a1de6f8f3b2cdef0a2", "e2": "b5e4ca7555e143e57846f9ce8759d6b4", "e3": "7d35c77cbad16badc94a9b5b6f2e1402", "e4": "8947ea95011851d7434c2c8845fcd1cd", "e5": "d8241604b02dbf24321c1291514f9b3c", "e6": "ff32c3a4910f2082827c8f1088c3a6b3", "e7": "e90b5011ca8a741ed9f7d3dd44e03386", "e8": "140153cc960707d847d1fc50e7814af9", "e9": "d4e3818812587966e37f70e5d3d50973", "leaf": "d6d050f4380f689825caee83d3ed10ce", "necklace": "86d7148f502e8fb1f0db0e7ae61f23ce", "reel": "87124a09ee1a63245826a43df4adde72"};const src=k=>BL(RV[k]);
+ /* ① 새 체험 12가지(dg 창): 그림 영상 → 실사 영상 → 다음 단계 */
+ const dv=$('#dgVid');if(dv){const tag=document.createElement('span');tag.className='rvtag';tag.textContent='📹 실제 모습 · AI 실사 영상';dv.after(tag);
+  let done=false,on=false;
+  const _st=dgStep;dgStep=function(n){if(n===2&&dgSt===1&&RV[dgK]&&!done&&!on){on=true;dv.src=src(dgK);dv.removeAttribute('poster');dv.currentTime=0;dv.playbackRate=1;dv.closest('.dg-stage,#dgStage')?.classList.add('rvon');tag.classList.add('on');dv.play().catch(()=>{});return}
+   if(n!==1){tag.classList.remove('on');$('#dgStage')?.classList.remove('rvon')}return _st(n)};
+  dv.addEventListener('ended',()=>{if(on){on=false;done=true;tag.classList.remove('on');$('#dgStage')?.classList.remove('rvon');dgStep(2)}});
+  const _pl=dgPlay;dgPlay=function(k){done=false;on=false;tag.classList.remove('on');$('#dgStage')?.classList.remove('rvon');return _pl(k)}}
+ /* ② 만드는 방법 영상 5가지: 애니메이션 → 실사 영상 → 실물 사진 */
+ const hv=$('#howVideo');if(hv){const tag=document.createElement('span');tag.className='rvtag hv';tag.textContent='📹 실제 모습 · AI 실사 영상';hv.after(tag);
+  let cur='',done=false;const _o=openHow;openHow=function(k){cur=k;done=false;tag.classList.remove('on');return _o(k)};
+  hv.addEventListener('ended',()=>{if(done||!RV[cur])return;done=true;const box=$('#howReal');setTimeout(()=>{if(box)box.hidden=true},0);hv.src=src(cur);hv.removeAttribute('poster');tag.classList.add('on');hv.play().catch(()=>{});
+   const end=()=>{tag.classList.remove('on');hv.removeEventListener('ended',end)};hv.addEventListener('ended',end)});
+  $('#howTitle')&&new MutationObserver(()=>{}).observe($('#howTitle'),{childList:true})}
+ /* ③ 영상관에도 '체험 실제 모습' 묶음 */
+ if(window.openVP){/* 영상관 목록은 v28에서 만들어져 있어 별도 버튼으로 연결 */}
+})();
+/* /v31 */
 
 
 </script>

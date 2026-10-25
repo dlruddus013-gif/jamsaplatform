@@ -173,7 +173,7 @@ const MENU=[['dash','🏠','대시보드'],
  ['shop','🛍','쇼핑',[['tickets','입장권·상품(예매)'],['orders','주문·예약 확인'],['prices','요금표'],['linkset','링크 주소 설정']]],
  ['promo','🎁','프로모션',[['popup','팝업·배너'],['events','행사 소식']]],
  ['content','📝','콘텐츠',[['hours','운영시간·휴관일'],['media','영상·사진 현황']]],
- ['stat','📈','통계',[['visits','방문자'],['people','방문자별 분석'],['inflow','유입 경로·검색어'],['funnel','클릭·티켓 전환'],['hourly','시간대별 행동'],['journey','방문자 여정'],['interest','관심 분야'],['demo','연령·성별 통계']]],
+ ['stat','📈','통계',[['visits','방문자'],['people','방문자별 분석'],['inflow','유입 경로·검색어'],['funnel','클릭·티켓 전환'],['hourly','시간대별 행동'],['journey','방문자 여정'],['interest','관심 분야'],['chatlog','AI 대화 로그'],['demo','연령·성별 통계']]],
  ['mkt','📣','홍보·마케팅',[['seo','검색·공유 노출'],['links','외부 채널 바로가기'],['linkset','링크 주소 설정']]],
  ['set','⚙️','설정',[['staff','운영진'],['pw','내 비밀번호'],['audit','활동 기록'],['domain','도메인·배포']]]];
 const TITLES=Object.fromEntries(MENU.flatMap(m=>m[3]?m[3]:[[m[0],m[2]]]));
@@ -421,6 +421,35 @@ async function vDetail(v){let S=[];try{S=await rpc('silk_visitor',{p_token:TOK,p
   return `<div class="qitem" style="margin-bottom:8px"><div class="h"><b>${vD(j.start)}</b><span style="color:var(--sub)">${vS(j.dwell||Math.round((new Date(j.end)-new Date(j.start))/1000))} 머묾</span>${j.ticket?'<span class="pill b">🎟 티켓 클릭</span>':''}<span class="pill g">${j.mobile?'휴대폰':'PC'}</span><span style="font-size:12.5px;color:var(--sub)">${esc(j.ref||'직접 방문')}${j.kw?' · "'+esc(j.kw)+'"':''}</span></div>
   <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;align-items:center">${st.map(s=>`<span title="${tm(s.at)}" style="font-size:12.5px;border-radius:8px;padding:4px 8px;background:${s.k==='ticket'?'#fde8ee':s.t==='pv'?'#eef3ff':'#f4f4f6'}"><small style="color:var(--sub)">${tm(s.at)}</small> ${s.t==='pv'?'📄 '+esc(pn(s.p))+(dw[s.p]?` <small style="color:var(--sub)">${vS(dw[s.p])}</small>`:''):s.t==='view'?'👀 '+esc(s.l):(KIND[s.k]?KIND[s.k].split(' ')[0]+' ':'')+esc(s.l||s.k)}</span>`).join('<span style="color:#bbb">›</span>')}</div></div>`}).join('')||'<div class="empty">기록이 없어요</div>'}</div>`;
  document.body.appendChild(box);box.onclick=e=>{if(e.target===box||e.target.closest('[data-x]'))box.remove()}}
+
+
+/* ---------- AI 캐릭터 대화 로그 ---------- */
+const CHN={gochi:'🐛 고치',boja:'🎀 보자기',nue:'🐛 누에',nabi:'🦋 나방'};CHN.gochi='🥚 고치';
+const MODE={llm:['🤖 AI 답변','#eef3ff','#2f55c9'],keyword:['🔑 키워드 답변','#e7f6ec','#1d7a3e'],button:['🔘 버튼 질문','#f3ecf6','#7a3d6c'],name:['👋 이름 소개','#fff3dd','#9a5b00'],fallback:['❓ 못 답함','#fde8ee','#b4235a'],error:['⚠️ 오류','#fde8ee','#b4235a']};
+const mtag=m=>{const x=MODE[m]||[m,'#eee','#555'];return `<span style="background:${x[1]};color:${x[2]};border-radius:999px;padding:3px 9px;font-size:12px;font-weight:700;white-space:nowrap">${x[0]}</span>`};
+let CLM='',CLQ='',CLV='list';
+PAGES.chatlog=async()=>{let D;try{D=await rpc('silk_chat_logs',{p_token:TOK,p_days:ADAYS,p_mode:CLM||null,p_q:CLQ||null})}catch(e){toast(e.message);return}
+ const md=D.modes||{},un=(md.fallback||0)+(md.error||0);
+ const tm=t=>{const d=new Date(t);return (d.getMonth()+1)+'/'+d.getDate()+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')};
+ const conv={};D.rows.forEach(r=>{(conv[r.sid]=conv[r.sid]||[]).push(r)});
+ $('#page').innerHTML=`<div class="toolbar">${daySel()}<select id="clm"><option value="">모든 답변 방식</option>${Object.entries(MODE).map(([k,v])=>`<option value="${k}"${CLM===k?' selected':''}>${v[0]}</option>`).join('')}</select>
+ <input id="clq" placeholder="질문·답변 내용 검색" value="${esc(CLQ)}" style="min-width:200px"><button class="btn sm ghost" id="clv">${CLV==='list'?'💬 대화별로 보기':'📋 한 줄씩 보기'}</button><button class="btn sm ghost" id="clcsv">⬇ 엑셀(CSV) 받기</button></div>
+ <div class="stats" style="margin-top:0;grid-template-columns:repeat(4,1fr)">${[['대화한 질문',D.total+'개'],['대화한 사람',D.users+'명 · '+D.convs+'번 대화'],['못 답한 질문',un+'개 ('+pct(un,D.total)+')'],['AI 평균 응답',D.llmMs?(D.llmMs/1000).toFixed(1)+'초':'AI 미사용']].map(x=>`<div class="card"><div style="color:var(--sub);font-size:13px">${x[0]}</div><div style="font-size:22px;font-weight:800;margin-top:4px">${x[1]}</div></div>`).join('')}</div>
+ <div class="stats">
+  <div class="card bars"><h3>캐릭터별</h3>${bars(Object.entries(D.who||{}).map(([k,n])=>({k,n})).sort((a,b)=>b.n-a.n),x=>CHN[x.k]||x.k,x=>x.n)}</div>
+  <div class="card bars"><h3>답변 방식</h3>${bars(Object.entries(md).map(([k,n])=>({k,n})).sort((a,b)=>b.n-a.n),x=>(MODE[x.k]||[x.k])[0],x=>x.n)}</div>
+  <div class="card bars"><h3>많이 물어본 질문</h3>${bars(D.topQ.slice(0,10),x=>x.q,x=>x.n)}</div>
+  <div class="card"><h3>❓ 못 답한 질문 <small style="color:var(--sub);font-weight:400">— 답변을 보강하면 좋은 것들</small></h3>${D.unanswered.length?`<table><tbody>${D.unanswered.map(u=>`<tr><td style="text-align:left">${esc(u.q)}</td><td>${u.n}번</td><td style="color:var(--sub);font-size:12px">${tm(u.last)}</td></tr>`).join('')}</tbody></table>`:'<div class="empty">없어요 👍</div>'}</div>
+ </div>
+ <div class="card" style="margin-top:16px;${CLV==='list'?'padding:0;overflow:auto':''}">${CLV==='list'?`<table style="min-width:900px"><thead><tr><th>시각</th><th>캐릭터</th><th style="text-align:left">방문자 질문</th><th style="text-align:left">캐릭터 답변</th><th>방식</th><th>응답</th><th>방문자</th></tr></thead><tbody>
+ ${D.rows.map(r=>`<tr><td style="white-space:nowrap;font-size:12.5px">${tm(r.at)}</td><td style="white-space:nowrap">${CHN[r.who]||esc(r.who)}</td><td style="text-align:left;max-width:240px"><b>${esc(r.q)}</b></td><td style="text-align:left;max-width:380px;font-size:13px;color:#333">${esc(r.a)}</td><td>${mtag(r.mode)}</td><td style="font-size:12px">${r.ms?(r.ms/1000).toFixed(1)+'초':'-'}</td><td style="font-size:12px">${r.mobile?'📱':'💻'} #${esc(r.vid)}</td></tr>`).join('')||'<tr><td colspan="7" class="empty">아직 대화 기록이 없어요.</td></tr>'}</tbody></table>`
+ :Object.values(conv).map(c=>{c=c.slice().reverse();return `<div class="qitem" style="margin-bottom:10px"><div class="h"><b>${tm(c[0].at)}</b><span>${CHN[c[0].who]||''}</span><span style="color:var(--sub);font-size:12.5px">${c[0].mobile?'휴대폰':'PC'} · 방문자 #${esc(c[0].vid)} · ${c.length}개 질문</span></div>
+   <div style="display:flex;flex-direction:column;gap:6px;margin-top:10px">${c.map(r=>`<div style="align-self:flex-end;background:#f3ecf6;border-radius:14px 14px 4px 14px;padding:7px 12px;max-width:75%">${esc(r.q)}</div><div style="align-self:flex-start;background:#f4f4f6;border-radius:14px 14px 14px 4px;padding:7px 12px;max-width:80%"><small>${CHN[r.who]||''}</small> ${esc(r.a)} ${mtag(r.mode)}</div>`).join('')}</div></div>`}).join('')||'<div class="empty">아직 대화 기록이 없어요.</div>'}</div>
+ <p style="color:var(--sub);font-size:12.5px;margin-top:10px">아이들이 알려 준 이름은 저장하지 않고 "(친구)"로 바꿔 기록하며, 질문에 섞인 전화번호·이메일도 가려서 저장해요. 지금 홈페이지에서는 대부분 키워드·버튼 답변으로 응답하고, Claude 앱 안에서 열면 AI 답변(🤖)이 동작해요.</p>`;
+ bindDays(PAGES.chatlog);$('#clm').onchange=e=>{CLM=e.target.value;PAGES.chatlog()};$('#clq').onchange=e=>{CLQ=e.target.value.trim();PAGES.chatlog()};
+ $('#clv').onclick=()=>{CLV=CLV==='list'?'conv':'list';PAGES.chatlog()};
+ $('#clcsv').onclick=()=>{const q=v=>'"'+String(v??'').replace(/"/g,'""')+'"';const csv='﻿'+[['시각','캐릭터','질문','답변','방식','응답(ms)','기기','방문자']].concat(D.rows.map(r=>[new Date(r.at).toLocaleString('ko-KR'),(CHN[r.who]||r.who).replace(/^\S+\s/,''),r.q,r.a,(MODE[r.mode]||[r.mode])[0].replace(/^\S+\s/,''),r.ms||'',r.mobile?'휴대폰':'PC',r.vid])).map(r=>r.map(q).join(',')).join('\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='AI대화로그_'+new Date().toISOString().slice(0,10)+'.csv';a.click()}};
 
 /* 홍보·마케팅 */
 PAGES.seo=()=>{const C=[['페이지 제목·설명','홈페이지 제목 "한국잠사박물관"과 소개 문구가 들어가 있어요',true],['카카오톡·네이버 공유 미리보기 이미지','공유 이미지(og:image)를 넣으면 링크 공유 때 사진이 크게 보여요',false],['네이버 서치어드바이저 등록','대표 도메인 연결 후 등록해야 네이버 검색에 새 홈페이지가 나와요',false],['구글 서치 콘솔 등록','대표 도메인 연결 후 등록',false],['모바일 화면','휴대폰 하단 바로가기·큰 영상 보기 적용됨',true]];

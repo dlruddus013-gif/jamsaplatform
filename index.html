@@ -2517,6 +2517,11 @@ const BL=id=>'media/'+id+'.mp4';
   const KW=[['time',/몇\s?시|시간|열어|여는|닫|운영|언제|휴관|입장\s?마감/],['food',/오디|메뉴|먹|밥|식당|배고|국수|돈가스|만두/],['way',/어디|주소|길|가는|오는|오시는|주차|위치|버스|차로|어떻게\s?가|찾아가/],['fun',/재밌|재미|놀|체험|뭐\s?해|추천|썰매|양떼|키즈/],['like',/좋아|취미|좋은\s?거/]];
   const FACTS='잠사박물관(한국잠사박물관) 정보: 충북 청주시 흥덕구 강내면 청주역로 213-52. 관람시간 오전 10:00–12:00, 오후 13:00–17:00, 입장 마감 16:30. 휴관일 매주 월요일. 요금(온라인 예매 기준): 종일권·오후권 각 13,000원, 동물 먹이주기 3종 5,000원, 만들기 체험 3종 12,000원, 간식 굽기 15,000원, 바비큐 그릴 세트 39,900원(입장권 별도), 시즌에 따라 바뀔 수 있음. 문의 043-235-1267, 단체예약 010-6256-2969. 대한잠사회 창립 75년을 기념해 세운 우리나라 최초의 잠사업 박물관. 입장권 하나로 잠사박물관 관람, 씽씽코스터(사계절 튜브썰매: 봄·가을 롤러썰매, 여름 물썰매, 겨울 눈썰매), 디지털 키즈카페(9가지 모션인식 놀이), 숲속 양떼정원(실내 온실 속 작은 동물원: 양, 염소, 토끼, 기니피그, 비단잉어 등 먹이주기), 누에쉼터(대형 에어바운스 4종). 체험: 누에고치 실뽑기, 누에고치 목걸이 만들기, 추억의 달고나 만들기, 빙어잡기(겨울). 오디 메뉴: 오디 삼겹살, 오디 돈가스, 오디 만두, 오디 김치, 오디 떡만둣국, 오디 국수. 누에는 뽕잎을 먹고 자라 고치를 짓고, 고치 하나에서 1,000m가 넘는 실이 나온다.';
   let cur='gochi',you=null,wait=false,hist=[],au=null,busy=false,sm=undefined;
+  const mask=t=>String(t||'').replace(/[\w.+-]+@[\w-]+\.[\w.]+/g,'(이메일)').replace(/0\d{1,2}[-\s.]?\d{3,4}[-\s.]?\d{4}/g,'(전화번호)').replace(/\d{6}[-\s]?\d{7}/g,'(번호)');
+  const lg=(q,a,mode,ms)=>{try{let vid='',sid='';try{vid=localStorage.getItem('jamsa_vid')||'';sid=sessionStorage.getItem('jamsa_sid')||''}catch(e){}
+    let A=mask(a);if(you)A=A.split(you).join('(친구)');
+    fetch('https://ewxquecxsxsfhyzfaaci.supabase.co/rest/v1/rpc/silk_chat_log',{method:'POST',keepalive:true,headers:{apikey:'sb_publishable_G2wWHOhRazQUn2nkNr7ZWg_xasgzW_O',Authorization:'Bearer sb_publishable_G2wWHOhRazQUn2nkNr7ZWg_xasgzW_O','Content-Type':'application/json'},
+    body:JSON.stringify({p:{vid,sid,who:cur,q:mask(you?String(q).split(you).join('(친구)'):q),a:A,mode,ms:ms||null,mobile:matchMedia('(max-width:760px)').matches,path:location.hash||'#home'}})}).catch(()=>{})}catch(e){}};
   try{you=localStorage.getItem('jamsa_friend_name')}catch(e){}
   const josa=n=>{const c=n.charCodeAt(n.length-1);if(c<0xAC00||c>0xD7A3)return '야';return (c-0xAC00)%28?'아':'야'};
   const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -2534,21 +2539,21 @@ const BL=id=>'media/'+id+'.mp4';
   $$('[data-friend]').forEach(b=>b.onclick=()=>open(b.dataset.friend));
   function takeName(t){t=t.replace(/[.!~?？\s]+$/,'');let m=t.match(/(?:내|제)\s*이름은\s*([가-힣A-Za-z0-9]{1,8}?)(?:이야|야|이에요|예요|에요|입니다|이라고|라고|$|[\s,.!])/)||t.match(/(?:^|[\s!,.])(?:나는|난|저는|전)\s*([가-힣A-Za-z]{1,6}?)(?:이야|야|이에요|예요|에요|입니다|이라고|라고)/);let n=m?m[1]:(wait&&t.length<=8&&!/[?？]/.test(t)&&!/[까요니]$/.test(t)?t:null);if(!n)return null;n=n.replace(/[^가-힣A-Za-z0-9 ]/g,'').trim().slice(0,8);return n||null}
   async function ask(q){if(busy)return;q=q.trim();if(!q)return;bubble('fcu',q);hist.push({role:'user',content:q});
-    const n=takeName(q);if(n){you=n;try{localStorage.setItem('jamsa_friend_name',n)}catch(e){}wait=false;setYou();chips();bubble('bot',`${n}${josa(n)}! `+V24.FCL[cur].nice);play('nice');return}
+    const n=takeName(q);if(n){you=n;try{localStorage.setItem('jamsa_friend_name',n)}catch(e){}wait=false;setYou();chips();bubble('bot',`${n}${josa(n)}! `+V24.FCL[cur].nice);play('nice');lg('(이름을 알려 줌)','(친구)'+josa(n)+'! '+V24.FCL[cur].nice,'name');return}
     const k=(KW.find(x=>x[1].test(q))||[])[0];
     if(sm===undefined){try{sm=window.claude&&await Promise.race([claude.use('sample'),new Promise(r=>setTimeout(()=>r(null),4000))])}catch(e){sm=null}}
-    if(!sm){if(k){say(k)}else if(/이름|누구/.test(q)){say('intro')}else{bubble('bot',`음… 그건 내가 잘 모르겠어. 위의 버튼을 눌러 보거나, 박물관 선생님께 물어봐! ☎ 043-235-1267`)}return}
-    if(k&&q.length<=14){say(k);return}
-    busy=true;const p=bubble('bot','생각하는 중…');p.parentElement.classList.add('think');stop();
+    if(!sm){if(k){say(k);lg(q,V24.FCL[cur][k],'keyword')}else if(/이름|누구/.test(q)){say('intro');lg(q,V24.FCL[cur].intro,'keyword')}else{const fb=`음… 그건 내가 잘 모르겠어. 위의 버튼을 눌러 보거나, 박물관 선생님께 물어봐! ☎ 043-235-1267`;bubble('bot',fb);lg(q,fb,'fallback')}return}
+    if(k&&q.length<=14){say(k);lg(q,V24.FCL[cur][k],'keyword');return}
+    busy=true;const t0=performance.now();const p=bubble('bot','생각하는 중…');p.parentElement.classList.add('think');stop();
     const f=FR2[cur];const persona=`너는 한국잠사박물관의 귀여운 캐릭터 "${f[0]}"(${f[1]})야. ${(typeof FR!=='undefined'&&FR[cur])?FR[cur][2]:''} 어린이 친구에게 다정한 반말로, 1~2문장으로 짧게 대답해. ${you?`친구 이름은 ${you}야.`:''} 아래 정보에 있는 사실만 말하고, 모르는 것(가격·날짜 등)은 지어내지 말고 "박물관에 전화(043-235-1267)해서 물어봐"라고 해. 이모지는 하나까지만.\n${FACTS}`;
     const msgs=[{role:'user',content:persona+'\n\n(대화를 시작해 줘)'},{role:'assistant',content:V24.FCL[cur].intro}].concat(hist.slice(-8));
     if(msgs[msgs.length-1].role!=='user')msgs.push({role:'user',content:q});
-    try{const r=await sm(msgs,{modelTier:'quick',cache:false,onText:({text})=>{p.parentElement.classList.remove('think');p.textContent=text}});p.parentElement.classList.remove('think');p.textContent=r.text.trim();hist.push({role:'assistant',content:r.text.trim()})}
-    catch(e){p.parentElement.classList.remove('think');if(k){p.parentElement.remove();say(k)}else p.textContent='앗, 지금은 대답하기 어려워. 위의 버튼을 눌러 봐! ☎ 043-235-1267';if(e&&e.code==='not_granted')sm=null}
+    try{const r=await sm(msgs,{modelTier:'quick',cache:false,onText:({text})=>{p.parentElement.classList.remove('think');p.textContent=text}});p.parentElement.classList.remove('think');p.textContent=r.text.trim();hist.push({role:'assistant',content:r.text.trim()});lg(q,r.text.trim(),'llm',Math.round(performance.now()-t0))}
+    catch(e){p.parentElement.classList.remove('think');if(k){p.parentElement.remove();say(k);lg(q,V24.FCL[cur][k],'keyword')}else{p.textContent='앗, 지금은 대답하기 어려워. 위의 버튼을 눌러 봐! ☎ 043-235-1267';lg(q,'(AI 응답 실패) '+((e&&e.code)||''),'error',Math.round(performance.now()-t0))}if(e&&e.code==='not_granted')sm=null}
     busy=false;$('#fcLog').scrollTop=1e6}
   $('#fcChips').addEventListener('click',e=>{const b=e.target.closest('[data-fq]');if(!b)return;const k=b.dataset.fq;
     if(k==='name'){bubble('fcu','내 이름 알려 줄게!');bubble('bot','좋아! 아래 칸에 네 이름을 써 줘. 🙂');wait=true;$('#fcInput').placeholder='내 이름은…';$('#fcInput').focus();return}
-    bubble('fcu',b.textContent.replace(/^\S+\s/,''));say(k)});
+    bubble('fcu',b.textContent.replace(/^\S+\s/,''));say(k);lg(b.textContent.replace(/^\S+\s/,''),V24.FCL[cur][k],'button')});
   $('#fcForm').addEventListener('submit',e=>{e.preventDefault();const v=$('#fcInput').value;$('#fcInput').value='';$('#fcInput').placeholder='네 이름이나 궁금한 걸 써 봐!';ask(v)});
   const _ca=closeAll;closeAll=function(){stop();return _ca.apply(this,arguments)};M.querySelector('[data-close]').onclick=()=>closeAll();$('#ov').onclick=()=>closeAll();
   $$('.cast button').forEach(b=>{b.setAttribute('aria-label',b.textContent.trim()+'와 대화하기');if(!b.querySelector('.say'))b.insertAdjacentHTML('beforeend','<span class="say">💬 대화하기</span>')});

@@ -1041,7 +1041,7 @@ footer .links a{text-decoration:none}
 .admpop .apb{background:#fbf6ee;border-radius:20px;padding:22px 22px 14px;width:min(420px,100%);text-align:center;box-shadow:0 20px 50px -10px rgba(0,0,0,.4)}
 .admpop img{height:70px}.admpop h3{margin:8px 0;color:var(--plum)}.admpop p{white-space:pre-wrap;margin:0 0 14px}
 .admpop .apf{display:flex;justify-content:space-between;margin-top:12px}.admpop .apf button{border:0;background:none;color:#7a6a70;cursor:pointer;font:inherit;font-size:13px}
-</style>
+footer .sns{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;width:100%}footer .sns a{border:1px solid var(--line);border-radius:999px;padding:5px 12px;font-size:13px;text-decoration:none;color:var(--plum);background:#fff}</style>
 
 <div class="util" role="navigation" aria-label="빠른 메뉴">
   <div class="wrap">
@@ -2797,6 +2797,25 @@ const BL=id=>'media/'+id+'.mp4';
  document.querySelectorAll('a[href="https://jamsamuseum.co.kr/admin"]').forEach(a=>{a.href='/admin';a.removeAttribute('target')});
 })();
 /* /v32 */
+/* v33: 관리자 '링크 주소 설정' 반영 */
+(()=>{const SBU='https://ewxquecxsxsfhyzfaaci.supabase.co',SK='sb_publishable_G2wWHOhRazQUn2nkNr7ZWg_xasgzW_O';
+ const OLD={reserve:['https://la2fdoci.com/jamsahome/product/productList.do'],mypage:['https://jamsamuseum.co.kr/login?back_url=L3Nob3BfbXlwYWdl&type=mypage'],
+  naverMap:['https://map.naver.com/p/search/'+encodeURIComponent('한국잠사박물관'),'https://map.naver.com/p/search/%EC%9E%A0%EC%82%AC%EB%B0%95%EB%AC%BC%EA%B4%80/place/1591058710'],
+  kakaoMap:['https://map.kakao.com/?q='+encodeURIComponent('한국잠사박물관')],ar:['https://jamsa-museum-ar.vercel.app/index.html']};
+ const ok=u=>/^https?:\/\/[^\s"'<>]+$/i.test(u||'');
+ fetch(SBU+'/rest/v1/silk_web_config?key=eq.site&select=data',{headers:{apikey:SK,Authorization:'Bearer '+SK}}).then(r=>r.json()).then(j=>{const L=j&&j[0]&&j[0].data&&j[0].data.links;if(!L)return;
+  const map=new Map();for(const k in OLD)if(ok(L[k]))OLD[k].forEach(o=>map.set(o,L[k]));
+  if(L.mypage===''){document.querySelectorAll('a').forEach(a=>{if(OLD.mypage.includes(a.getAttribute('href')))a.remove()})}
+  const fix=root=>(root||document).querySelectorAll('a[href]').forEach(a=>{const h=a.getAttribute('href');if(map.has(h))a.setAttribute('href',map.get(h))});
+  fix();new MutationObserver(ms=>ms.forEach(m=>m.addedNodes.forEach(n=>{if(n.nodeType===1)fix(n.parentNode||n)}))).observe(document.body,{childList:true,subtree:true});
+  /* 네이버 예약 버튼 */
+  if(ok(L.naverBook)){const ib=document.querySelector('.inforow .ibtn');if(ib&&!ib.querySelector('.nbk'))ib.insertAdjacentHTML('beforeend',`<a class="nbk" href="${L.naverBook}" target="_blank" rel="noopener">N 네이버 예약</a>`)}
+  /* 맨 아래 SNS */
+  const S=[['youtube','▶ 유튜브'],['instagram','◎ 인스타그램'],['blog','b 블로그'],['kakaoCh','💬 카카오 채널']].filter(([k])=>ok(L[k]));
+  const ft=document.querySelector('footer:not(#lbCap)');if(S.length&&ft&&!ft.querySelector('.sns')){const d=document.createElement('div');d.className='sns';d.innerHTML=S.map(([k,t])=>`<a href="${L[k]}" target="_blank" rel="noopener">${t}</a>`).join('');(ft.querySelector('.wrap')||ft).appendChild(d)}
+ }).catch(()=>{})})();
+/* /v33 */
+
 
 
 

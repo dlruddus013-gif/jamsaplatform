@@ -48,7 +48,7 @@ a{color:inherit;text-decoration:none}
 .top{display:flex;align-items:center;justify-content:space-between;background:#fff;border-bottom:1px solid var(--line);padding:16px 28px;position:sticky;top:0;z-index:5}
 .top h2{margin:0;font-size:20px}
 .top .r{display:flex;gap:8px;align-items:center}
-.btn{border:1px solid var(--line);background:#fff;border-radius:10px;padding:8px 14px;cursor:pointer;font-weight:600}
+.btn{white-space:nowrap;border:1px solid var(--line);background:#fff;border-radius:10px;padding:8px 14px;cursor:pointer;font-weight:600}
 .btn.p{background:var(--plum);border-color:var(--plum);color:#fff}
 .btn.sm{padding:5px 10px;font-size:13px}
 .wrapc{padding:24px 28px 60px}
@@ -168,11 +168,11 @@ $('#mOpen').onclick=()=>$('#side').classList.toggle('open');
 /* ---------- 메뉴 (아임웹 구성) ---------- */
 const MENU=[['dash','🏠','대시보드'],
  ['cust','👤','고객',[['quotes','단체 견적·문의'],['todo','처리할 일']]],
- ['shop','🛍','쇼핑',[['tickets','입장권·상품(예매)'],['orders','주문·예약 확인'],['prices','요금표']]],
+ ['shop','🛍','쇼핑',[['tickets','입장권·상품(예매)'],['orders','주문·예약 확인'],['prices','요금표'],['linkset','링크 주소 설정']]],
  ['promo','🎁','프로모션',[['popup','팝업·배너'],['events','행사 소식']]],
  ['content','📝','콘텐츠',[['hours','운영시간·휴관일'],['media','영상·사진 현황']]],
  ['stat','📈','통계',[['visits','방문자'],['inflow','유입 경로·인기 페이지']]],
- ['mkt','📣','홍보·마케팅',[['seo','검색·공유 노출'],['links','외부 채널 바로가기']]],
+ ['mkt','📣','홍보·마케팅',[['seo','검색·공유 노출'],['links','외부 채널 바로가기'],['linkset','링크 주소 설정']]],
  ['set','⚙️','설정',[['staff','운영진'],['pw','내 비밀번호'],['audit','활동 기록'],['domain','도메인·배포']]]];
 const TITLES=Object.fromEntries(MENU.flatMap(m=>m[3]?m[3]:[[m[0],m[2]]]));
 function buildNav(){$('#nav').innerHTML=MENU.map(m=>m[3]?`<div class="grp" data-g="${m[0]}"><button type="button" data-tog="${m[0]}"><span class="ic">${m[1]}</span>${m[2]}${m[0]==='cust'?' <span class="badge" id="bCust">0</span>':''}<span class="car">▾</span></button><div class="sub">${m[3].map(s=>`<button type="button" data-go="${s[0]}">${s[1]}</button>`).join('')}</div></div>`:`<button type="button" data-go="${m[0]}"><span class="ic">${m[1]}</span>${m[2]}</button>`).join('');}
@@ -247,9 +247,41 @@ PAGES.quotes=async()=>{$('#page').innerHTML='<div class="empty">불러오는 중
   $('#qf').onchange=draw;$('#qq').oninput=draw;draw();
   $('#ql').onclick=async e=>{const b=e.target.closest('[data-st]');if(!b)return;const id=b.dataset.id;const memo=$(`[data-memo="${CSS.escape(id)}"]`).value;try{await rpc('silk_quote_update',{p_token:TOK,p_id:id,p_status:b.dataset.st,p_memo:memo});const x=QUOTES.find(q=>q.id===id);x.status=b.dataset.st;x.memo=memo;draw();toast('저장했어요')}catch(err){toast(err.message)}}};
 
-const EXT='https://la2fdoci.com/jamsahome/product/productList.do';
-PAGES.tickets=()=>{$('#page').innerHTML=`<div class="card"><h3>입장권·상품</h3><p style="color:var(--sub)">입장권과 체험 상품 판매·결제는 예매 사이트(디투컴퍼니)에서 관리돼요. 홈페이지의 [입장권 예매] 버튼이 이 페이지로 연결돼요.</p><div class="links"><a href="${EXT}" target="_blank" rel="noopener"><span>🎟 예매 상품 목록</span><span>열기 ↗</span></a><a href="https://la2fdoci.com/jamsahome/product/productDetail.do?id=1579" target="_blank" rel="noopener"><span>대표 상품(종일권·오후권·체험 옵션)</span><span>열기 ↗</span></a></div></div>`};
-PAGES.orders=()=>{$('#page').innerHTML=`<div class="card"><h3>주문·예약 확인</h3><p style="color:var(--sub)">온라인 예매 주문은 예매 사이트 판매자 화면에서, 네이버 예약은 스마트플레이스에서 확인해요.</p><div class="links"><a href="https://new.smartplace.naver.com/" target="_blank" rel="noopener"><span>네이버 스마트플레이스 예약</span><span>열기 ↗</span></a><a href="${EXT}" target="_blank" rel="noopener"><span>예매 사이트</span><span>열기 ↗</span></a><a href="#quotes"><span>홈페이지 단체 견적 문의</span><span>›</span></a></div></div>`};
+/* ---------- 링크 주소 (홈페이지 버튼·관리자 바로가기에 함께 쓰임) ---------- */
+const LINKDEF=[
+ ['reserve','🎟 입장권 예매','https://la2fdoci.com/jamsahome/product/productList.do','홈페이지 상단 [예매하기] · 첫 화면 [입장권 예매하기] · 이용 안내 · 휴대폰 하단 [예매]','shop'],
+ ['product','대표 상품 (종일권·오후권·체험 옵션)','https://la2fdoci.com/jamsahome/product/productDetail.do?id=1579','관리자 바로가기','shop'],
+ ['mypage','👤 마이페이지 (예매 내역)','https://jamsamuseum.co.kr/login?back_url=L3Nob3BfbXlwYWdl&type=mypage','홈페이지 상단 [마이페이지]','shop'],
+ ['naverBook','네이버 예약 페이지','','홈페이지 단체·예약 안내 (넣으면 버튼이 생겨요)','order'],
+ ['smartplace','네이버 스마트플레이스 (관리)','https://new.smartplace.naver.com/','관리자 바로가기','order'],
+ ['naverMap','📍 네이버 지도 (길찾기)','https://map.naver.com/p/search/%EC%9E%A0%EC%82%AC%EB%B0%95%EB%AC%BC%EA%B4%80/place/1591058710','휴대폰 하단 [길찾기] · 관람시간 카드 [네이버 지도] · 오시는 길','map'],
+ ['kakaoMap','카카오맵','https://map.kakao.com/?q=%ED%95%9C%EA%B5%AD%EC%9E%A0%EC%82%AC%EB%B0%95%EB%AC%BC%EA%B4%80','관람시간 카드 [카카오맵]','map'],
+ ['ar','📱 AR 가이드','https://jamsa-museum-ar.vercel.app/index.html','디지털 체험관 · AR 체험관','sns'],
+ ['youtube','유튜브 채널','','홈페이지 맨 아래 SNS 버튼','sns'],
+ ['instagram','인스타그램','','홈페이지 맨 아래 SNS 버튼','sns'],
+ ['blog','네이버 블로그','','홈페이지 맨 아래 SNS 버튼','sns'],
+ ['kakaoCh','카카오톡 채널','','홈페이지 맨 아래 SNS 버튼','sns']];
+let LNK=null;async function links(){if(!LNK){const S=(await cfg('site'))||{};LNK=Object.assign(Object.fromEntries(LINKDEF.map(d=>[d[0],d[2]])),S.links||{})}return LNK}
+const okUrl=u=>!u||/^https?:\/\/[^\s"'<>]+$/i.test(u);
+const lrow=(k,L,lab)=>{const d=LINKDEF.find(x=>x[0]===k);const u=L[k]||'';return `<a ${u?`href="${esc(u)}" target="_blank" rel="noopener"`:''}><span>${esc(lab||d[1])}${u?'':' <span class="pill w">주소 없음</span>'}</span><span>${u?'열기 ↗':''}</span></a>`};
+const editBtn=g=>`<button class="btn sm" data-go="linkset" style="margin-top:12px">✏️ 링크 주소 바꾸기</button>`;
+PAGES.tickets=async()=>{const L=await links();$('#page').innerHTML=`<div class="card"><h3>입장권·상품</h3><p style="color:var(--sub)">입장권과 체험 상품 판매·결제는 예매 사이트에서 관리돼요. 홈페이지의 [입장권 예매] 버튼은 아래 '입장권 예매' 주소로 연결돼요.</p><div class="links">${lrow('reserve',L,'🎟 예매 상품 목록')}${lrow('product',L)}${lrow('mypage',L)}</div>${editBtn()}</div>`};
+PAGES.orders=async()=>{const L=await links();$('#page').innerHTML=`<div class="card"><h3>주문·예약 확인</h3><p style="color:var(--sub)">온라인 예매 주문은 예매 사이트에서, 네이버 예약은 스마트플레이스에서 확인해요.</p><div class="links">${lrow('smartplace',L)}${lrow('naverBook',L)}${lrow('reserve',L,'예매 사이트')}<a href="#quotes"><span>홈페이지 단체 견적 문의</span><span>›</span></a></div>${editBtn()}</div>`};
+PAGES.links=async()=>{const L=await links();const X=[['유튜브 스튜디오','https://studio.youtube.com/'],['카카오 채널 관리자','https://center-pf.kakao.com/']];
+  $('#page').innerHTML=`<div class="card"><h3>외부 채널 바로가기</h3><div class="links">${['smartplace','reserve','naverMap','youtube','instagram','blog','kakaoCh','ar'].map(k=>lrow(k,L)).join('')}${X.map(l=>`<a href="${l[1]}" target="_blank" rel="noopener"><span>${l[0]}</span><span>열기 ↗</span></a>`).join('')}${(L.custom||[]).filter(c=>c[1]).map(c=>`<a href="${esc(c[1])}" target="_blank" rel="noopener"><span>${esc(c[0])}</span><span>열기 ↗</span></a>`).join('')}</div>${editBtn()}</div>`};
+PAGES.linkset=async()=>{LNK=null;const L=await links();const G={shop:'쇼핑·예매',order:'예약 확인',map:'지도·길찾기',sns:'SNS·디지털'};
+  const row=d=>`<div style="margin-bottom:12px"><label><b style="color:#222">${d[1]}</b> · <span>${d[3]}</span></label><div style="display:flex;gap:6px"><input data-k="${d[0]}" value="${esc(L[d[0]]||'')}" placeholder="https://"><button class="btn sm" type="button" data-test="${d[0]}">열어보기</button>${d[2]?`<button class="btn sm" type="button" data-def="${d[0]}" title="처음 주소로">↺</button>`:''}</div></div>`;
+  $('#page').innerHTML=`<div class="card form"><h3>링크 주소 설정</h3><p style="color:var(--sub);margin:0">여기서 바꾼 주소는 저장하는 즉시 홈페이지 버튼과 관리자 바로가기에 함께 반영돼요. 비워 두면 그 버튼은 숨겨져요(입장권 예매·지도 제외).</p>
+   ${Object.entries(G).map(([g,t])=>`<h3 style="margin:14px 0 4px">${t}</h3>${LINKDEF.filter(d=>d[4]===g).map(row).join('')}`).join('')}
+   <h3 style="margin:14px 0 4px">관리자용 바로가기 추가</h3><div id="cl">${(L.custom||[]).map(c=>`<div class="erow" style="grid-template-columns:1fr 2fr auto"><input placeholder="이름" value="${esc(c[0])}"><input placeholder="https://" value="${esc(c[1])}"><button class="btn sm" data-del>삭제</button></div>`).join('')}</div><button class="btn sm" id="cadd" type="button">+ 바로가기 추가</button>
+   <div><button class="btn p" id="lsave">저장하고 홈페이지에 반영</button></div></div>`;
+  $('#cadd').onclick=()=>$('#cl').insertAdjacentHTML('beforeend','<div class="erow" style="grid-template-columns:1fr 2fr auto"><input placeholder="이름"><input placeholder="https://"><button class="btn sm" data-del>삭제</button></div>');
+  $('#page').onclick=e=>{if(e.target.matches('[data-del]'))e.target.parentElement.remove();const t=e.target.closest('[data-test]');if(t){const u=$(`[data-k="${t.dataset.test}"]`).value.trim();if(u&&okUrl(u))open(u,'_blank','noopener');else toast('주소를 확인해 주세요')}
+    const d=e.target.closest('[data-def]');if(d){$(`[data-k="${d.dataset.def}"]`).value=LINKDEF.find(x=>x[0]===d.dataset.def)[2]}};
+  $('#lsave').onclick=async()=>{const nl={};for(const i of $$('[data-k]')){const v=i.value.trim();if(!okUrl(v)){toast(`'${LINKDEF.find(x=>x[0]===i.dataset.k)[1]}' 주소가 올바르지 않아요 (https://로 시작)`);i.focus();return}nl[i.dataset.k]=v}
+    if(!nl.reserve){toast('입장권 예매 주소는 꼭 필요해요');return}
+    nl.custom=$$('#cl .erow').map(r=>[...r.querySelectorAll('input')].map(x=>x.value.trim())).filter(c=>c[0]&&c[1]&&okUrl(c[1]));
+    try{const S=Object.assign({},DEF,(await cfg('site'))||{});S.links=nl;await saveSite(S);LNK=null}catch(err){toast(err.message)}}};
 
 /* 요금표 · 운영시간 (홈페이지 '이용 안내'에 바로 반영) */
 const DEF={tickets:[['종일권','10:00 – 17:00','13,000원','박물관 · 디지털 키즈카페 · 양떼정원 · 누에쉼터(에어바운스) · 썰매장'],['오후권','14:00 – 17:00','13,000원','종일권과 같은 시설, 오후 이용']],extra:[['동물 먹이주기 3종','잉어 · 양 · 소동물','5,000원'],['만들기 체험 3종','달고나 · 누에고치 목걸이 · 빼빼로','12,000원'],['간식 굽기 체험','고구마 · 마시멜로 · 쫀드기 등','15,000원'],['바비큐 그릴 세트','양떼정원 옆 평상 · 입장권 별도','39,900원']],base:'온라인 예매 판매가 기준',note:'시즌(눈썰매장·물놀이장)에 따라 요금과 구성이 바뀌어요. 정확한 요금은 예매 페이지나 043-235-1267로 확인해 주세요.',am:'10:00 – 12:00',pm:'13:00 – 17:00',last:'16:30',closed:1,closedLabel:'매주 월요일',extraClosed:''};
@@ -293,7 +325,7 @@ PAGES.inflow=async()=>{const D=await loadDash();const bar=(L,k)=>{const m=Math.m
 /* 홍보·마케팅 */
 PAGES.seo=()=>{const C=[['페이지 제목·설명','홈페이지 제목 "한국잠사박물관"과 소개 문구가 들어가 있어요',true],['카카오톡·네이버 공유 미리보기 이미지','공유 이미지(og:image)를 넣으면 링크 공유 때 사진이 크게 보여요',false],['네이버 서치어드바이저 등록','대표 도메인 연결 후 등록해야 네이버 검색에 새 홈페이지가 나와요',false],['구글 서치 콘솔 등록','대표 도메인 연결 후 등록',false],['모바일 화면','휴대폰 하단 바로가기·큰 영상 보기 적용됨',true]];
   $('#page').innerHTML=`<div class="card"><h3>검색·공유 노출 점검</h3><div class="onb" style="display:block"><ul>${C.map(c=>`<li style="align-items:flex-start"><span><b style="color:#222">${c[0]}</b><br><small>${c[1]}</small></span><span class="ck ${c[2]?'':'no'}">${c[2]?'✓':'·'}</span></li>`).join('')}</ul></div><div class="links" style="margin-top:12px"><a href="https://searchadvisor.naver.com/" target="_blank" rel="noopener"><span>네이버 서치어드바이저</span><span>열기 ↗</span></a><a href="https://search.google.com/search-console" target="_blank" rel="noopener"><span>구글 서치 콘솔</span><span>열기 ↗</span></a></div></div>`};
-PAGES.links=()=>{$('#page').innerHTML=`<div class="card"><h3>외부 채널 바로가기</h3><div class="links">${[['네이버 스마트플레이스','https://new.smartplace.naver.com/'],['예매 사이트','https://la2fdoci.com/jamsahome/product/productList.do'],['유튜브 스튜디오','https://studio.youtube.com/'],['인스타그램','https://www.instagram.com/'],['카카오 채널 관리자','https://center-pf.kakao.com/']].map(l=>`<a href="${l[1]}" target="_blank" rel="noopener"><span>${l[0]}</span><span>열기 ↗</span></a>`).join('')}</div></div>`};
+
 
 /* 설정 */
 PAGES.staff=async()=>{let L=[];try{L=await rpc('silk_admin_list',{p_token:TOK})}catch(e){}

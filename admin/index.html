@@ -104,6 +104,8 @@ tr.today td{background:#f3f8ff}
 .mbtn{display:none}
 @media (max-width:1100px){.grid{grid-template-columns:1fr}.onb{grid-template-columns:1fr}.stats{grid-template-columns:1fr}}
 @media (max-width:820px){.shell{grid-template-columns:1fr}.side{position:fixed;left:0;top:0;z-index:20;width:260px;transform:translateX(-100%);transition:transform .25s;box-shadow:0 0 40px rgba(0,0,0,.2)}.side.open{transform:none}.mbtn{display:inline-block}.wrapc{padding:16px}.top{padding:12px 16px}.onb .cols{grid-template-columns:1fr}.onb .cols>div{border:0;padding:0 0 10px}.erow{grid-template-columns:1fr 1fr}}
+.vmodal{position:fixed;inset:0;background:rgba(20,10,20,.45);z-index:200;display:flex;justify-content:flex-end}.vpanel{background:#fff;width:min(760px,100%);height:100%;overflow:auto;padding:24px;box-shadow:-10px 0 40px rgba(0,0,0,.15)}.vrow:hover td{background:#faf6f9}
+@media(max-width:760px){.stats[style*="repeat(4"]{grid-template-columns:repeat(2,1fr)!important}}
 </style>
 </head>
 <body>
@@ -171,7 +173,7 @@ const MENU=[['dash','🏠','대시보드'],
  ['shop','🛍','쇼핑',[['tickets','입장권·상품(예매)'],['orders','주문·예약 확인'],['prices','요금표'],['linkset','링크 주소 설정']]],
  ['promo','🎁','프로모션',[['popup','팝업·배너'],['events','행사 소식']]],
  ['content','📝','콘텐츠',[['hours','운영시간·휴관일'],['media','영상·사진 현황']]],
- ['stat','📈','통계',[['visits','방문자'],['inflow','유입 경로·검색어'],['funnel','클릭·티켓 전환'],['hourly','시간대별 행동'],['journey','방문자 여정'],['interest','관심 분야'],['demo','연령·성별 통계']]],
+ ['stat','📈','통계',[['visits','방문자'],['people','방문자별 분석'],['inflow','유입 경로·검색어'],['funnel','클릭·티켓 전환'],['hourly','시간대별 행동'],['journey','방문자 여정'],['interest','관심 분야'],['demo','연령·성별 통계']]],
  ['mkt','📣','홍보·마케팅',[['seo','검색·공유 노출'],['links','외부 채널 바로가기'],['linkset','링크 주소 설정']]],
  ['set','⚙️','설정',[['staff','운영진'],['pw','내 비밀번호'],['audit','활동 기록'],['domain','도메인·배포']]]];
 const TITLES=Object.fromEntries(MENU.flatMap(m=>m[3]?m[3]:[[m[0],m[2]]]));
@@ -355,7 +357,7 @@ PAGES.journey=async()=>{const day=$('#jday')?.value||new Date(Date.now()+9*36e5)
  const dur=(a,b)=>{const s=Math.round((new Date(b)-new Date(a))/1000);return s<60?s+'초':Math.floor(s/60)+'분 '+(s%60)+'초'};
  $('#page').innerHTML=`<div class="toolbar"><input type="date" id="jday" value="${day}"><label style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="jonly"${only?' checked':''}> 티켓 링크 누른 방문만</label><span style="color:var(--sub);font-size:13px">${J.length}개 방문 · 방문자는 익명 번호로만 보여요</span></div>
  ${J.map(j=>`<div class="qitem"><div class="h"><b>${tm(j.start)}</b><span style="color:var(--sub)">머문 시간 ${dur(j.start,j.end)} · 행동 ${j.n}개</span>${j.ticket?'<span class="pill b">🎟 티켓 클릭</span>':''}${j.newv?'<span class="pill ok">첫 방문</span>':'<span class="pill g">재방문</span>'}<span class="pill g">${j.mobile?'휴대폰':'PC'}</span><span style="color:var(--sub);font-size:12.5px">유입: ${esc(j.ref||'직접 방문')}${j.kw?` · 검색어 "${esc(j.kw)}"`:''}${j.utm?` · ${esc(j.utm)}`:''} · #${esc(j.vid)}</span></div>
-  <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;align-items:center">${j.steps.map(s=>`<span title="${tm(s.at)}" style="font-size:12.5px;border-radius:8px;padding:4px 8px;background:${s.k==='ticket'?'#fde8ee':s.t==='pv'?'#eef3ff':'#f4f4f6'}">${s.t==='pv'?'📄 '+esc(pn(s.p)):s.t==='view'?'👀 '+esc(s.l):(KIND[s.k]?KIND[s.k].split(' ')[0]+' ':'')+esc(s.l||s.k)}</span>`).join('<span style="color:#bbb">›</span>')}</div></div>`).join('')||'<div class="card empty">이 날 기록된 방문이 없어요.</div>'}`;
+  <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;align-items:center">${j.steps.filter(s=>s.t!=='leave').map(s=>`<span title="${tm(s.at)}" style="font-size:12.5px;border-radius:8px;padding:4px 8px;background:${s.k==='ticket'?'#fde8ee':s.t==='pv'?'#eef3ff':'#f4f4f6'}">${s.t==='pv'?'📄 '+esc(pn(s.p)):s.t==='view'?'👀 '+esc(s.l):(KIND[s.k]?KIND[s.k].split(' ')[0]+' ':'')+esc(s.l||s.k)}</span>`).join('<span style="color:#bbb">›</span>')}</div></div>`).join('')||'<div class="card empty">이 날 기록된 방문이 없어요.</div>'}`;
  $('#jday').onchange=PAGES.journey;$('#jonly').onchange=PAGES.journey};
 PAGES.interest=async()=>{const D=await A();const G={};const add=(k,n)=>{G[k]=(G[k]||0)+n};
  const PG={'#learn':'체험학습','#learn-visit':'체험학습','#group':'단체 방문','#quote':'단체 방문','#story':'역사·문화','#museum':'역사·문화','#tour':'역사·문화','#online':'역사·문화','#about':'역사·문화','#kids':'아이와 놀이','#play':'아이와 놀이','#seasons':'아이와 놀이','#sheep':'동물 체험','#products':'오디·먹거리','#shop':'쇼핑','#visit':'방문 준비','#news':'행사·축제','#ar':'디지털 체험','#theater':'디지털 체험','#ailab':'디지털 체험'};
@@ -369,6 +371,56 @@ PAGES.demo=()=>{$('#page').innerHTML=`<div class="card"><h3>연령·성별 통�
  <a href="https://analytics.google.com/" target="_blank" rel="noopener"><span><b>구글 애널리틱스 (GA4)</b><br><small style="color:var(--sub)">측정 ID(G-로 시작)를 알려 주시면 넣어 드려요 → Google 신호 사용 시 연령·성별·관심 분야 리포트</small></span><span>열기 ↗</span></a>
  <a href="https://new.smartplace.naver.com/" target="_blank" rel="noopener"><span><b>네이버 스마트플레이스 통계</b><br><small style="color:var(--sub)">플레이스를 찾아본 사람의 연령·성별 분포</small></span><span>열기 ↗</span></a></div>
  <p style="color:var(--sub);font-size:12.5px;margin-top:12px">소득 수준은 공개된 신뢰할 만한 방문자 통계가 없어, 지역(시군구) 분포 정도로만 간접 참고하는 걸 권해요.</p></div>`};
+
+
+/* ---------- 방문자별 분석 ---------- */
+const IPG={'#learn':'체험학습','#learn-visit':'체험학습','#learn-craft':'체험학습','#learn-cook':'체험학습','#learn-art':'체험학습','#learn-sci':'체험학습','#learn-eco':'체험학습','#group':'단체 방문','#quote':'단체 방문','#story':'역사·문화','#gallery':'역사·문화','#museum':'역사·문화','#tour':'역사·문화','#online':'역사·문화','#about':'역사·문화','#kids':'아이와 놀이','#play':'아이와 놀이','#seasons':'아이와 놀이','#sheep':'동물 체험','#products':'오디·먹거리','#shop':'쇼핑','#visit':'방문 준비','#news':'행사·축제','#ar':'디지털 체험','#theater':'디지털 체험','#ailab':'디지털 체험'};
+const ICK={menu:'오디·먹거리',cartoon:'역사·문화',program:'체험학습',facility:'역사·문화',video:'영상 콘텐츠',chat:'아이와 놀이',quote:'단체 방문',ticket:'방문 준비',map:'방문 준비',call:'방문 준비',price:'방문 준비',naverbook:'방문 준비'};
+const vInterest=v=>{const G={};for(const[k,n]of Object.entries(v.paths||{}))if(IPG[k])G[IPG[k]]=(G[IPG[k]]||0)+n;for(const[k,n]of Object.entries(v.kinds||{}))if(ICK[k])G[ICK[k]]=(G[ICK[k]]||0)+n*2;return Object.entries(G).sort((a,b)=>b[1]-a[1]).map(x=>x[0])};
+const vScore=v=>Math.min(100,(v.ticket?55:0)+Math.min(v.price,2)*8+((v.map||v.call)?12:0)+(v.quote?10:0)+(v.visits>1?10:0)+(v.dwell>=180?10:v.dwell>=60?5:0)+Math.min(v.pv,5)*2);
+const vType=v=>v.ticket?['🎟 예매 클릭형','#fde8ee','#b4235a']:(v.quote||v.call)?['👥 단체·문의형','#fff3dd','#9a5b00']:(v.price||v.map)?['🧭 방문 준비형','#e7f6ec','#1d7a3e']:(v.pv>=4||v.dwell>=120)?['📖 콘텐츠 탐색형','#eef3ff','#2f55c9']:['👋 잠깐 둘러봄','#f2f2f4','#666'];
+const vS=s=>!s?'-':s<60?s+'초':s<3600?Math.floor(s/60)+'분 '+(s%60?s%60+'초':''):Math.floor(s/3600)+'시간 '+Math.floor(s%3600/60)+'분';
+const vD=t=>{const d=new Date(t);return (d.getMonth()+1)+'/'+d.getDate()+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')};
+const hrBand=h=>{if(!h||!h.length)return '-';const c={'오전':0,'점심':0,'오후':0,'저녁':0,'밤':0};h.forEach(x=>{c[x<6?'밤':x<11?'오전':x<14?'점심':x<18?'오후':x<22?'저녁':'밤']++});return Object.entries(c).sort((a,b)=>b[1]-a[1])[0][0]};
+let VF='all',VQ='',VSORT='last';
+PAGES.people=async()=>{let L=[];try{L=await rpc('silk_visitors',{p_token:TOK,p_days:ADAYS})}catch(e){toast(e.message)}
+ L.forEach(v=>{v.score=vScore(v);v.type=vType(v);v.int=vInterest(v)});
+ const T={};L.forEach(v=>{T[v.type[0]]=(T[v.type[0]]||0)+1});
+ let F=L.filter(v=>VF==='all'||(VF==='hot'&&v.score>=50)||(VF==='ticket'&&v.ticket)||(VF==='re'&&v.visits>1)||(VF==='m'&&v.mobile)||(VF==='pc'&&!v.mobile)||v.type[0]===VF);
+ if(VQ)F=F.filter(v=>JSON.stringify([v.vid.slice(0,6),v.ref,v.kw,v.utm,v.int,v.browser,v.os,v.type[0]]).includes(VQ));
+ F.sort((a,b)=>VSORT==='score'?b.score-a.score:VSORT==='dwell'?b.dwell-a.dwell:VSORT==='visits'?b.visits-a.visits:String(b.last).localeCompare(String(a.last)));
+ const re=L.filter(v=>v.visits>1).length,tk=L.filter(v=>v.ticket).length,avg=L.length?Math.round(L.reduce((a,v)=>a+v.dwell,0)/L.length):0;
+ $('#page').innerHTML=`<div class="toolbar">${daySel()}<select id="vsort"><option value="last">최근 방문순</option><option value="score">예매 가능성순</option><option value="dwell">오래 머문 순</option><option value="visits">자주 온 순</option></select><input id="vq" placeholder="검색: 번호·검색어·유입·관심분야" value="${esc(VQ)}" style="min-width:220px"></div>
+ <div class="stats" style="margin-top:0;grid-template-columns:repeat(4,1fr)">${[['방문자',L.length+'명'],['다시 온 사람',re+'명 ('+pct(re,L.length)+')'],['티켓 링크 누른 사람',tk+'명 ('+pct(tk,L.length)+')'],['1인 평균 체류',vS(avg)]].map(x=>`<div class="card"><div style="color:var(--sub);font-size:13px">${x[0]}</div><div style="font-size:24px;font-weight:800;margin-top:4px">${x[1]}</div></div>`).join('')}</div>
+ <div style="display:flex;gap:6px;flex-wrap:wrap;margin:14px 0">${[['all','전체 '+L.length],['hot','🔥 예매 가능성 높음'],['re','🔁 재방문'],['m','📱 휴대폰'],['pc','💻 PC'],...['🎟 예매 클릭형','👥 단체·문의형','🧭 방문 준비형','📖 콘텐츠 탐색형','👋 잠깐 둘러봄'].map(t=>[t,t+' '+(T[t]||0)])].map(([k,t])=>`<button class="btn sm ${VF===k?'':'ghost'}" data-vf="${esc(k)}">${esc(t)}</button>`).join('')}</div>
+ <div class="card" style="padding:0;overflow:auto"><table style="min-width:1050px"><thead><tr><th style="text-align:left;padding-left:18px">방문자</th><th>유형</th><th>예매 가능성</th><th>방문</th><th>총 체류</th><th style="text-align:left">처음 들어온 곳</th><th style="text-align:left">관심 분야</th><th>기기</th><th>주 접속</th><th style="text-align:left">마지막 행동</th><th>마지막 방문</th></tr></thead><tbody>
+ ${F.map(v=>`<tr class="vrow" data-vid="${esc(v.vid)}" style="cursor:pointer"><td style="text-align:left;padding-left:18px"><b>#${esc(v.vid.slice(0,6))}</b></td>
+ <td><span style="background:${v.type[1]};color:${v.type[2]};border-radius:999px;padding:3px 9px;font-size:12px;font-weight:700;white-space:nowrap">${v.type[0]}</span></td>
+ <td><div style="display:flex;align-items:center;gap:6px"><span style="width:60px;height:7px;background:#eee;border-radius:9px;overflow:hidden"><i style="display:block;height:100%;width:${v.score}%;background:${v.score>=50?'#c2185b':v.score>=25?'#e8a33d':'#9aa'}"></i></span><b style="font-size:12.5px">${v.score}</b></div></td>
+ <td>${v.visits}회${v.days>1?` <small style="color:var(--sub)">(${v.days}일)</small>`:''}</td><td>${vS(v.dwell)}</td>
+ <td style="text-align:left;font-size:12.5px">${esc(v.ref||'직접 방문')}${v.kw&&v.kw.length?`<br><small style="color:var(--plum)">"${esc(v.kw[0])}"</small>`:''}${v.utm?`<br><small style="color:var(--sub)">${esc(v.utm)}</small>`:''}</td>
+ <td style="text-align:left;font-size:12.5px">${esc(v.int.slice(0,2).join(', ')||'-')}</td>
+ <td style="font-size:12px">${v.mobile?'📱':'💻'} ${esc(v.os||'')}<br><small style="color:var(--sub)">${esc(v.browser||'')}</small></td>
+ <td>${hrBand(v.hours)}</td><td style="text-align:left;font-size:12.5px;max-width:170px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(pn(v.lastAct||''))}</td><td style="font-size:12.5px;white-space:nowrap">${vD(v.last)}</td></tr>`).join('')||'<tr><td colspan="11" class="empty">조건에 맞는 방문자가 없어요.</td></tr>'}</tbody></table></div>
+ <p style="color:var(--sub);font-size:12.5px;margin-top:10px">방문자는 브라우저마다 붙는 익명 번호로 구분해요(이름·연락처·IP 없음). 같은 사람이 휴대폰과 PC로 오면 다른 방문자로 보여요. 예매 가능성은 티켓 링크 클릭·요금표 확인·길찾기/전화·재방문·체류시간으로 계산한 참고 점수예요.</p>
+ <div id="vdet"></div>`;
+ bindDays(PAGES.people);$('#vsort').value=VSORT;$('#vsort').onchange=e=>{VSORT=e.target.value;PAGES.people()};
+ $('#vq').onchange=e=>{VQ=e.target.value.trim();PAGES.people()};
+ document.querySelectorAll('[data-vf]').forEach(b=>b.onclick=()=>{VF=b.dataset.vf;PAGES.people()});
+ document.querySelectorAll('.vrow').forEach(r=>r.onclick=()=>vDetail(L.find(v=>v.vid===r.dataset.vid)))};
+async function vDetail(v){let S=[];try{S=await rpc('silk_visitor',{p_token:TOK,p_vid:v.vid})}catch(e){toast(e.message)}
+ const tm=s=>{const d=new Date(s);return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')};
+ const box=document.createElement('div');box.className='vmodal';box.innerHTML=`<div class="vpanel"><button class="btn sm ghost" style="float:right" data-x>닫기 ✕</button>
+ <h2 style="margin:0 0 4px">방문자 #${esc(v.vid.slice(0,6))} <span style="background:${v.type[1]};color:${v.type[2]};border-radius:999px;padding:3px 10px;font-size:13px;vertical-align:middle">${v.type[0]}</span></h2>
+ <p style="color:var(--sub);margin:0 0 14px">처음 ${vD(v.first)} · 마지막 ${vD(v.last)}</p>
+ <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px">${[['예매 가능성',v.score+'점'],['방문',v.visits+'회 · '+v.days+'일'],['총 체류',vS(v.dwell)],['본 페이지',v.pv+'개'],['클릭',v.clicks+'번'],['가장 깊이 스크롤',v.scroll!=null?v.scroll+'%':'-'],['티켓 링크',v.ticket?v.ticket+'번 클릭':'안 누름'],['요금표 확인',v.price?'확인함':'안 봄'],['길찾기·전화',(v.map+v.call)?(v.map+v.call)+'번':'-'],['단체·견적',v.quote?v.quote+'번':'-'],['기기',(v.mobile?'휴대폰':'PC')+' · '+(v.os||'-')],['브라우저',(v.browser||'-')+(v.inapp?' (앱 안)':'')],['화면',v.scr||'-'],['언어',v.lang||'-'],['주 접속',hrBand(v.hours)+' ('+(v.hours||[]).sort((a,b)=>a-b).join(', ')+'시)'],['처음 유입',(v.ref||'직접 방문')+(v.utm?' · '+v.utm:'')]].map(x=>`<div style="background:#f7f6f8;border-radius:12px;padding:10px 12px"><div style="font-size:12px;color:var(--sub)">${x[0]}</div><div style="font-weight:700;margin-top:2px;font-size:14px">${esc(String(x[1]))}</div></div>`).join('')}</div>
+ ${v.kw&&v.kw.length?`<p style="margin:12px 0 0"><b>검색어</b> ${[...new Set(v.kw)].map(k=>`<span class="pill g">${esc(k)}</span>`).join(' ')}</p>`:''}
+ <p style="margin:8px 0 0"><b>관심 분야</b> ${v.int.map((k,i)=>`<span class="pill ${i?'g':'b'}">${esc(k)}</span>`).join(' ')||'-'}</p>
+ <h3 style="margin:18px 0 8px">방문 기록 (${S.length}회)</h3>
+ ${S.map(j=>{const st=j.steps.filter(s=>s.t!=='leave');const dw={};j.steps.filter(s=>s.t==='leave').forEach(s=>{dw[s.p]=(dw[s.p]||0)+(s.d||0)});
+  return `<div class="qitem" style="margin-bottom:8px"><div class="h"><b>${vD(j.start)}</b><span style="color:var(--sub)">${vS(j.dwell||Math.round((new Date(j.end)-new Date(j.start))/1000))} 머묾</span>${j.ticket?'<span class="pill b">🎟 티켓 클릭</span>':''}<span class="pill g">${j.mobile?'휴대폰':'PC'}</span><span style="font-size:12.5px;color:var(--sub)">${esc(j.ref||'직접 방문')}${j.kw?' · "'+esc(j.kw)+'"':''}</span></div>
+  <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;align-items:center">${st.map(s=>`<span title="${tm(s.at)}" style="font-size:12.5px;border-radius:8px;padding:4px 8px;background:${s.k==='ticket'?'#fde8ee':s.t==='pv'?'#eef3ff':'#f4f4f6'}"><small style="color:var(--sub)">${tm(s.at)}</small> ${s.t==='pv'?'📄 '+esc(pn(s.p))+(dw[s.p]?` <small style="color:var(--sub)">${vS(dw[s.p])}</small>`:''):s.t==='view'?'👀 '+esc(s.l):(KIND[s.k]?KIND[s.k].split(' ')[0]+' ':'')+esc(s.l||s.k)}</span>`).join('<span style="color:#bbb">›</span>')}</div></div>`}).join('')||'<div class="empty">기록이 없어요</div>'}</div>`;
+ document.body.appendChild(box);box.onclick=e=>{if(e.target===box||e.target.closest('[data-x]'))box.remove()}}
 
 /* 홍보·마케팅 */
 PAGES.seo=()=>{const C=[['페이지 제목·설명','홈페이지 제목 "한국잠사박물관"과 소개 문구가 들어가 있어요',true],['카카오톡·네이버 공유 미리보기 이미지','공유 이미지(og:image)를 넣으면 링크 공유 때 사진이 크게 보여요',false],['네이버 서치어드바이저 등록','대표 도메인 연결 후 등록해야 네이버 검색에 새 홈페이지가 나와요',false],['구글 서치 콘솔 등록','대표 도메인 연결 후 등록',false],['모바일 화면','휴대폰 하단 바로가기·큰 영상 보기 적용됨',true]];

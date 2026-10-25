@@ -2831,10 +2831,17 @@ const BL=id=>'media/'+id+'.mp4';
  if(fresh){ref=document.referrer||'';try{if(ref){const u=new URL(ref);if(u.host!==location.host){host=u.host.replace(/^www\./,'');kw=u.searchParams.get('query')||u.searchParams.get('q')||u.searchParams.get('keyword')||u.searchParams.get('wd')||u.searchParams.get('search_query')||''}else ref=''}}catch(e){}
   const q=new URLSearchParams(location.search);utm=['utm_source','utm_medium','utm_campaign'].map(k=>q.get(k)).filter(Boolean).join(' / ');if(!kw)kw=q.get('n_keyword')||q.get('utm_term')||'';
   ss('jamsa_src',JSON.stringify({ref,host,kw,utm}))}
- const send=p=>{ls('jamsa_last',String(Date.now()));const body=Object.assign({vid,sid,mobile,newv,path:(location.hash||'#home').split(/[?&]/)[0]},fresh?{ref,ref_host:host,ref_kw:kw,utm}:{},p);fresh=false;
+ const UA=navigator.userAgent;const env={os:/iPhone|iPad|iPod/.test(UA)?'iOS':/Android/.test(UA)?'Android':/Windows/.test(UA)?'Windows':/Mac OS/.test(UA)?'Mac':/Linux/.test(UA)?'Linux':'기타',
+  browser:/NAVER\(inapp|NAVER/.test(UA)?'네이버앱':/KAKAOTALK/.test(UA)?'카카오톡':/Instagram/.test(UA)?'인스타그램':/FBAN|FBAV/.test(UA)?'페이스북':/Whale/.test(UA)?'웨일':/SamsungBrowser/.test(UA)?'삼성인터넷':/Edg\//.test(UA)?'엣지':/CriOS|Chrome/.test(UA)?'크롬':/Safari/.test(UA)?'사파리':/Firefox/.test(UA)?'파이어폭스':'기타',
+  scr:screen.width+'x'+screen.height,lang:(navigator.language||'').slice(0,12)};env.inapp=/네이버앱|카카오톡|인스타그램|페이스북/.test(env.browser)?env.browser:'';
+ const send=p=>{ls('jamsa_last',String(Date.now()));const body=Object.assign({vid,sid,mobile,newv,path:(location.hash||'#home').split(/[?&]/)[0]},fresh?Object.assign({ref,ref_host:host,ref_kw:kw,utm},env):{},p);fresh=false;
   fetch(SBU+'/rest/v1/rpc/silk_event',{method:'POST',keepalive:true,headers:{apikey:SK,Authorization:'Bearer '+SK,'Content-Type':'application/json'},body:JSON.stringify({p:body})}).catch(()=>{})};
  window.__jt=send;const ft=document.querySelector('footer:not(#lbCap)');if(ft&&!ft.querySelector('.anon'))(ft.querySelector('.wrap')||ft).insertAdjacentHTML('beforeend','<p class="anon" style="width:100%;font-size:11.5px;opacity:.7;margin:8px 0 0">이 홈페이지는 서비스 개선을 위해 이름·연락처 없이 익명 방문 기록(방문 경로·클릭)만 수집해요.</p>');
- let lastP='';const pv=()=>{const p=(location.hash||'#home').split(/[?&]/)[0];if(p===lastP)return;lastP=p;send({type:'pv'})};
+ let lastP='',t0=Date.now(),mx=0,act=0,vis=Date.now();
+ const sc=()=>{const h=document.documentElement;const v=Math.round((scrollY+innerHeight)/Math.max(h.scrollHeight,1)*100);if(v>mx)mx=Math.min(v,100)};addEventListener('scroll',sc,{passive:true});
+ const leave=()=>{if(!lastP)return;const d=Math.round((act+(document.hidden?0:Date.now()-vis))/1000);act=0;vis=Date.now();if(d>=1)send({type:'leave',path:lastP,dwell:d,scroll:mx});mx=0};
+ document.addEventListener('visibilitychange',()=>{if(document.hidden){act+=Date.now()-vis;const d=Math.round(act/1000);if(lastP&&d>=1){send({type:'leave',path:lastP,dwell:d,scroll:mx})}act=0}else vis=Date.now()});
+ const pv=()=>{const p=(location.hash||'#home').split(/[?&]/)[0];if(p===lastP)return;leave();lastP=p;mx=0;sc();send({type:'pv'})};
  pv();addEventListener('hashchange',pv);
  /* 요금표를 실제로 봤는지 */
  const ui=document.querySelector('.useinfo');if(ui&&'IntersectionObserver' in window){let seen=false;new IntersectionObserver(es=>{if(!seen&&es[0].isIntersecting){seen=true;send({type:'view',label:'요금표·운영시간 확인',kind:'price'})}},{threshold:.4}).observe(ui)}

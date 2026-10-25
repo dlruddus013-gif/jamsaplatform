@@ -171,7 +171,7 @@ const MENU=[['dash','🏠','대시보드'],
  ['shop','🛍','쇼핑',[['tickets','입장권·상품(예매)'],['orders','주문·예약 확인'],['prices','요금표'],['linkset','링크 주소 설정']]],
  ['promo','🎁','프로모션',[['popup','팝업·배너'],['events','행사 소식']]],
  ['content','📝','콘텐츠',[['hours','운영시간·휴관일'],['media','영상·사진 현황']]],
- ['stat','📈','통계',[['visits','방문자'],['inflow','유입 경로·인기 페이지']]],
+ ['stat','📈','통계',[['visits','방문자'],['inflow','유입 경로·검색어'],['funnel','클릭·티켓 전환'],['hourly','시간대별 행동'],['journey','방문자 여정'],['interest','관심 분야'],['demo','연령·성별 통계']]],
  ['mkt','📣','홍보·마케팅',[['seo','검색·공유 노출'],['links','외부 채널 바로가기'],['linkset','링크 주소 설정']]],
  ['set','⚙️','설정',[['staff','운영진'],['pw','내 비밀번호'],['audit','활동 기록'],['domain','도메인·배포']]]];
 const TITLES=Object.fromEntries(MENU.flatMap(m=>m[3]?m[3]:[[m[0],m[2]]]));
@@ -321,6 +321,54 @@ PAGES.inflow=async()=>{const D=await loadDash();const bar=(L,k)=>{const m=Math.m
   const NM={'#home':'홈','#learn':'방문체험학습','#story':'양잠이야기','#tour':'시설 둘러보기','#online':'온라인 박물관','#group':'단체예약','#visit':'오시는 길','#museum':'박물관'};
   D.paths.forEach(p=>p.path=NM[p.path]||p.path);
   $('#page').innerHTML=`<div class="stats" style="margin-top:0"><div class="card bars"><h3>유입 경로 (최근 7일)</h3>${bar(D.refs,'src')}</div><div class="card bars"><h3>인기 페이지 (최근 7일)</h3>${bar(D.paths,'path')}</div></div>`};
+
+
+/* ---------- 행동 분석 ---------- */
+const KIND={ticket:'🎟 티켓 구매 링크',call:'📞 전화',map:'📍 길찾기',quote:'👥 단체·견적',naverbook:'N 네이버 예약',sns:'SNS',video:'🎬 영상',menu:'🍇 오디 메뉴',cartoon:'📚 잠사카툰',program:'✋ 체험 프로그램',facility:'🏛 시설·전시',chat:'💬 캐릭터 대화',nav:'메뉴 이동',out:'외부 링크',ui:'기타',price:'요금표 확인'};
+const PN={'#home':'홈','#learn':'방문체험학습','#learn-visit':'체험학습 미리보기','#story':'양잠이야기·카툰','#tour':'시설 둘러보기','#online':'온라인 박물관','#group':'단체예약','#visit':'오시는 길','#museum':'박물관','#about':'소개','#seasons':'사계절 체험','#sheep':'양떼정원','#kids':'키즈카페','#play':'놀이시설','#quote':'견적서','#gallery':'갤러리','#products':'가공식품','#shop':'쇼핑몰','#news':'행사소식','#ar':'AR 체험관','#theater':'3D 영상관','#ailab':'AI 체험관'};
+const pn=p=>PN[p]||p;let ADAYS=7;
+const daySel=()=>`<select id="adays">${[[1,'오늘'],[7,'최근 7일'],[30,'최근 30일'],[90,'최근 90일']].map(([v,t])=>`<option value="${v}"${v===ADAYS?' selected':''}>${t}</option>`).join('')}</select>`;
+const bindDays=f=>{$('#adays').onchange=e=>{ADAYS=+e.target.value;f()}};
+const bars=(L,lab,val,sub)=>{const m=Math.max(1,...L.map(val));return L.length?L.map(x=>`<div class="b"><span title="${esc(lab(x))}">${esc(lab(x))}</span><span class="t"><i style="width:${val(x)/m*100}%"></i></span><span>${val(x)}${sub?`<small style="color:var(--sub)"> ${sub(x)}</small>`:''}</span></div>`).join(''):'<div class="empty">아직 데이터가 없어요. 방문이 쌓이면 보여요.</div>'};
+const A=()=>rpc('silk_analytics',{p_token:TOK,p_days:ADAYS});
+const pct=(a,b)=>b?Math.round(a/b*1000)/10+'%':'-';
+PAGES.inflow=async()=>{const D=await A();$('#page').innerHTML=`<div class="toolbar">${daySel()}<span style="color:var(--sub);font-size:13px">방문 세션 ${D.sessions} · 방문자 ${D.visitors} (신규 ${D.newv})</span></div>
+ <div class="stats" style="margin-top:0"><div class="card bars"><h3>어디서 왔나 (유입 사이트)</h3>${bars(D.refs,x=>x.host,x=>x.n,x=>'티켓 '+x.t)}</div>
+ <div class="card bars"><h3>검색어 (네이버 등에서 넘어온 경우)</h3>${bars(D.keywords,x=>x.kw+' · '+x.host.replace(/\..*/,''),x=>x.n)}<p style="color:var(--sub);font-size:12px">구글·네이버 일부 검색은 검색어를 넘겨주지 않아 '직접 방문'이나 사이트명만 보일 수 있어요.</p></div>
+ <div class="card bars"><h3>광고·캠페인 (UTM)</h3>${bars(D.utm,x=>x.utm,x=>x.n)}<p style="color:var(--sub);font-size:12px">광고·문자·SNS 링크 뒤에 ?utm_source=naver&utm_campaign=겨울썰매 처럼 붙이면 캠페인별로 집계돼요.</p></div>
+ <div class="card bars"><h3>많이 본 페이지</h3>${bars(D.paths,x=>pn(x.path),x=>x.n,x=>x.s+'세션')}</div></div>`;bindDays(PAGES.inflow)};
+PAGES.funnel=async()=>{const D=await A();const S=D.sessions||0;const st=[['방문',S],['요금표 확인',D.priceSessions],['티켓 구매 링크 클릭',D.ticketSessions]];
+ $('#page').innerHTML=`<div class="toolbar">${daySel()}</div>
+ <div class="card" style="margin-bottom:16px"><h3>티켓 전환 흐름</h3><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">${st.map((x,i)=>`<div style="background:${['#eef3ff','#f3ecf6','#fde8ee'][i]};border-radius:14px;padding:16px"><div style="color:var(--sub);font-size:13px">${x[0]}</div><div style="font-size:28px;font-weight:800">${x[1]}</div><div style="font-size:12.5px;color:var(--sub)">${i?'방문 대비 '+pct(x[1],S):'세션'}</div></div>`).join('')}</div>
+ <p style="color:var(--sub);font-size:13px;margin:12px 0 0">그 밖에 전화 버튼 ${D.callSessions}세션 · 단체·견적 ${D.quoteSessions}세션. 실제 결제는 예매 사이트에서 이뤄져 여기서는 '구매 링크를 눌렀는지'까지 셉니다.</p></div>
+ <div class="card"><h3>무엇을 눌렀나 (클릭 순위)</h3><table><thead><tr><th style="text-align:left">버튼·링크</th><th>종류</th><th>클릭</th><th>세션</th></tr></thead><tbody>${D.clicks.map(c=>`<tr><td style="text-align:left">${esc(c.label||'(이름 없음)')}</td><td>${KIND[c.kind]||esc(c.kind)}</td><td>${c.n}</td><td>${c.s}</td></tr>`).join('')||'<tr><td colspan="4" class="empty">아직 클릭 기록이 없어요</td></tr>'}</tbody></table></div>`;bindDays(PAGES.funnel)};
+PAGES.hourly=async()=>{const D=await A();const m=Math.max(1,...D.hours.map(h=>h.s));const W=['일','월','화','수','목','금','토'];
+ $('#page').innerHTML=`<div class="toolbar">${daySel()}</div><div class="card" style="margin-bottom:16px"><h3>시간대별 방문 세션 · 티켓 클릭</h3>
+ <div style="display:grid;grid-template-columns:repeat(24,1fr);gap:3px;align-items:end;height:180px">${D.hours.map(h=>`<div title="${h.h}시 방문 ${h.s} · 티켓 ${h.t}" style="display:flex;flex-direction:column;justify-content:flex-end;height:100%"><div style="height:${h.s/m*100}%;background:#c9b3c2;border-radius:4px 4px 0 0;position:relative">${h.t?`<div style="position:absolute;bottom:0;left:0;right:0;height:${h.t/Math.max(h.s,1)*100}%;background:var(--plum);border-radius:4px 4px 0 0"></div>`:''}</div></div>`).join('')}</div>
+ <div style="display:grid;grid-template-columns:repeat(24,1fr);font-size:10.5px;color:var(--sub);text-align:center">${D.hours.map(h=>`<span>${h.h%3?'':h.h}</span>`).join('')}</div>
+ <p style="color:var(--sub);font-size:12.5px">연한 막대 = 방문 세션, 진한 부분 = 그중 티켓 링크를 누른 세션 (한국 시간)</p></div>
+ <div class="card bars"><h3>요일별 방문</h3>${bars(W.map((w,i)=>({w,s:(D.weekday.find(x=>x.w===i)||{}).s||0})),x=>x.w+'요일',x=>x.s)}</div>
+ <p style="color:var(--sub);font-size:13px">휴대폰 ${D.mobile.m||0} · PC ${D.mobile.d||0} 세션</p>`;bindDays(PAGES.hourly)};
+PAGES.journey=async()=>{const day=$('#jday')?.value||new Date(Date.now()+9*36e5).toISOString().slice(0,10);const only=$('#jonly')?.checked||false;
+ let J=[];try{J=await rpc('silk_journeys',{p_token:TOK,p_day:day,p_only_ticket:only})}catch(e){toast(e.message)}
+ const tm=s=>{const d=new Date(s);return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')+':'+String(d.getSeconds()).padStart(2,'0')};
+ const dur=(a,b)=>{const s=Math.round((new Date(b)-new Date(a))/1000);return s<60?s+'초':Math.floor(s/60)+'분 '+(s%60)+'초'};
+ $('#page').innerHTML=`<div class="toolbar"><input type="date" id="jday" value="${day}"><label style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="jonly"${only?' checked':''}> 티켓 링크 누른 방문만</label><span style="color:var(--sub);font-size:13px">${J.length}개 방문 · 방문자는 익명 번호로만 보여요</span></div>
+ ${J.map(j=>`<div class="qitem"><div class="h"><b>${tm(j.start)}</b><span style="color:var(--sub)">머문 시간 ${dur(j.start,j.end)} · 행동 ${j.n}개</span>${j.ticket?'<span class="pill b">🎟 티켓 클릭</span>':''}${j.newv?'<span class="pill ok">첫 방문</span>':'<span class="pill g">재방문</span>'}<span class="pill g">${j.mobile?'휴대폰':'PC'}</span><span style="color:var(--sub);font-size:12.5px">유입: ${esc(j.ref||'직접 방문')}${j.kw?` · 검색어 "${esc(j.kw)}"`:''}${j.utm?` · ${esc(j.utm)}`:''} · #${esc(j.vid)}</span></div>
+  <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;align-items:center">${j.steps.map(s=>`<span title="${tm(s.at)}" style="font-size:12.5px;border-radius:8px;padding:4px 8px;background:${s.k==='ticket'?'#fde8ee':s.t==='pv'?'#eef3ff':'#f4f4f6'}">${s.t==='pv'?'📄 '+esc(pn(s.p)):s.t==='view'?'👀 '+esc(s.l):(KIND[s.k]?KIND[s.k].split(' ')[0]+' ':'')+esc(s.l||s.k)}</span>`).join('<span style="color:#bbb">›</span>')}</div></div>`).join('')||'<div class="card empty">이 날 기록된 방문이 없어요.</div>'}`;
+ $('#jday').onchange=PAGES.journey;$('#jonly').onchange=PAGES.journey};
+PAGES.interest=async()=>{const D=await A();const G={};const add=(k,n)=>{G[k]=(G[k]||0)+n};
+ const PG={'#learn':'체험학습','#learn-visit':'체험학습','#group':'단체 방문','#quote':'단체 방문','#story':'역사·문화','#museum':'역사·문화','#tour':'역사·문화','#online':'역사·문화','#about':'역사·문화','#kids':'아이와 놀이','#play':'아이와 놀이','#seasons':'아이와 놀이','#sheep':'동물 체험','#products':'오디·먹거리','#shop':'쇼핑','#visit':'방문 준비','#news':'행사·축제','#ar':'디지털 체험','#theater':'디지털 체험','#ailab':'디지털 체험'};
+ const CK={menu:'오디·먹거리',cartoon:'역사·문화',program:'체험학습',facility:'역사·문화',video:'영상 콘텐츠',chat:'아이와 놀이',quote:'단체 방문',ticket:'방문 준비',map:'방문 준비',call:'방문 준비',price:'방문 준비'};
+ D.paths.forEach(p=>{if(PG[p.path])add(PG[p.path],p.s)});D.clicks.forEach(c=>{if(CK[c.kind])add(CK[c.kind],c.s)});
+ const L=Object.entries(G).map(([k,n])=>({k,n})).sort((a,b)=>b.n-a.n);
+ $('#page').innerHTML=`<div class="toolbar">${daySel()}</div><div class="card bars"><h3>방문자들이 관심을 보인 분야</h3>${bars(L,x=>x.k,x=>x.n)}<p style="color:var(--sub);font-size:12.5px;margin-top:10px">개인을 추정하지 않고, 홈페이지에서 실제로 본 페이지와 누른 버튼을 분야별로 묶어 센 값이에요. 홍보 문구·첫 화면 배치를 정할 때 참고하세요.</p></div>`;bindDays(PAGES.interest)};
+PAGES.demo=()=>{$('#page').innerHTML=`<div class="card"><h3>연령·성별 통계는 이렇게 보세요</h3>
+ <p style="color:#333;line-height:1.7">홈페이지 접속 기록만으로는 방문자의 나이·소득을 알 수 없고, 동의 없이 개인별로 추정해 저장하면 개인정보보호법상 문제가 될 수 있어요. 대신 아래 서비스가 <b>로그인 사용자 표본으로 만든 연령·성별 분포(통계)</b>를 무료로 보여줘요.</p>
+ <div class="links"><a href="https://analytics.naver.com/" target="_blank" rel="noopener"><span><b>네이버 애널리틱스</b><br><small style="color:var(--sub)">사이트 등록 후 받은 추적 코드를 알려 주시면 홈페이지에 넣어 드려요 → 연령·성별·지역 분포</small></span><span>열기 ↗</span></a>
+ <a href="https://analytics.google.com/" target="_blank" rel="noopener"><span><b>구글 애널리틱스 (GA4)</b><br><small style="color:var(--sub)">측정 ID(G-로 시작)를 알려 주시면 넣어 드려요 → Google 신호 사용 시 연령·성별·관심 분야 리포트</small></span><span>열기 ↗</span></a>
+ <a href="https://new.smartplace.naver.com/" target="_blank" rel="noopener"><span><b>네이버 스마트플레이스 통계</b><br><small style="color:var(--sub)">플레이스를 찾아본 사람의 연령·성별 분포</small></span><span>열기 ↗</span></a></div>
+ <p style="color:var(--sub);font-size:12.5px;margin-top:12px">소득 수준은 공개된 신뢰할 만한 방문자 통계가 없어, 지역(시군구) 분포 정도로만 간접 참고하는 걸 권해요.</p></div>`};
 
 /* 홍보·마케팅 */
 PAGES.seo=()=>{const C=[['페이지 제목·설명','홈페이지 제목 "한국잠사박물관"과 소개 문구가 들어가 있어요',true],['카카오톡·네이버 공유 미리보기 이미지','공유 이미지(og:image)를 넣으면 링크 공유 때 사진이 크게 보여요',false],['네이버 서치어드바이저 등록','대표 도메인 연결 후 등록해야 네이버 검색에 새 홈페이지가 나와요',false],['구글 서치 콘솔 등록','대표 도메인 연결 후 등록',false],['모바일 화면','휴대폰 하단 바로가기·큰 영상 보기 적용됨',true]];

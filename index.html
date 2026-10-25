@@ -2815,6 +2815,42 @@ const BL=id=>'media/'+id+'.mp4';
   const ft=document.querySelector('footer:not(#lbCap)');if(S.length&&ft&&!ft.querySelector('.sns')){const d=document.createElement('div');d.className='sns';d.innerHTML=S.map(([k,t])=>`<a href="${L[k]}" target="_blank" rel="noopener">${t}</a>`).join('');(ft.querySelector('.wrap')||ft).appendChild(d)}
  }).catch(()=>{})})();
 /* /v33 */
+/* v34: 방문 행동 기록(익명) — 유입 경로·검색어·페이지 이동·클릭·티켓 링크 */
+(()=>{const SBU='https://ewxquecxsxsfhyzfaaci.supabase.co',SK='sb_publishable_G2wWHOhRazQUn2nkNr7ZWg_xasgzW_O';
+ const ls=(k,v)=>{try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v)}catch(e){return null}};
+ const ss=(k,v)=>{try{if(v===undefined)return sessionStorage.getItem(k);sessionStorage.setItem(k,v)}catch(e){return null}};
+ const rid=()=>(crypto.randomUUID?crypto.randomUUID():String(Math.random()).slice(2)+Date.now());
+ let vid=ls('jamsa_vid'),newv=false;if(!vid){vid=rid();ls('jamsa_vid',vid);newv=true}
+ const now=Date.now(),last=+ls('jamsa_last')||0;let sid=ss('jamsa_sid');let fresh=false;
+ if(!sid||now-last>30*60e3){sid=rid();ss('jamsa_sid',sid);fresh=true}
+ const mobile=matchMedia('(max-width:760px)').matches;
+ let ref='',host='',kw='',utm='';
+ if(fresh){ref=document.referrer||'';try{if(ref){const u=new URL(ref);if(u.host!==location.host){host=u.host.replace(/^www\./,'');kw=u.searchParams.get('query')||u.searchParams.get('q')||u.searchParams.get('keyword')||u.searchParams.get('wd')||u.searchParams.get('search_query')||''}else ref=''}}catch(e){}
+  const q=new URLSearchParams(location.search);utm=['utm_source','utm_medium','utm_campaign'].map(k=>q.get(k)).filter(Boolean).join(' / ');if(!kw)kw=q.get('n_keyword')||q.get('utm_term')||'';
+  ss('jamsa_src',JSON.stringify({ref,host,kw,utm}))}
+ const send=p=>{ls('jamsa_last',String(Date.now()));const body=Object.assign({vid,sid,mobile,newv,path:(location.hash||'#home').split(/[?&]/)[0]},fresh?{ref,ref_host:host,ref_kw:kw,utm}:{},p);fresh=false;
+  fetch(SBU+'/rest/v1/rpc/silk_event',{method:'POST',keepalive:true,headers:{apikey:SK,Authorization:'Bearer '+SK,'Content-Type':'application/json'},body:JSON.stringify({p:body})}).catch(()=>{})};
+ window.__jt=send;const ft=document.querySelector('footer:not(#lbCap)');if(ft&&!ft.querySelector('.anon'))(ft.querySelector('.wrap')||ft).insertAdjacentHTML('beforeend','<p class="anon" style="width:100%;font-size:11.5px;opacity:.7;margin:8px 0 0">이 홈페이지는 서비스 개선을 위해 이름·연락처 없이 익명 방문 기록(방문 경로·클릭)만 수집해요.</p>');
+ let lastP='';const pv=()=>{const p=(location.hash||'#home').split(/[?&]/)[0];if(p===lastP)return;lastP=p;send({type:'pv'})};
+ pv();addEventListener('hashchange',pv);
+ /* 요금표를 실제로 봤는지 */
+ const ui=document.querySelector('.useinfo');if(ui&&'IntersectionObserver' in window){let seen=false;new IntersectionObserver(es=>{if(!seen&&es[0].isIntersecting){seen=true;send({type:'view',label:'요금표·운영시간 확인',kind:'price'})}},{threshold:.4}).observe(ui)}
+ /* 클릭 */
+ const kindOf=(el,href,txt)=>{const R=(window.__SITE&&window.__SITE.links&&window.__SITE.links.reserve)||'la2fdoci.com';
+  if(href&&(href.includes('la2fdoci.com')||(R&&href.startsWith(R)))||/예매/.test(txt))return 'ticket';
+  if(/^tel:/.test(href))return 'call';if(/map\.naver|map\.kakao|naver\.me|kko\.to|길찾기/.test(href+txt))return 'map';
+  if(/견적|단체/.test(txt))return 'quote';if(/booking\.naver/.test(href))return 'naverbook';
+  if(/youtube|instagram|blog\.naver|pf\.kakao/.test(href))return 'sns';if(el.closest('.vpfab,.vplay,#mbVid,.ret,.vpgo,.lbre,video'))return 'video';
+  if(el.closest('.storymenu'))return 'menu';if(el.closest('.tep,.toon'))return 'cartoon';if(el.closest('.dgc,.how,.newexp'))return 'program';
+  if(el.closest('.fgrid,.tstop,#plist,#pins'))return 'facility';if(/대화하기/.test(txt)||el.closest('.fchat,#friendModal'))return 'chat';
+  if(href&&href.startsWith('#'))return 'nav';if(href&&/^https?:/.test(href))return 'out';return 'ui'};
+ document.addEventListener('click',e=>{const el=e.target.closest('a,button,[role=button],.dgc,.tep,.storymenu,.fgrid button');if(!el)return;
+  const href=el.getAttribute&&el.getAttribute('href')||'';let txt=(el.getAttribute('aria-label')||el.textContent||'').replace(/\s+/g,' ').trim().slice(0,60);
+  if(!txt&&el.querySelector('img'))txt=el.querySelector('img').alt||'';
+  send({type:'click',label:txt,href:href.slice(0,300),kind:kindOf(el,href,txt)})},true);
+})();
+/* /v34 */
+
 
 
 

@@ -1037,6 +1037,10 @@ footer .links a{text-decoration:none}
 #howVideo{position:relative}
 .newexp .dgc{position:relative}
 .newexp .dgc::after{top:28px!important;right:28px!important;bottom:auto!important;left:auto!important;background:rgba(255,255,255,.94)!important;z-index:2}
+.admpop{position:fixed;inset:0;z-index:96;background:rgba(20,12,16,.55);display:grid;place-items:center;padding:16px}
+.admpop .apb{background:#fbf6ee;border-radius:20px;padding:22px 22px 14px;width:min(420px,100%);text-align:center;box-shadow:0 20px 50px -10px rgba(0,0,0,.4)}
+.admpop img{height:70px}.admpop h3{margin:8px 0;color:var(--plum)}.admpop p{white-space:pre-wrap;margin:0 0 14px}
+.admpop .apf{display:flex;justify-content:space-between;margin-top:12px}.admpop .apf button{border:0;background:none;color:#7a6a70;cursor:pointer;font:inherit;font-size:13px}
 </style>
 
 <div class="util" role="navigation" aria-label="빠른 메뉴">
@@ -2715,14 +2719,15 @@ const BL=id=>'media/'+id+'.mp4';
  const RES='https://la2fdoci.com/jamsahome/product/productList.do';
  const kst=()=>{const d=new Date(Date.now()+(new Date().getTimezoneOffset()+540)*60000);return {day:d.getDay(),m:d.getHours()*60+d.getMinutes()}};
  const mm=(h,m)=>h*60+m;
- function status(){const {day,m}=kst();
-  if(day===OPEN.closed)return ['off','오늘은 휴관일이에요','매주 월요일 휴관 · 내일(화) 오전 10시에 열어요'];
+ function status(){const {day,m}=kst();const SS=window.__SITE||{};const CD=SS.closed!==undefined?+SS.closed:OPEN.closed;const CL=SS.closedLabel||'매주 월요일';const D7=['일','월','화','수','목','금','토'];
+  const td=new Date(Date.now()+(new Date().getTimezoneOffset()+540)*60000).toISOString().slice(0,10);if((SS.extraClosed||'').split(/[,\s]+/).includes(td))return ['off','오늘은 임시 휴관일이에요','문의 043-235-1267'];
+  if(day===CD)return ['off','오늘은 휴관일이에요',`${CL} 휴관 · 내일(${D7[(day+1)%7]}) 오전 10시에 열어요`];
   if(m<mm(OPEN.am[0],OPEN.am[1]))return ['soon','곧 문을 열어요','오늘 오전 10시 개장'];
   if(m<mm(OPEN.am[2],OPEN.am[3]))return ['on','지금 관람할 수 있어요','오전 10:00 – 12:00 · 오후 13:00 – 17:00'];
   if(m<mm(OPEN.pm[0],OPEN.pm[1]))return ['soon','점심시간이에요','오후 1시부터 다시 관람할 수 있어요'];
   if(m<mm(OPEN.last[0],OPEN.last[1]))return ['on','지금 관람할 수 있어요','입장 마감 16:30 · 운영 17:00까지'];
   if(m<mm(OPEN.pm[2],OPEN.pm[3]))return ['soon','오늘 입장은 마감됐어요','운영은 17:00까지'];
-  const tomorrow=(day+1)%7===OPEN.closed?'모레(화)':'내일';return ['off','오늘 운영이 끝났어요',`${tomorrow} 오전 10시에 열어요 · 매주 월요일 휴관`]}
+  const tomorrow=(day+1)%7===CD?`모레(${D7[(day+2)%7]})`:'내일';return ['off','오늘 운영이 끝났어요',`${tomorrow} 오전 10시에 열어요 · ${CL} 휴관`]}
  const chip=()=>{const s=status();return `<span class="ostat ${s[0]}"><i></i><b>${s[1]}</b><small>${s[2]}</small></span>`};
  /* ① 홈 첫 화면 바로 아래 '이용 안내' */
  const home=document.querySelector('.view[data-view="home"]');
@@ -2739,7 +2744,7 @@ const BL=id=>'media/'+id+'.mp4';
  const hb=document.querySelector('.inforow .box dl.hours');if(hb&&!hb.querySelector('.cl')){hb.insertAdjacentHTML('beforeend','<dt>휴관일</dt><dd class="cl">매주 월요일</dd>');hb.insertAdjacentHTML('beforebegin',`<div id="ostat2">${chip()}</div>`)}
  /* ③ 오시는 길 페이지에도 */
  const vv=document.querySelector('.view[data-view="visit"] .band .wrap');if(vv&&!vv.querySelector('.ostat'))vv.insertAdjacentHTML('afterbegin',`<div id="ostat3" style="margin-bottom:14px">${chip()}</div>`);
- setInterval(()=>['ostat1','ostat2','ostat3'].forEach(id=>{const e=document.getElementById(id);if(e)e.innerHTML=chip()}),60000);
+ window.__ostatRefresh=()=>['ostat1','ostat2','ostat3'].forEach(id=>{const e=document.getElementById(id);if(e)e.innerHTML=chip()});setInterval(window.__ostatRefresh,60000);
  if(typeof INDEX!=='undefined')INDEX.push(['요금표 · 운영시간 · 휴관일','home','요금 가격 입장료 종일권 오후권 휴관 월요일 운영시간 체험비']);
 })();
 /* /v30 */
@@ -2762,6 +2767,37 @@ const BL=id=>'media/'+id+'.mp4';
  if(window.openVP){/* 영상관 목록은 v28에서 만들어져 있어 별도 버튼으로 연결 */}
 })();
 /* /v31 */
+/* v32: 관리자 연동 — 방문 통계 · 요금표/운영시간 · 행사 소식 · 팝업 */
+(()=>{const SBU='https://ewxquecxsxsfhyzfaaci.supabase.co',SK='sb_publishable_G2wWHOhRazQUn2nkNr7ZWg_xasgzW_O',H={apikey:SK,Authorization:'Bearer '+SK,'Content-Type':'application/json'};
+ const e=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ /* ① 방문 통계 */
+ let vid='';try{vid=localStorage.getItem('jamsa_vid')||'';if(!vid){vid=(crypto.randomUUID?crypto.randomUUID():String(Math.random()).slice(2));localStorage.setItem('jamsa_vid',vid)}}catch(x){vid='na'}
+ let last='';const track=()=>{const p=(location.hash||'#home').split(/[?&]/)[0];if(p===last)return;last=p;fetch(SBU+'/rest/v1/rpc/silk_track',{method:'POST',headers:H,body:JSON.stringify({p_vid:vid,p_path:p,p_ref:document.referrer||'',p_mobile:matchMedia('(max-width:760px)').matches})}).catch(()=>{})};
+ track();addEventListener('hashchange',track);
+ const cfg=k=>fetch(SBU+'/rest/v1/silk_web_config?key=eq.'+k+'&select=data',{headers:H}).then(r=>r.json()).then(j=>j&&j[0]?j[0].data:null).catch(()=>null);
+ /* ② 요금표·운영시간 */
+ cfg('site').then(S=>{if(!S)return;window.__SITE=S;const ui=document.querySelector('.useinfo');if(!ui)return;
+  const cards=ui.querySelectorAll('.uicard');
+  if(S.tickets&&cards[0])cards[0].innerHTML=`<h3>🎟 입장권</h3>${S.tickets.map(t=>`<div class="tk"><div><b>${e(t[0])}</b><small>${e(t[1])}</small></div><strong>${e(t[2])}</strong><p>${e(t[3]||'')}</p></div>`).join('')}<a class="btn" href="https://la2fdoci.com/jamsahome/product/productList.do" target="_blank" rel="noopener">입장권 예매하기 ↗</a>`;
+  if(S.extra&&cards[1])cards[1].innerHTML=`<h3>✋ 추가 체험 <small>입장권과 별도</small></h3><ul class="ex">${S.extra.map(x=>`<li><span><b>${e(x[0])}</b><small>${e(x[1])}</small></span><strong>${e(x[2])}</strong></li>`).join('')}</ul>`;
+  const hrs=`<dt>오전</dt><dd>${e(S.am||'10:00 – 12:00')}</dd><dt>오후</dt><dd>${e(S.pm||'13:00 – 17:00')}</dd><dt>입장 마감</dt><dd>${e(S.last||'16:30')}</dd><dt>휴관일</dt><dd class="cl">${e(S.closedLabel||'매주 월요일')}</dd>`;
+  document.querySelectorAll('.useinfo dl.hours,.inforow .box dl.hours').forEach(d=>d.innerHTML=hrs);
+  const n=ui.querySelector('.uinote');if(n)n.textContent='※ '+(S.base||'')+'. '+(S.note||'');
+  window.__ostatRefresh&&window.__ostatRefresh()});
+ /* ③ 행사 소식 */
+ cfg('notices').then(N=>{const L=(N&&N.items)||[];if(!L.length)return;
+  const hn=document.getElementById('homeNews');if(hn)hn.insertAdjacentHTML('afterbegin',L.slice(0,3).map(x=>`<a href="#news"><img src="img/ch/boja.png" alt="" loading="lazy" style="object-fit:contain;background:#f6efe3"><span><b>${x.pin?'📌 ':''}${e(x.title)}</b><small>${e(x.date)}</small></span></a>`).join(''));
+  const nl=document.getElementById('newsList');const put=()=>{if(!nl||nl.querySelector('.admnews'))return;nl.insertAdjacentHTML('afterbegin',L.map(x=>`<article class="card admnews" style="display:grid;gap:6px"><span class="cat">${x.pin?'📌 공지':'행사 소식'}</span><h4>${e(x.title)}</h4><p style="white-space:pre-wrap">${e(x.body)}</p><span class="meta">${e(x.date)}</span></article>`).join(''))};
+  put();if(nl)new MutationObserver(put).observe(nl,{childList:true})});
+ /* ④ 팝업 */
+ cfg('popup').then(P=>{if(!P||!P.on||!P.title)return;if(P.until&&new Date(P.until+'T23:59:59')<new Date())return;let k='';try{k=localStorage.getItem('jamsa_pop_hide')}catch(x){}if(k===String(P.v))return;
+  const d=document.createElement('div');d.className='admpop';d.innerHTML=`<div class="apb"><img src="img/ch/nue.png" alt=""><h3>${e(P.title)}</h3><p>${e(P.body)}</p>${P.link?`<a class="btn" href="${e(P.link)}" target="_blank" rel="noopener">자세히 보기</a>`:''}<div class="apf"><button type="button" data-h>오늘 그만 보기</button><button type="button" data-c>닫기</button></div></div>`;
+  document.body.appendChild(d);d.onclick=ev=>{if(ev.target.matches('[data-h]')){try{localStorage.setItem('jamsa_pop_hide',String(P.v))}catch(x){}d.remove()}if(ev.target.matches('[data-c]')||ev.target===d)d.remove()}});
+ /* ⑤ 하단 ADMIN → 새 관리자 */
+ document.querySelectorAll('a[href="https://jamsamuseum.co.kr/admin"]').forEach(a=>{a.href='/admin';a.removeAttribute('target')});
+})();
+/* /v32 */
+
 
 
 </script>

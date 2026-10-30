@@ -2079,7 +2079,7 @@ $('#g-copy').onclick=()=>{const t=$('#g-sum').textContent;navigator.clipboard.wr
 
 /* how-to videos */
 const HOW={necklace:['누에고치 목걸이 만들기',['고치를 반으로 잘라 속을 비워요','고치에 색을 칠해 꽃 모양으로 붙여요','실에 꿰면 고치 꽃 목걸이 완성!']],reel:['누에고치 실뽑기',['고치를 따뜻한 물에 불려요','솔로 살살 저어 실 끝을 찾아요','물레를 돌려 비단실을 감아요']],dye:['천연 비단 염색',['손수건을 비틀어 고무줄로 묶어요','오디·치자·쪽 천연 염료에 담가요','풀어서 말리면 나만의 무늬 완성!']],leaf:['뽕잎 판화',['뽕잎 뒷면에 물감을 발라요','종이에 올려 롤러로 문질러요','살짝 떼면 잎맥 판화 완성!']],ai:['AI 3D 누에 만들기',['AI와 함께 나만의 누에를 디자인해요','3D 프린터가 한 층씩 출력해요','출력한 누에를 색칠해 가져가요']]};
-function openHow(k){const h=HOW[k];if(!h)return;const v=$('#howVideo');$('#howTitle').textContent=h[0]+' · 만드는 방법';$('#howSteps').innerHTML=h[1].map(s=>`<li>${s}</li>`).join('');v.poster='img/how/'+k+'.jpg';v.src='video/how/'+k+'.mp4';openEl($('#howModal'));v.play().catch(()=>{})}
+function openHow(k){const h=HOW[k];if(!h)return;const v=$('#howVideo');$('#howTitle').textContent=h[0]+' · 만드는 방법';$('#howSteps').innerHTML=h[1].map(s=>`<li>${s}</li>`).join('');v.poster='img/how/'+k+'_p.jpg';v.src='video/how/'+k+'.mp4?v=2';openEl($('#howModal'));v.play().catch(()=>{})}
 document.addEventListener('click',e=>{const b=e.target.closest('[data-how]');if(b){e.preventDefault();openHow(b.dataset.how)}});
 
 /* copy buttons */

@@ -1110,6 +1110,14 @@ p{letter-spacing:-.012em}
 .arbar ol b{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--wash);color:var(--plum);font-size:12px;font-weight:800;margin-right:6px}
 .armob{display:none}
 @media (max-width:760px){.arstage{border-radius:18px}.arstage .arphone{display:none}.armob{display:block;position:relative;width:min(250px,64vw);aspect-ratio:390/844;margin:16px auto 0;border-radius:12%/5.6%;background:#16161b;box-shadow:0 20px 40px -18px rgba(0,0,0,.5)}.armob video{position:absolute;top:2.4%;left:5%;width:90%;height:95.2%;object-fit:cover;border-radius:10%/4.6%;background:#000}.arbar ol{flex-basis:100%}}
+/* v39: 온라인 박물관 배너 (힉스필드 배너 + 노트북 화면에 실제 사이트 30초 미리보기) */
+.olstage{position:relative;display:block;aspect-ratio:3840/1648;background:#6B3A5B url(https://d2ol7oe51mr4n9.cloudfront.net/user_3HIffWpq3GSMBxHpmZpjIn8lEj6/22f25479-c572-41ab-b2f4-124d3c2b9992.jpg) center/cover no-repeat;border-radius:28px;overflow:hidden;box-shadow:0 30px 60px -40px rgba(58,42,49,.5);text-decoration:none}
+.olscr{position:absolute;left:47.19%;top:39.81%;width:25.99%;height:40.29%;overflow:hidden;background:#f6efe4;border-radius:2px}
+.olscr video{width:100%;height:100%;object-fit:cover;display:block}
+.olgo{position:absolute;left:4.6%;bottom:9%;background:#fff;color:#6B3A5B;font-weight:800;font-size:clamp(13px,1.2vw,16px);padding:.7em 1.3em;border-radius:99px;box-shadow:0 10px 24px -12px rgba(0,0,0,.5);transition:transform .25s}
+.olstage:hover .olgo{transform:translateX(4px)}
+.olmob{display:none}
+@media (max-width:760px){.olstage{border-radius:18px}.olstage .olscr,.olstage .olgo{display:none}.olmob{display:block;margin-top:12px;border-radius:16px;overflow:hidden;background:#16161b;text-decoration:none}.olmob video{display:block;width:100%;aspect-ratio:3/2;object-fit:cover}.olmob span{display:block;padding:10px 14px;color:#fff;font-weight:700;font-size:14px;background:#6B3A5B}}
 /* v38: 누에 친구 108 — 하루 한 친구 공개 */
 .nf108{margin-top:22px;padding:clamp(18px,2.6vw,30px);border-radius:28px;background:linear-gradient(180deg,#fbf6ec,#f3ecdd);box-shadow:inset 0 0 0 1px rgba(91,44,79,.08)}
 .nfhd{display:flex;align-items:flex-end;justify-content:space-between;gap:10px 20px;flex-wrap:wrap;margin-bottom:16px}
@@ -1125,7 +1133,7 @@ p{letter-spacing:-.012em}
 .nftx small{display:block;font-weight:800;color:#2f8f5b;font-size:13px;letter-spacing:.04em}
 .nftx b{display:block;font-size:clamp(20px,2.3vw,28px);color:var(--plum,#5B2C4F);margin:2px 0 6px;line-height:1.25}
 .nftx p{margin:0;color:var(--ink,#3a2a31);font-size:15px;line-height:1.6}
-.nftx .nx{margin-top:10px;font-size:13px;color:var(--muted,#7a6a70)}.nftx .nx b{display:inline;font-size:13px;color:#d6455d;margin:0}
+.nftx .nfnx{margin-top:10px;font-size:13px;color:var(--muted,#7a6a70)}.nftx .nfnx b{display:inline;font-size:13px;color:#d6455d;margin:0}
 .nftx .go{display:inline-block;margin-top:12px;font-size:14px;font-weight:800;color:var(--plum,#5B2C4F)}
 .nfvid{position:relative;aspect-ratio:720/966;max-height:440px;margin-inline:auto;width:100%;max-width:330px;border-radius:18px;overflow:hidden;background:#16161b}
 .nfvid video{width:100%;height:100%;object-fit:cover;display:block}
@@ -2598,7 +2606,8 @@ new MutationObserver(()=>{if($('#lbx').hidden)olOn=false}).observe($('#lbx'),{at
 let olT=0;setInterval(()=>{const t=$('#olTicker');if(!t||t.offsetParent===null)return;const k=OLK[olT++%OLK.length];t.innerHTML=`<span>📢 잠사 지식</span><b>${k[2]}</b><a href="${k[4]}" target="_blank" rel="noopener">${k[3]}</a>`},6000);
 (()=>{const k=OLK[0];$('#olTicker').innerHTML=`<span>📢 잠사 지식</span><b>${k[2]}</b><a href="${k[4]}" target="_blank" rel="noopener">${k[3]}</a>`})();
 /* 홈 배너 */
-(()=>{const home=document.querySelector('.view[data-view="home"]');if(!home)return;const s=document.createElement('section');s.className='band olbanner';s.innerHTML=`<div class="wrap"><a class="olb" href="#online"><img src="img/ch/nue.png" alt=""><span><em>NEW · 온라인 박물관</em><b>집에서 만나는 잠사박물관</b><small>캐릭터 도슨트 해설 · 오늘의 잠사 지식 · 방송사가 소개한 박물관 영상</small></span><i>바로가기 ›</i></a></div>`;const first=home.querySelector('section');if(first&&first.nextSibling)home.insertBefore(s,first.nextSibling);else home.appendChild(s)})();
+(()=>{const home=document.querySelector('.view[data-view="home"]');if(!home)return;const s=document.createElement('section');s.className='band olbanner';s.innerHTML=`<div class="wrap"><a class="olstage" href="#online" aria-label="NEW 온라인 박물관 — 집에서 만나는 잠사박물관. 캐릭터 도슨트 해설, 오늘의 잠사 지식, 방송 소개 영상 바로가기"><span class="olscr"><video src="https://d2ol7oe51mr4n9.cloudfront.net/user_3HIffWpq3GSMBxHpmZpjIn8lEj6/68b9c2ae-b64e-44f5-8042-a46f867ea536.mp4" poster="https://d2ol7oe51mr4n9.cloudfront.net/user_3HIffWpq3GSMBxHpmZpjIn8lEj6/6b83e7aa-41ad-46d6-bd70-c21ff016ffe3.jpg" muted loop playsinline autoplay preload="metadata" aria-label="온라인 박물관 실제 화면 30초 미리보기"></video></span><span class="olgo">온라인 박물관 바로가기 ›</span></a><a class="olmob" href="#online"><video src="https://d2ol7oe51mr4n9.cloudfront.net/user_3HIffWpq3GSMBxHpmZpjIn8lEj6/68b9c2ae-b64e-44f5-8042-a46f867ea536.mp4" poster="https://d2ol7oe51mr4n9.cloudfront.net/user_3HIffWpq3GSMBxHpmZpjIn8lEj6/6b83e7aa-41ad-46d6-bd70-c21ff016ffe3.jpg" muted loop playsinline autoplay preload="metadata" aria-label="온라인 박물관 실제 화면 30초 미리보기"></video><span>▶ 실제 화면 30초 미리보기 · 바로가기 ›</span></a></div>`;
+ s.querySelectorAll('video').forEach(v=>{if('IntersectionObserver' in window)new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting&&v.offsetParent!==null)v.play().catch(()=>{});else v.pause()}),{threshold:.2}).observe(v)});const first=home.querySelector('section');if(first&&first.nextSibling)home.insertBefore(s,first.nextSibling);else home.appendChild(s)})();
 route();
 /* /v21 */
 /* v24: 친구와 이름 나누고 대화하기 · 그림→실물 호버 · 움직이는 그림 타일 · 옛사람 재현 영상 */
@@ -3051,7 +3060,7 @@ const BL=id=>'media/'+id+'.mp4';
  const box=document.createElement('div');box.className='nf108';
  let tiles='';for(const d of D){const n=d[0],ok=n<=open;tiles+=`<button type="button" class="nft ${ok?'op':'lk'}${n===open?' td':''}" data-n="${n}" ${ok?`aria-label="${n}번 ${d[1]}"`:`aria-label="${n}번 친구 (공개 예정)" tabindex="-1"`}><i style="${pos(n)}"></i>${ok?'':`<span>${n}</span>`}</button>`}
  box.innerHTML=`<div class="nfhd"><div><em>누에 친구 108 · 하루 한 친구 공개</em><h3>오늘의 누에 친구를 만나 보세요</h3></div><div class="cnt">지금까지 <b>${open}</b> / 108 친구 공개</div></div>
- <div class="nfcard"><div class="nfinfo"><div class="nffig"><i></i><span class="bd"></span></div><div class="nftx"><small></small><b></b><p></p><div class="nx"></div><a class="go" href="${AR}" target="_blank" rel="noopener">AR로 이 친구 찾으러 가기 ›</a></div></div><div class="nfvid"></div></div>
+ <div class="nfcard"><div class="nfinfo"><div class="nffig"><i></i><span class="bd"></span></div><div class="nftx"><small></small><b></b><p></p><div class="nfnx"></div><a class="go" href="${AR}" target="_blank" rel="noopener">AR로 이 친구 찾으러 가기 ›</a></div></div><div class="nfvid"></div></div>
  <div class="nfgrid" role="list">${tiles}</div>
  <p class="nfnote">그림자 속 친구들은 매일 자정에 한 명씩 모습을 드러내요 · 박물관 AR 가이드에서 108마리를 모두 모아 보세요</p>`;
  sec.querySelector('.wrap').appendChild(box);
@@ -3062,7 +3071,7 @@ const BL=id=>'media/'+id+'.mp4';
   box.querySelectorAll('.nft.on').forEach(t=>t.classList.remove('on'));box.querySelector(`.nft[data-n="${n}"]`).classList.add('on');
   const v=vb.querySelector('video');if(v&&vis)v.play().catch(()=>{})}
  box.querySelector('.nfgrid').addEventListener('click',e=>{const t=e.target.closest('.nft.op');if(!t)return;show(+t.dataset.n);box.querySelector('.nfcard').scrollIntoView({behavior:'smooth',block:'nearest'});const v=vb.querySelector('video');v&&v.play().catch(()=>{})});
- const nx=tx.querySelector('.nx');function tick(){if(open>=108){nx.textContent='108마리 모두 공개됐어요!';return}const left=START+open*DAY-Date.now();if(left<=0){nx.textContent='새 친구가 도착했어요! 새로고침해 보세요';return}const h=left/36e5|0,m=left/6e4%60|0,s2=left/1e3%60|0;nx.innerHTML=`다음 친구 공개까지 <b>${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s2).padStart(2,'0')}</b>`}
+ const nx=tx.querySelector('.nfnx');function tick(){if(open>=108){nx.textContent='108마리 모두 공개됐어요!';return}const left=START+open*DAY-Date.now();if(left<=0){nx.textContent='새 친구가 도착했어요! 새로고침해 보세요';return}const h=left/36e5|0,m=left/6e4%60|0,s2=left/1e3%60|0;nx.innerHTML=`다음 친구 공개까지 <b>${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s2).padStart(2,'0')}</b>`}
  tick();setInterval(tick,1000);show(open);
  if('IntersectionObserver' in window)new IntersectionObserver(es=>es.forEach(e=>{vis=e.isIntersecting;const v=vb.querySelector('video');if(!v)return;if(vis)v.play().catch(()=>{});else v.pause()}),{threshold:.35}).observe(vb);
 })();

@@ -3125,7 +3125,7 @@ const BL=id=>'media/'+id+'.mp4';
  const box=document.createElement('div');box.className='nf108';
  let tiles='';for(const d of D){const n=d[0],ok=n<=open;tiles+=`<button type="button" class="nft ${ok?'op':'lk'}${n===open?' td':''}" data-n="${n}" ${ok?`aria-label="${n}번 ${d[1]}"`:`aria-label="${n}번 친구 (공개 예정)" tabindex="-1"`}><i style="${pos(n)}"></i>${ok?'':`<span>${n}</span>`}</button>`}
  box.innerHTML=`<div class="nfstage"><div class="nfinfo"><div class="nfhd"><em>누에 친구 108 · 하루 한 친구 공개</em><h3>오늘의 누에 친구를<br>만나 보세요</h3><p class="cnt">지금까지 <b>${open}</b> / 108 친구 공개 · 매일 자정 새 친구 등장</p></div>
- <div class="nfrow"><div class="nffig"><i></i><span class="bd"></span></div><div class="nftx"><small></small><b></b><p></p><div class="nfnx"></div><a class="go" href="${AR}" target="_blank" rel="noopener">AR로 이 친구 찾으러 가기 ›</a></div></div></div>
+ <div class="nfrow"><div class="nffig"><i></i><span class="bd"></span></div><div class="nftx"><small></small><b></b><p></p><div class="nfnx"></div><a class="go" href="${AR}" target="_blank" rel="noopener">AR로 찾으러 가기 ›</a></div></div></div>
  <div class="nfvid"></div></div>
  <div class="nfgrid" role="list">${tiles}</div>
  <p class="nfnote">그림자 속 친구들은 매일 자정에 한 명씩 모습을 드러내요 · 공개된 친구를 누르면 그 친구 영상을 볼 수 있어요</p>`;
@@ -3168,7 +3168,7 @@ const BL=id=>'media/'+id+'.mp4';
  .nftx b{font-size:17px!important;margin:1px 0 3px!important}
  .nftx p{font-size:12.5px!important;line-height:1.45!important;-webkit-line-clamp:3!important}
  .nftx .nfnx{font-size:11.5px!important;margin-top:5px!important}.nftx .nfnx b{font-size:11.5px!important}
- .nftx .go{font-size:12px!important;padding:.55em .9em!important;margin-top:8px!important}
+ .nftx .go{font-size:12.5px!important;padding:.6em 1em!important;margin-top:8px!important;white-space:nowrap}
  .nfgrid{margin-top:10px!important;padding:8px!important;gap:3px!important}
  .nfnote{font-size:12px!important;margin-top:8px!important;line-height:1.5}
 }

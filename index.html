@@ -2882,31 +2882,30 @@ const BL=id=>'media/'+id+'.mp4';
 })();
 /* /v34 */
 /* v35: 사계절 홍보영상 팝업 */
-(()=>{const H='https://d2ol7oe51mr4n9.cloudfront.net/user_3HIffWpq3GSMBxHpmZpjIn8lEj6/',SVU={spring:H+'a8a533f3-402a-4043-96cd-582c61e2b50b.mp4',summer:H+'ad6a459e-12c2-4364-89e5-c7df68ac6989.mp4',autumn:H+'842c27b8-b0f6-4540-9af9-85141777e24b.mp4',winter:H+'e2d82e47-4766-42cf-8b08-da691b255996.mp4'};const S=[['spring','봄','🌸','벚꽃 아래 롤러 썰매','꽃길 따라 박물관 나들이 · 잔디 롤러 썰매'],['summer','여름','🌊','시원한 물 썰매 · 오디 따기','물 썰매로 첨벙! 6월엔 까만 오디 수확 체험'],['autumn','가을','🍁','단풍 속 양떼정원','양에게 건초 주고, 낙엽 사이로 썰매 타기'],['winter','겨울','⛄','눈썰매 · 눈꽃축제','하얀 눈썰매장과 겨울 눈꽃축제']];
+(()=>{const S=[['spring','봄','🌸','벚꽃 아래 롤러 썰매','꽃길 따라 박물관 나들이 · 잔디 롤러 썰매'],['summer','여름','🌊','시원한 물 썰매 · 오디 따기','물 썰매로 첨벙! 6월엔 까만 오디 수확 체험'],['autumn','가을','🍁','단풍 속 양떼정원','양에게 건초 주고, 낙엽 사이로 썰매 타기'],['winter','겨울','⛄','눈썰매 · 눈꽃축제','하얀 눈썰매장과 겨울 눈꽃축제']];
  const st={get:k=>{try{return localStorage.getItem(k)}catch(e){return null}},set:(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}}};
  const m=new Date().getMonth()+1;const cur=m>=3&&m<=5?0:m>=6&&m<=8?1:m>=9&&m<=11?2:3;
  let el=null,i=cur,snd=false,ph=0;
- const PV=k=>'video/season/'+k+'.mp4',FX=k=>'audio/season/sfx_'+k+'.mp3';
+ const PV=k=>'video/season/'+k+'.mp4';
  let AC=null;function blip(f1,f2,d,g){if(!snd)return;try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();const o=AC.createOscillator(),v=AC.createGain(),t=AC.currentTime;o.type='sine';o.frequency.setValueAtTime(f1,t);o.frequency.exponentialRampToValueAtTime(f2,t+d);v.gain.setValueAtTime(g,t);v.gain.exponentialRampToValueAtTime(.001,t+d);o.connect(v).connect(AC.destination);o.start(t);o.stop(t+d+.02)}catch(e){}}
- function fxSync(){if(!el)return;const v=el.querySelector('video'),a=el.querySelector('.svfx');if(ph!==0||!snd||v.paused){a.pause();return}try{if(Math.abs(a.currentTime-v.currentTime)>.25)a.currentTime=v.currentTime}catch(e){}a.volume=.75;a.play().catch(()=>{})}
- function render(){const s=S[i];const v=el.querySelector('video'),a=el.querySelector('.svfx');ph=0;v.src=SVU[s[0]];a.src=FX(s[0]);el.querySelector('.svt').style.display='';v.muted=!snd;v.play().catch(()=>{});
+
+ function render(){const s=S[i];const v=el.querySelector('video');ph=1;v.poster='img/season/'+s[0]+'.jpg';v.src=PV(s[0]);el.querySelector('.svt').style.display='none';v.muted=!snd;v.play().catch(()=>{});
   el.querySelector('.svt').innerHTML=`<b>${s[2]} ${s[1]}</b><span>${s[3]}</span><small>${s[4]}</small>`;
   el.querySelectorAll('[data-si]').forEach(b=>b.classList.toggle('on',+b.dataset.si===i));try{window.__jt&&__jt({type:'click',label:'사계절 영상 '+s[1],kind:'video'})}catch(e){}}
  function open(start){if(el)return;i=start??cur;el=document.createElement('div');el.className='svpop';el.setAttribute('role','dialog');el.setAttribute('aria-label','사계절 홍보영상');
-  el.innerHTML=`<div class="svb"><div class="svv"><video playsinline muted autoplay preload="auto"></video><div class="svt"></div><audio class="svfx" preload="auto"></audio>
+  el.innerHTML=`<div class="svb"><div class="svv"><video playsinline muted autoplay preload="auto"></video><div class="svt" style="display:none"></div>
    <button type="button" class="svx" data-c aria-label="닫기">✕</button><button type="button" class="svs" data-s>🔇 소리 켜기</button></div>
    <div class="svtabs">${S.map((s,k)=>`<button type="button" data-si="${k}">${s[2]} ${s[1]}</button>`).join('')}</div>
    <div class="svf"><a class="btn sm" href="#seasons" data-c>사계절 체험 보기</a><a class="btn sm ghost" data-c data-book href="https://la2fdoci.com/jamsahome/product/productList.do" target="_blank" rel="noopener">예매하기 ↗</a><span class="sp"></span><button type="button" data-h>오늘 그만 보기</button><button type="button" data-c>닫기</button></div></div>`;
-  document.body.appendChild(el);const v=el.querySelector('video');v.addEventListener('ended',()=>{if(ph===0){ph=1;el.querySelector('.svfx').pause();el.querySelector('.svt').style.display='none';v.src=PV(S[i][0]);v.muted=!snd;v.play().catch(()=>{});try{window.__jt&&__jt({type:'click',label:'사계절 캐릭터영상 '+S[i][1],kind:'video'})}catch(e){}}else{i=(i+1)%4;render()}});
-  ['play','playing','pause','seeked','waiting'].forEach(ev=>v.addEventListener(ev,fxSync));
+  document.body.appendChild(el);const v=el.querySelector('video');v.addEventListener('ended',()=>{i=(i+1)%4;render()});
   try{const R=window.__SITE&&__SITE.links&&__SITE.links.reserve;if(R)el.querySelector('[data-book]').href=R}catch(e){}
   el.addEventListener('click',e=>{const t=e.target;if(t.closest('[data-si]')){i=+t.closest('[data-si]').dataset.si;blip(520,1240,.14,.18);render();return}
-   if(t.closest('[data-s]')){snd=!snd;v.muted=!snd;if(snd){v.play().catch(()=>{});blip(660,1320,.16,.2)}fxSync();t.closest('[data-s]').textContent=snd?'🔊 소리 끄기':'🔇 소리 켜기';return}
+   if(t.closest('[data-s]')){snd=!snd;v.muted=!snd;if(snd){v.play().catch(()=>{});blip(660,1320,.16,.2)}t.closest('[data-s]').textContent=snd?'🔊 소리 끄기':'🔇 소리 켜기';return}
    if(t.closest('[data-h]')){st.set('jamsa_sv_hide',new Date().toDateString());close();return}
    if(t.closest('[data-c]')||t===el)close()});
   document.addEventListener('keydown',esc);render()}
  function esc(e){if(e.key==='Escape')close()}
- function close(){if(!el)return;el.querySelector('video').pause();try{el.querySelector('.svfx').pause()}catch(e){}el.remove();el=null;document.removeEventListener('keydown',esc)}
+ function close(){if(!el)return;el.querySelector('video').pause();el.remove();el=null;document.removeEventListener('keydown',esc)}
  window.openSeasonVideo=open;
  /* 첫 화면 자동 팝업(하루 1번 숨김 가능) — 관람 안내 팝업 대신 */
  if(st.get('jamsa_sv_hide')!==new Date().toDateString()&&!navigator.webdriver&&(location.hash||'#home')==='#home'){

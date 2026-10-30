@@ -10,7 +10,9 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Nanum+Brush+Script&family=Gowun+Dodum&family=IBM+Plex+Sans+KR:wght@400;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Brush+Script&display=swap">
+<link rel="preload" href="fonts/jamsa/jamsasans-regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/jamsa/jamsasans-bold.woff2" as="font" type="font/woff2" crossorigin>
 <style>
 /* Layout: a storybook site — watercolor scene bands with the four official mascots standing on them as guides; cream paper pages in between; silk-thread gold rules */
 :root{
@@ -1058,6 +1060,63 @@ footer .sns{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;width:100%}foote
 .svf button{border:0;background:none;color:#7a6a70;cursor:pointer;font:inherit;font-size:13px}
 .svopen{margin:10px 0 6px;width:auto!important;display:inline-flex!important;justify-self:start;align-self:flex-start}.svf .btn{white-space:nowrap}
 @media(max-width:560px){.svf .btn{flex:1 1 40%;justify-content:center;text-align:center}.svf .sp{flex-basis:100%;height:0}.svf{justify-content:space-between}}
+
+/* ===== 잠사체(Jamsa) 서체 시스템 + 정돈된 기업형 톤 (v36) ===== */
+@font-face{font-family:"Jamsa Sans";src:url(fonts/jamsa/jamsasans-regular.woff2) format("woff2");font-weight:400;font-display:swap}
+@font-face{font-family:"Jamsa Sans";src:url(fonts/jamsa/jamsasans-medium.woff2) format("woff2");font-weight:500;font-display:swap}
+@font-face{font-family:"Jamsa Sans";src:url(fonts/jamsa/jamsasans-semibold.woff2) format("woff2");font-weight:600;font-display:swap}
+@font-face{font-family:"Jamsa Sans";src:url(fonts/jamsa/jamsasans-bold.woff2) format("woff2");font-weight:700;font-display:swap}
+@font-face{font-family:"Jamsa Sans";src:url(fonts/jamsa/jamsasans-extrabold.woff2) format("woff2");font-weight:800 900;font-display:swap}
+/* 제목용: 기본 굵기(400)로 써도 Bold로 보이게 매핑 */
+@font-face{font-family:"Jamsa Display";src:url(fonts/jamsa/jamsasans-bold.woff2) format("woff2");font-weight:100 500;font-display:swap}
+@font-face{font-family:"Jamsa Display";src:url(fonts/jamsa/jamsasans-extrabold.woff2) format("woff2");font-weight:600 900;font-display:swap}
+@font-face{font-family:"Jamsa Bidan";src:url(fonts/jamsa/jamsabidan-regular.woff2) format("woff2");font-weight:400;font-display:swap}
+@font-face{font-family:"Jamsa Bidan";src:url(fonts/jamsa/jamsabidan-bold.woff2) format("woff2");font-weight:700;font-display:swap}
+:root{
+  --display:"Jamsa Display","Jamsa Sans","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  --body:"Jamsa Sans","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  --util:"Jamsa Sans","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  --serif:"Jamsa Bidan","Apple SD Gothic Neo",serif;
+  --ink:#2B2026;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--ink:#F2E8EC}}
+:root[data-theme="dark"]{--ink:#F2E8EC}
+body{font-size:16px;line-height:1.7;letter-spacing:-.01em;word-break:keep-all;font-feature-settings:"ss06","tnum" 0}
+h1,h2,h3,h4{letter-spacing:-.035em;line-height:1.22}
+h2{font-weight:800}
+.head h2,.uihead h2,section>.wrap>h2{font-size:clamp(28px,3.4vw,44px)}
+.eyebrow{font-weight:700;letter-spacing:.06em;font-size:13px}
+.btn{font-weight:700;letter-spacing:-.01em}
+.hero h1{letter-spacing:-.045em;font-weight:800}
+.hero .kicker{font-family:var(--serif);font-weight:700;letter-spacing:-.01em}
+.hero .lead{letter-spacing:-.015em}
+nav a,.nav a,.quick a{letter-spacing:-.02em}
+p{letter-spacing:-.012em}
+/* 섹션 간 여백·카드 정돈 */
+.band{padding-block:clamp(48px,6vw,88px)}
+.pcard,.card{border-radius:20px}
+.pcard{transition:transform .35s cubic-bezier(.2,.7,.2,1),box-shadow .35s}
+.pcard:hover{transform:translateY(-6px);box-shadow:0 26px 50px -30px rgba(58,42,49,.55)}
+.olbanner{padding-block:clamp(20px,3vw,36px) 0!important}
+/* 잠사 AR 가이드 섹션 */
+.arsec{padding-block:clamp(20px,3vw,36px) clamp(8px,2vw,24px)}
+.arbox{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:clamp(20px,3vw,40px);align-items:center;background:var(--card);border:1px solid var(--line);border-radius:28px;padding:clamp(20px,3vw,40px);box-shadow:0 30px 60px -44px rgba(58,42,49,.45)}
+.arbox .ey{display:inline-flex;align-items:center;gap:8px;font-weight:700;font-size:13px;letter-spacing:.06em;color:var(--leaf-ink)}
+.arbox .ey i{font-style:normal;background:#5B2C4F;color:#fff;border-radius:999px;padding:2px 9px;font-size:11px;letter-spacing:.04em}
+.arbox h2{font-size:clamp(28px,3.2vw,42px);margin:8px 0 10px;color:var(--plum)}
+.arbox h2 span{font-family:var(--serif);font-weight:700;color:var(--ink)}
+.arbox p.d{color:var(--muted);font-size:16px;line-height:1.75}
+.arsteps{list-style:none;padding:0;margin:16px 0 20px;display:grid;gap:8px}
+.arsteps li{display:flex;gap:10px;align-items:flex-start;font-size:15px}
+.arsteps b{flex:none;width:24px;height:24px;border-radius:50%;background:var(--wash);color:var(--plum);display:grid;place-items:center;font-size:12.5px;font-weight:800}
+.arcta{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.arqr{display:flex;gap:10px;align-items:center;font-size:13px;color:var(--muted);line-height:1.45}
+.arqr img{width:92px;height:92px;border-radius:12px;border:1px solid var(--line);background:#fff;padding:4px}
+.arvid{position:relative;border-radius:22px;overflow:hidden;background:#111;aspect-ratio:16/9;box-shadow:0 24px 48px -30px rgba(0,0,0,.6)}
+.arvid video{width:100%;height:100%;object-fit:cover;display:block}
+.arvid .tag{position:absolute;left:12px;top:12px;background:rgba(255,255,255,.92);color:#5B2C4F;font-weight:700;font-size:12.5px;border-radius:999px;padding:4px 11px}
+.arvid .snd{position:absolute;right:12px;bottom:12px;border:0;border-radius:999px;background:rgba(0,0,0,.55);color:#fff;font:inherit;font-size:13px;padding:6px 12px;cursor:pointer}
+@media (max-width:860px){.arbox{grid-template-columns:1fr}.arvid{order:-1}.arqr img{width:80px;height:80px}}
 </style>
 
 <div class="util" role="navigation" aria-label="빠른 메뉴">
@@ -2936,5 +2995,24 @@ const BL=id=>'media/'+id+'.mp4';
 })();
 </script>
 
+<script>
+/* v36: 잠사 AR 가이드 섹션 (온라인 박물관 배너 아래) */
+(()=>{const AR='https://jamsa-museum-ar.vercel.app/index.html',VID='https://d8j0ntlcm91z4.cloudfront.net/user_3HIffWpq3GSMBxHpmZpjIn8lEj6/hf_20261030_045756_2a444b6e-da3c-4082-9b3e-0ae6fc7bb986.mp4#t=0.6';
+ const home=document.querySelector('.view[data-view="home"]');if(!home||home.querySelector('.arsec'))return;
+ const s=document.createElement('section');s.className='arsec';s.id='ar-guide';
+ s.innerHTML=`<div class="wrap"><div class="arbox">
+  <div><span class="ey">잠사 AR 가이드 <i>NEW</i></span>
+   <h2>휴대폰으로 찾는 <span>누에 친구 108</span></h2>
+   <p class="d">카메라를 켜고 박물관 곳곳을 비춰 보세요. 숨어 있는 누에 친구를 찾아 도감을 채우면, 친구마다 숨겨진 이야기가 열려요.</p>
+   <ol class="arsteps"><li><b>1</b><span>QR을 찍거나 아래 버튼으로 AR 가이드를 열어요</span></li><li><b>2</b><span>카메라 사용을 허용하고 전시실·정원을 비춰요</span></li><li><b>3</b><span>화면 속 누에 친구를 톡! 눌러 도감에 모아요</span></li></ol>
+   <div class="arcta"><a class="btn" href="${AR}" target="_blank" rel="noopener">AR 가이드 열기 ↗</a>
+    <div class="arqr"><img src="img/ar/ar-qr.png" alt="잠사 AR 가이드 QR 코드" width="92" height="92"><span>휴대폰 카메라로<br>QR을 찍으면 바로 시작</span></div></div></div>
+  <div class="arvid"><video src="${VID}" muted loop playsinline autoplay preload="metadata" aria-label="잠사 AR 가이드 시연 영상"></video><span class="tag">▶ 이렇게 놀아요</span><button type="button" class="snd">🔇 소리 켜기</button></div>
+ </div></div>`;
+ const after=home.querySelector('.olbanner');if(after&&after.nextSibling)home.insertBefore(s,after.nextSibling);else{const f=home.querySelector('section');f&&f.nextSibling?home.insertBefore(s,f.nextSibling):home.appendChild(s)}
+ const v=s.querySelector('video'),b=s.querySelector('.snd');b.onclick=()=>{v.muted=!v.muted;if(!v.muted)v.play().catch(()=>{});b.textContent=v.muted?'🔇 소리 켜기':'🔊 소리 끄기'};
+ if('IntersectionObserver' in window){new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)v.play().catch(()=>{});else v.pause()}),{threshold:.25}).observe(v)}
+})();
+</script>
 </body>
 </html>

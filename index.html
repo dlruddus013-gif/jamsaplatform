@@ -29,7 +29,7 @@
   if((m=u.match(/audio\/dg2\/(\w+)\.mp3/)))return['dg',m[1]];
   if((m=u.match(/audio\/hall_(\w+)\.mp3/)))return['hall',m[1]];
   if(/audio\/tour_intro\.mp3/.test(u))return['hall','tour_intro'];
-  if(!fcMap&&window.V24&&V24.FCA){fcMap={};for(const ch in V24.FCA)for(const k in V24.FCA[ch])fcMap[V24.FCA[ch][k]]=ch+'.'+k}
+  if(!fcMap){try{const X=V24.FCA;fcMap={};for(const ch in X)for(const k in X[ch])fcMap[X[ch][k]]=ch+'.'+k}catch(e){}}
   if(fcMap)for(const id in fcMap)if(u.indexOf(id)>=0)return['fc',fcMap[id]];
   return null}
  function seg(g,k){const o=OFF[g]&&OFF[g][k];return o?{g,k,s:o[0],d:o[1]}:null}

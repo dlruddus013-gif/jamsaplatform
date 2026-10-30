@@ -130,7 +130,7 @@ footer{color:var(--sub);font-size:13px;padding-block:28px 48px;border-top:1px so
  <span class="eyebrow">3D · MESHY</span><h2>돌려 보는 3D 굿즈</h2>
  <p class="lead">썰매 피규어 사진을 Meshy로 3D 모델로 바꾼 뒤, 열쇠고리 고리와 키보드 키캡(체리 MX 스템)을 붙였습니다. 마우스나 손가락으로 돌려 보세요.</p>
  <div class="three">
-  <div class="viewer ph" id="viewerBox"><model-viewer id="mv" camera-controls auto-rotate auto-rotate-delay="800" rotation-per-second="24deg" shadow-intensity="0.8" exposure="1.05" interaction-prompt="none" alt="선택한 캐릭터 굿즈 3D 모델"></model-viewer><span class="vhint" id="vhint">3D 불러오는 중…</span></div>
+  <div class="viewer ph" id="viewerBox"><model-viewer id="mv" loading="eager" reveal="auto" camera-controls auto-rotate auto-rotate-delay="800" rotation-per-second="24deg" shadow-intensity="0.8" exposure="1.05" interaction-prompt="none" alt="선택한 캐릭터 굿즈 3D 모델"></model-viewer><span class="vhint" id="vhint">3D 불러오는 중…</span></div>
   <div class="panel">
    <div class="tabs" id="kindTabs" role="group" aria-label="굿즈 종류"><button type="button" data-k="keychain" aria-pressed="true">🔑 열쇠고리</button><button type="button" data-k="keycap" aria-pressed="false">⌨️ 키캡</button></div>
    <div class="tabs" id="charTabs" role="group" aria-label="캐릭터"></div>
@@ -188,7 +188,7 @@ function show3d(){const mv=$('#mv');$('#vhint').textContent='3D 불러오는 중
  $('#thumbs').innerHTML=C.map(x=>`<img data-z="${K==='keychain'?'k':'c'}_${x.k}.jpg" alt="${x.n} ${K==='keychain'?'열쇠고리':'키캡'} 미리보기">`).join('');fill()}
 $('#kindTabs').onclick=e=>{const b=e.target.closest('[data-k]');if(b){K=b.dataset.k;show3d()}};
 $('#charTabs').onclick=e=>{const b=e.target.closest('[data-c]');if(b){CK=b.dataset.c;show3d()}};
-$('#mv').addEventListener('load',()=>{$('#vhint').textContent='드래그해서 돌려 보기';$('#viewerBox').classList.remove('ph')});
+const mvDone=()=>{$('#vhint').textContent='드래그해서 돌려 보기';$('#viewerBox').classList.remove('ph')};$('#mv').addEventListener('load',mvDone);setInterval(()=>{const m=$('#mv');if(m.loaded&&$('#vhint').textContent!=='드래그해서 돌려 보기')mvDone()},800);
 $('#mv').addEventListener('error',()=>{$('#vhint').textContent='3D를 불러오지 못했어요. 새로고침해 주세요.'});
 /* images from one zip */
 const URLS={};let zipReady=null;

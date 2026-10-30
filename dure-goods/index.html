@@ -181,7 +181,7 @@ $('#goodsList').innerHTML=G.map(g=>`<figure><div class="im ph"><img data-z="${g[
 /* 3D */
 let K='keychain',CK='dure';
 $('#charTabs').innerHTML=C.map(x=>`<button type="button" data-c="${x.k}" aria-pressed="${x.k==='dure'}"><span class="dot" style="background:${x.c}"></span>${x.n}</button>`).join('');
-function show3d(){const mv=$('#mv');$('#vhint').textContent='3D 불러오는 중…';mv.src=H+GLB[K][CK]+'.glb';
+function show3d(){const mv=$('#mv');$('#vhint').textContent='3D 불러오는 중…';mv.setAttribute('src',H+GLB[K][CK]+'.glb');
  document.querySelectorAll('#kindTabs button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.k===K));
  document.querySelectorAll('#charTabs button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.c===CK));
  $('#spec').innerHTML=`<b style="font-family:var(--disp);font-size:20px;font-weight:400">${NM[CK]} ${K==='keychain'?'열쇠고리':'키캡'}</b><dl><dt>크기(가로×깊이×높이)</dt><dd>${SIZE[K][CK]} mm</dd>${K==='keychain'?'<dt>고리</dt><dd>머리 위, 외경 9.6 · 두께 2.4 mm</dd><dt>추천 출력</dt><dd>레진(SLA) 후 채색</dd>':'<dt>스템</dt><dd>체리 MX 호환 십자 4.15 × 1.35 mm</dd><dt>캡</dt><dd>바닥 18 × 18, 높이 7 mm</dd>'}<dt>파일</dt><dd>${CK}_${K}.stl (ZIP 안)</dd></dl>`;

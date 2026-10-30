@@ -1199,7 +1199,9 @@ p{letter-spacing:-.012em}
 .nftx .nfnx{margin-top:8px;font-size:13px;color:#7a6a70}.nftx .nfnx b{display:inline;font-size:13px;color:#d6455d;margin:0}
 .nftx .go{display:inline-block;margin-top:10px;font-size:13.5px;font-weight:800;color:#fff;background:#5B2C4F;padding:.55em 1.1em;border-radius:99px;text-decoration:none}
 .nfvid{position:absolute;left:59.06%;top:20.02%;width:18.7%;height:65.9%;overflow:hidden;background:#2a2a2a}
-.nfvid video{width:100%;height:100%;object-fit:cover;display:block}
+.nfvid video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;background:transparent}
+.nfvid .ph{position:absolute;left:12%;right:12%;top:50%;aspect-ratio:1;transform:translateY(-50%);background-image:url(https://jamsa-museum-ar.vercel.app/media/nue108/cut.webp);background-size:1200% auto;background-repeat:no-repeat;opacity:.9}
+.nfvid{background:radial-gradient(circle at 50% 45%,#fffaf0,#efe2c8)!important}
 .nfvid .none{position:absolute;inset:0;display:grid;place-items:center;text-align:center;color:#fff;padding:14px;font-size:13px;line-height:1.6}
 .nfvid .none a{color:#ffd77a;font-weight:800}
 .nfgrid{display:grid;grid-template-columns:repeat(27,1fr);gap:4px;margin-top:14px;padding:clamp(10px,1.2vw,16px);background:linear-gradient(180deg,#fbf6ec,#f3ecdd);border-radius:22px;box-shadow:inset 0 0 0 1px rgba(91,44,79,.08)}
@@ -3131,7 +3133,7 @@ const BL=id=>'media/'+id+'.mp4';
  const fig=box.querySelector('.nffig i'),bd=box.querySelector('.bd'),tx=box.querySelector('.nftx'),vb=box.querySelector('.nfvid');let vis=false;
  function show(n){const d=D[n-1];fig.setAttribute('style',pos(n));bd.textContent=n===open?'오늘 공개':'공개됨';
   tx.querySelector('small').textContent=`No.${String(n).padStart(3,'0')} / 108`;tx.querySelector('b').textContent=d[1];tx.querySelector('p').textContent=d[4]+'…';
-  vb.innerHTML=d[3]?`<video src="${CDN+d[3]}#t=0.1" controls playsinline muted preload="metadata" aria-label="${d[1]} 홍보영상"></video>`:`<div class="none"><div><b>${d[1]}</b>의 영상은 준비 중이에요.<br><a href="${AR}" target="_blank" rel="noopener">AR 가이드에서 먼저 만나기 ›</a></div></div>`;
+  vb.innerHTML=d[3]?`<i class="ph" style="${pos(n)}"></i><video src="${CDN+d[3]}#t=0.1" controls playsinline muted preload="metadata" aria-label="${d[1]} 홍보영상"></video>`:`<div class="none"><div><b>${d[1]}</b>의 영상은 준비 중이에요.<br><a href="${AR}" target="_blank" rel="noopener">AR 가이드에서 먼저 만나기 ›</a></div></div>`;
   box.querySelectorAll('.nft.on').forEach(t=>t.classList.remove('on'));box.querySelector(`.nft[data-n="${n}"]`).classList.add('on');
   const v=vb.querySelector('video');if(v&&vis)v.play().catch(()=>{})}
  box.querySelector('.nfgrid').addEventListener('click',e=>{const t=e.target.closest('.nft.op');if(!t)return;show(+t.dataset.n);box.querySelector('.nfstage').scrollIntoView({behavior:'smooth',block:'nearest'});const v=vb.querySelector('video');v&&v.play().catch(()=>{})});
@@ -3140,5 +3142,37 @@ const BL=id=>'media/'+id+'.mp4';
  if('IntersectionObserver' in window)new IntersectionObserver(es=>es.forEach(e=>{vis=e.isIntersecting;const v=vb.querySelector('video');if(!v)return;if(vis)v.play().catch(()=>{});else v.pause()}),{threshold:.35}).observe(vb);
 })();
 </script>
+<style>
+/* v41: 모바일 — AR·누에 친구 108 빈틈없이 정리 */
+@media (max-width:760px){
+ #ar-guide{padding-top:14px}
+ #ar-guide>.wrap{display:grid;grid-template-columns:42% minmax(0,1fr);gap:12px 14px;align-items:center}
+ #ar-guide .arstage,#ar-guide .nf108{grid-column:1/-1}
+ #ar-guide .armob{width:100%!important;margin:0!important}
+ #ar-guide .arbar{margin:0!important;padding:0!important;flex-direction:column;align-items:stretch;gap:12px}
+ #ar-guide .arbar .btn{justify-content:center;width:100%;font-size:14px;padding-inline:10px}
+ #ar-guide .arbar ol{flex-direction:column;gap:9px;font-size:13px;line-height:1.4}
+ #ar-guide .arbar ol li{display:flex;align-items:flex-start;gap:6px}
+ #ar-guide .arbar ol b{flex:none;margin:0!important}
+ .nf108{margin-top:6px!important}
+ .nfstage{display:grid!important;grid-template-columns:44% minmax(0,1fr);grid-template-areas:"hd hd" "vid row";gap:14px 12px!important;padding:18px 14px!important;align-items:stretch}
+ .nfinfo{display:contents!important}
+ .nfhd{grid-area:hd;position:relative;text-align:center}
+ .nfhd h3{font-size:22px!important}
+ .nfhd .cnt{font-size:12.5px!important}
+ .nfvid{grid-area:vid;position:relative!important;width:100%!important;max-width:none!important;height:auto!important;margin:0!important;border:7px solid #4a2f22!important;border-radius:6px!important;align-self:start}
+ .nfrow{grid-area:row;position:relative;margin:0!important;flex-direction:column!important;align-items:center!important;text-align:center!important;padding:12px 10px!important;gap:6px!important;border-radius:16px!important}
+ .nffig{width:74px!important}
+ .nffig .bd{top:-8px!important;right:-22px!important;font-size:10px!important;padding:3px 7px!important}
+ .nftx small{font-size:11.5px!important}
+ .nftx b{font-size:17px!important;margin:1px 0 3px!important}
+ .nftx p{font-size:12.5px!important;line-height:1.45!important;-webkit-line-clamp:3!important}
+ .nftx .nfnx{font-size:11.5px!important;margin-top:5px!important}.nftx .nfnx b{font-size:11.5px!important}
+ .nftx .go{font-size:12px!important;padding:.55em .9em!important;margin-top:8px!important}
+ .nfgrid{margin-top:10px!important;padding:8px!important;gap:3px!important}
+ .nfnote{font-size:12px!important;margin-top:8px!important;line-height:1.5}
+}
+@media (max-width:360px){.nfstage{grid-template-columns:1fr;grid-template-areas:"hd" "row" "vid"}.nfvid{max-width:240px!important;margin:0 auto!important}}
+</style>
 </body>
 </html>

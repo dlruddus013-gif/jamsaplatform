@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>두레와 친구들 겨울 굿즈</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&display=swap">
+<style>
+/* 눈 덮인 마을 — 하얀 눈 위의 소나무 남색, 두레 목도리 빨강 한 점 */
+:root{
+ --snow:#f5f8fb; --paper:#ffffff; --ink:#1f2b3d; --sub:#5d6b80; --line:#dde5ee;
+ --pine:#22415f; --scarf:#d2393a; --ice:#e6f0f8; --shadow:0 10px 30px -14px rgba(31,43,61,.35);
+ --disp:"Jua","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+ --body:"Gowun Dodum","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--snow:#111823;--paper:#18212e;--ink:#e8eef6;--sub:#9fb0c6;--line:#2a3646;--pine:#8fb6dc;--scarf:#ff6b63;--ice:#1d2a3a;--shadow:0 10px 30px -14px rgba(0,0,0,.7);color-scheme:dark}}
+:root[data-theme="dark"]{--snow:#111823;--paper:#18212e;--ink:#e8eef6;--sub:#9fb0c6;--line:#2a3646;--pine:#8fb6dc;--scarf:#ff6b63;--ice:#1d2a3a;--shadow:0 10px 30px -14px rgba(0,0,0,.7);color-scheme:dark}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--snow);color:var(--ink);font:16px/1.65 var(--body);-webkit-font-smoothing:antialiased}
+img{max-width:100%;display:block}
+.wrap{max-width:1180px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--disp);font-weight:400;letter-spacing:-.01em;text-wrap:balance;margin:0}
+h2{font-size:clamp(26px,4vw,36px);color:var(--pine)}
+.eyebrow{font-size:13px;letter-spacing:.12em;color:var(--scarf);font-weight:700}
+section{padding-block:56px}
+.lead{color:var(--sub);max-width:62ch;margin:10px 0 0}
+.ph{background:linear-gradient(110deg,var(--ice) 30%,var(--line) 50%,var(--ice) 70%);background-size:200% 100%;animation:sh 1.4s linear infinite}
+@keyframes sh{to{background-position:-200% 0}}
+@media (prefers-reduced-motion:reduce){.ph{animation:none}}
+/* hero */
+.hero{padding-block:36px 24px;position:relative;overflow:hidden}
+.hero .top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;font-size:14px;color:var(--sub)}
+.hero h1{font-size:clamp(38px,7vw,72px);color:var(--pine);line-height:1.08;margin-top:18px}
+.hero h1 em{font-style:normal;color:var(--scarf)}
+.lineup{margin-top:22px;border-radius:24px;overflow:hidden;aspect-ratio:16/9;box-shadow:var(--shadow);background:var(--ice)}
+.lineup img{width:100%;height:100%;object-fit:cover}
+.badge{display:inline-flex;gap:6px;align-items:center;background:var(--paper);border:1px solid var(--line);border-radius:999px;padding:5px 12px;font-size:13px}
+.stats{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+.stats span{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:8px 14px;font-size:14px}
+.stats b{font-family:var(--disp);font-size:20px;color:var(--pine);font-weight:400;margin-right:4px}
+/* chars */
+.chars{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-top:24px}
+.ch{background:var(--paper);border-radius:20px;padding:12px 12px 16px;border:1px solid var(--line);text-align:center}
+.ch .im{aspect-ratio:1;border-radius:14px;overflow:hidden;background:var(--ice)}
+.ch .im img{width:100%;height:100%;object-fit:cover}
+.ch h3{font-size:24px;margin-top:10px}
+.ch p{margin:2px 0 0;color:var(--sub);font-size:14px;line-height:1.5}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:1px}
+@media(max-width:860px){.chars{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:520px){.chars{grid-template-columns:repeat(2,1fr)}}
+/* filter + grid */
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin-top:20px}
+.filters button{font:inherit;font-size:14px;border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:999px;padding:7px 14px;cursor:pointer}
+.filters button[aria-pressed="true"]{background:var(--pine);color:var(--snow);border-color:var(--pine)}
+.filters button:focus-visible,.card:focus-visible,.tabs button:focus-visible{outline:3px solid var(--scarf);outline-offset:2px}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:20px}
+@media(max-width:960px){.grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:640px){.grid{grid-template-columns:repeat(2,1fr);gap:10px}}
+.card{background:var(--paper);border-radius:18px;overflow:hidden;border:1px solid var(--line);cursor:zoom-in;text-align:left;padding:0;font:inherit;color:inherit}
+.card .im{aspect-ratio:1;background:var(--ice)}
+.card .im img{width:100%;height:100%;object-fit:cover}
+.card .cap{padding:10px 12px 12px;display:grid;gap:2px}
+.card .no{font-size:12px;color:var(--sub);font-variant-numeric:tabular-nums}
+.card b{font-weight:700;font-size:15px}
+.card span.who{font-size:13px;color:var(--sub)}
+/* 3D */
+.three{display:grid;grid-template-columns:1.4fr 1fr;gap:22px;margin-top:22px;align-items:start}
+@media(max-width:860px){.three{grid-template-columns:1fr}}
+.viewer{background:radial-gradient(circle at 50% 30%,var(--paper),var(--ice));border:1px solid var(--line);border-radius:24px;aspect-ratio:1;position:relative;overflow:hidden}
+model-viewer{width:100%;height:100%;--poster-color:transparent}
+.vhint{position:absolute;left:14px;bottom:12px;font-size:13px;color:var(--sub);background:var(--paper);border-radius:999px;padding:4px 10px;border:1px solid var(--line)}
+.tabs{display:flex;gap:6px;flex-wrap:wrap}
+.tabs button{font:inherit;border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:12px;padding:8px 12px;cursor:pointer;font-size:14px}
+.tabs button[aria-pressed="true"]{border-color:var(--pine);box-shadow:inset 0 0 0 2px var(--pine)}
+.panel{display:grid;gap:14px}
+.spec{background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:16px 18px}
+.spec dl{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;margin:10px 0 0;font-size:14.5px}
+.spec dt{color:var(--sub)}.spec dd{margin:0;font-variant-numeric:tabular-nums}
+.thumbs{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.thumbs img{border-radius:10px;background:var(--ice);aspect-ratio:1;object-fit:cover;width:100%}
+/* goods */
+.goods{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-top:22px}
+@media(max-width:860px){.goods{grid-template-columns:repeat(2,1fr)}}
+.goods figure{margin:0;background:var(--paper);border-radius:16px;overflow:hidden;border:1px solid var(--line)}
+.goods .im{aspect-ratio:1;background:var(--ice)}.goods img{width:100%;height:100%;object-fit:cover}
+.goods figcaption{padding:8px 10px;font-size:13.5px}
+.dl{display:flex;gap:16px;flex-wrap:wrap;align-items:center;justify-content:space-between;background:var(--pine);color:var(--snow);border-radius:24px;padding:24px 26px;margin-top:22px}
+.dl h3{font-size:26px}
+.dl p{margin:4px 0 0;opacity:.85;font-size:14.5px;max-width:60ch}
+.btn{display:inline-flex;align-items:center;gap:8px;background:var(--scarf);color:#fff;text-decoration:none;font-weight:700;border-radius:999px;padding:12px 20px;white-space:nowrap}
+.btn.ghost{background:transparent;border:1px solid currentColor;color:inherit}
+footer{color:var(--sub);font-size:13px;padding-block:28px 48px;border-top:1px solid var(--line)}
+/* lightbox */
+.lb{position:fixed;inset:0;background:rgba(10,16,26,.86);display:grid;place-items:center;z-index:50;padding:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(16px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.lb img{max-height:80vh;max-width:min(92vw,900px);border-radius:16px}
+.lb p{color:#fff;text-align:center;margin:10px 0 0;font-family:var(--disp);font-size:20px}
+.lb button{position:absolute;top:calc(14px + env(safe-area-inset-top,0px));right:calc(14px + env(safe-area-inset-right,0px));width:42px;height:42px;border-radius:50%;border:0;background:#fff;font-size:18px;cursor:pointer}
+.snow{position:absolute;inset:0;pointer-events:none;opacity:.55}
+</style>
+</head>
+<body>
+<header class="hero"><canvas class="snow" id="snow" aria-hidden="true"></canvas>
+ <div class="wrap">
+  <div class="top"><span class="badge">❄ 마장두레마을 겨울 눈꽃축제</span><span class="badge">AI로 만든 디자인 시안 · 힉스필드 + Meshy</span></div>
+  <h1>두레와 친구들,<br><em>썰매 타러</em> 가요</h1>
+  <p class="lead">마을 마스코트 조랑말 다섯 친구를 3D 장난감 스타일로 다시 그리고, 겨울 장면 24컷과 3D 모델, 열쇠고리·키캡 시안과 3D 프린트 파일까지 한곳에 모았습니다.</p>
+  <div class="stats"><span><b>5</b>캐릭터</span><span><b>24</b>겨울 장면</span><span><b>10</b>3D 굿즈 모델</span><span><b>10</b>굿즈 사진 시안</span></div>
+  <div class="lineup ph"><img data-z="L0.jpg" alt="두레, 마루, 곡이, 숲이, 별이 다섯 조랑말 캐릭터 3D 라인업"></div>
+ </div>
+</header>
+
+<main>
+<section id="chars"><div class="wrap">
+ <span class="eyebrow">CHARACTERS</span><h2>캐릭터 다섯</h2>
+ <p class="lead">홈페이지의 설정(크림색 두레, 하늘색 마루, 주황 곡이, 초록 숲이, 분홍 별이)을 그대로 살렸습니다. 아래 썰매 피규어 사진이 3D 모델의 원본이에요.</p>
+ <div class="chars" id="charList"></div>
+</div></section>
+
+<section id="winter" style="background:var(--paper)"><div class="wrap">
+ <span class="eyebrow">WINTER CONCEPTS</span><h2>겨울 컨셉 24컷</h2>
+ <p class="lead">썰매·튜브·스노우래프팅·눈꽃축제 등 마을 축제 구성에 맞춰 그렸습니다. 캐릭터를 눌러 걸러 보고, 사진을 누르면 크게 보여요.</p>
+ <div class="filters" id="filters" role="group" aria-label="캐릭터로 거르기"></div>
+ <div class="grid" id="grid"></div>
+</div></section>
+
+<section id="model"><div class="wrap">
+ <span class="eyebrow">3D · MESHY</span><h2>돌려 보는 3D 굿즈</h2>
+ <p class="lead">썰매 피규어 사진을 Meshy로 3D 모델로 바꾼 뒤, 열쇠고리 고리와 키보드 키캡(체리 MX 스템)을 붙였습니다. 마우스나 손가락으로 돌려 보세요.</p>
+ <div class="three">
+  <div class="viewer ph" id="viewerBox"><model-viewer id="mv" camera-controls auto-rotate auto-rotate-delay="800" rotation-per-second="24deg" shadow-intensity="0.8" exposure="1.05" interaction-prompt="none" alt="선택한 캐릭터 굿즈 3D 모델"></model-viewer><span class="vhint" id="vhint">3D 불러오는 중…</span></div>
+  <div class="panel">
+   <div class="tabs" id="kindTabs" role="group" aria-label="굿즈 종류"><button type="button" data-k="keychain" aria-pressed="true">🔑 열쇠고리</button><button type="button" data-k="keycap" aria-pressed="false">⌨️ 키캡</button></div>
+   <div class="tabs" id="charTabs" role="group" aria-label="캐릭터"></div>
+   <div class="spec" id="spec"></div>
+   <div class="thumbs" id="thumbs"></div>
+  </div>
+ </div>
+</div></section>
+
+<section id="goods" style="background:var(--paper)"><div class="wrap">
+ <span class="eyebrow">GOODS MOCKUPS</span><h2>열쇠고리 · 키캡 시안</h2>
+ <p class="lead">실제로 만들었을 때의 모습을 상상해 본 제품 사진 시안입니다(AI 합성 사진). 레진 3D 프린트 열쇠고리, 아크릴 열쇠고리 세트, 아티장 키캡 세 가지 방향을 담았습니다.</p>
+ <div class="goods" id="goodsList"></div>
+ <div class="dl">
+  <div><h3>3D 프린트 파일 받기</h3><p>열쇠고리 STL 5개, 키캡 STL 5개, Meshy 원본 GLB 5개, 출력 안내서가 들어 있어요(ZIP, 약 36MB). 단위는 mm입니다.</p></div>
+  <div style="display:flex;gap:10px;flex-wrap:wrap"><a class="btn" href="https://d2ol7oe51mr4n9.cloudfront.net/user_3HIffWpq3GSMBxHpmZpjIn8lEj6/4b660b57-6f82-467f-8c6d-d3464a0e07e1.zip">⬇ ZIP 내려받기</a></div>
+ </div>
+</div></section>
+</main>
+<footer><div class="wrap">마장두레마을 협동조합 · 캐릭터 디자인 시안(AI 생성). 실제 생산 전 색상·크기·안전 기준(어린이 제품 KC 인증 등)을 확인하세요.</div></footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script type="module" src="https://unpkg.com/@google/model-viewer@3.5.0/dist/model-viewer.min.js"></script>
+<script>
+const H='https://d2ol7oe51mr4n9.cloudfront.net/user_3HIffWpq3GSMBxHpmZpjIn8lEj6/';
+const ZIP=H+'2a081265-cb0c-4ee0-aee4-e121daaf3164.zip';
+const C=[
+ {k:'dure',n:'두레',c:'#efe3cf',d:'크림색 조랑말 · 마을 대표 마스코트. 빨간 목도리가 트레이드마크',f:'f30.jpg'},
+ {k:'maru',n:'마루',c:'#7fb8e6',d:'하늘색 말 · 씽씽 슬로프 담당. 이마에 스키 고글',f:'f31.jpg'},
+ {k:'gogi',n:'곡이',c:'#f0a55a',d:'주황색 말 · 동그란 안경의 똑똑이',f:'f32.jpg'},
+ {k:'supi',n:'숲이',c:'#7cc08a',d:'초록 갈기 말 · 숲 지킴이. 머리에 솔가지',f:'f33.jpg'},
+ {k:'byeoli',n:'별이',c:'#f2a3c4',d:'분홍 별 말 · 막내. 이마에 노란 별',f:'f34.jpg'}];
+const NM=Object.fromEntries(C.map(x=>[x.k,x.n]));
+const W=[[1,'전통 나무썰매 활강',['dure']],[2,'빨간 튜브썰매',['maru']],[3,'다섯 친구 스노우래프팅',['dure','maru','gogi','supi','byeoli']],[4,'썰매 위 핫초코 한 잔',['gogi']],[5,'솔방울 썰매 끌기',['supi']],[6,'꼬마 썰매장',['byeoli']],[7,'별이 썰매 끌어 주기',['gogi','byeoli']],[8,'2인 봅슬레이',['maru','gogi']],[9,'병오년 한복 설맞이 썰매',['maru']],[10,'조랑말 눈사람 만들기',['dure','byeoli']],[11,'눈싸움 한판',['maru','supi','gogi']],[12,'얼음분수 축제',['maru']],[13,'스노보드 점프',['maru']],[14,'이글루 쉼터',['dure']],[15,'산타 썰매 선물 배달',['dure']],[16,'눈천사 만들기',['byeoli']],[17,'군고구마 먹거리 부스',['dure','supi']],[18,'눈꽃축제의 밤',['dure','maru','gogi','supi','byeoli']],[19,'빙글빙글 회전 튜브',['dure','byeoli']],[20,'눈송이 맛보기',['byeoli']],[21,'얼음 개울 스케이트',['dure','maru']],[22,'썰매장 단체 셀카',['dure','maru','gogi','supi','byeoli']],[23,'평상 쉼터에서 차 한 잔',['dure']],[24,'2인승 나무썰매',['dure','byeoli']]];
+const G=[['g40.jpg','두레 · 레진 열쇠고리'],['g41.jpg','마루 · 가방 열쇠고리'],['g42.jpg','곡이 · 열쇠고리'],['g43.jpg','숲이 · 열쇠고리'],['g44.jpg','별이 · 열쇠고리'],['g45.jpg','다섯 친구 · 아크릴 열쇠고리 세트'],['g46.jpg','두레 · 얼음 레진 키캡'],['g47.jpg','마루 · 튜브 키캡'],['g48.jpg','다섯 친구 · 키캡 세트'],['g49.jpg','별이 · 분홍 레진 키캡']];
+const GLB={keychain:{dure:'a7fb584f-d423-4782-a6d5-14d9f1e938b1',maru:'6beb2508-5f26-4d26-9c10-868fb699dc3b',gogi:'9594344d-3218-4efc-9b95-98871d0f23dc',supi:'451fdcd2-53c0-41e7-bc17-fdf8c4fa9c2d',byeoli:'c4442627-808f-48d3-b7ce-2aca71970800'},
+ keycap:{dure:'79fdb4c3-522e-409c-af5a-a599e2af44a8',maru:'1d963f9b-48ab-4f08-83ef-5902e41a2d52',gogi:'51c21492-b5b8-45d4-8de5-9aa77532c4d8',supi:'019246a2-96e4-4802-9197-be4175f3b2ce',byeoli:'0adc3abd-c630-42a2-9f9b-1abc915eccd9'}};
+const SIZE={keychain:{dure:'17.7 × 40.1 × 46.8',maru:'37.7 × 47.6 × 46.8',gogi:'17.3 × 35.1 × 46.8',supi:'17.1 × 43.8 × 46.8',byeoli:'21.4 × 36.6 × 46.8'},keycap:{dure:'18 × 18 × 21.1',maru:'18 × 18 × 18.8',gogi:'18 × 18 × 23.1',supi:'18 × 18 × 19.9',byeoli:'18 × 18 × 22.4'}};
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const $=s=>document.querySelector(s);
+/* render */
+$('#charList').innerHTML=C.map(x=>`<div class="ch"><div class="im ph"><img data-z="${x.f}" alt="${x.n} 썰매 피규어"></div><h3><span class="dot" style="background:${x.c}"></span>${x.n}</h3><p>${x.d}</p></div>`).join('');
+let F='all';
+function grid(){$('#grid').innerHTML=W.filter(w=>F==='all'||w[2].includes(F)).map(w=>`<button type="button" class="card" data-i="${w[0]}"><div class="im ph"><img data-z="w${w[0]}.jpg" alt="${esc(w[1])}"></div><div class="cap"><span class="no">No.${String(w[0]).padStart(2,'0')}</span><b>${esc(w[1])}</b><span class="who">${w[2].length===5?'다섯 친구':w[2].map(k=>NM[k]).join(' · ')}</span></div></button>`).join('');fill()}
+$('#filters').innerHTML=[['all','전체 24']].concat(C.map(x=>[x.k,x.n+' '+W.filter(w=>w[2].includes(x.k)).length])).map(([k,t])=>`<button type="button" data-f="${k}" aria-pressed="${k==='all'}">${t}</button>`).join('');
+$('#filters').onclick=e=>{const b=e.target.closest('[data-f]');if(!b)return;F=b.dataset.f;document.querySelectorAll('#filters button').forEach(x=>x.setAttribute('aria-pressed',x===b));grid()};
+$('#goodsList').innerHTML=G.map(g=>`<figure><div class="im ph"><img data-z="${g[0]}" alt="${esc(g[1])}"></div><figcaption>${esc(g[1])}</figcaption></figure>`).join('');
+/* 3D */
+let K='keychain',CK='dure';
+$('#charTabs').innerHTML=C.map(x=>`<button type="button" data-c="${x.k}" aria-pressed="${x.k==='dure'}"><span class="dot" style="background:${x.c}"></span>${x.n}</button>`).join('');
+function show3d(){const mv=$('#mv');$('#vhint').textContent='3D 불러오는 중…';mv.src=H+GLB[K][CK]+'.glb';
+ document.querySelectorAll('#kindTabs button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.k===K));
+ document.querySelectorAll('#charTabs button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.c===CK));
+ $('#spec').innerHTML=`<b style="font-family:var(--disp);font-size:20px;font-weight:400">${NM[CK]} ${K==='keychain'?'열쇠고리':'키캡'}</b><dl><dt>크기(가로×깊이×높이)</dt><dd>${SIZE[K][CK]} mm</dd>${K==='keychain'?'<dt>고리</dt><dd>머리 위, 외경 9.6 · 두께 2.4 mm</dd><dt>추천 출력</dt><dd>레진(SLA) 후 채색</dd>':'<dt>스템</dt><dd>체리 MX 호환 십자 4.15 × 1.35 mm</dd><dt>캡</dt><dd>바닥 18 × 18, 높이 7 mm</dd>'}<dt>파일</dt><dd>${CK}_${K}.stl (ZIP 안)</dd></dl>`;
+ $('#thumbs').innerHTML=C.map(x=>`<img data-z="${K==='keychain'?'k':'c'}_${x.k}.jpg" alt="${x.n} ${K==='keychain'?'열쇠고리':'키캡'} 미리보기">`).join('');fill()}
+$('#kindTabs').onclick=e=>{const b=e.target.closest('[data-k]');if(b){K=b.dataset.k;show3d()}};
+$('#charTabs').onclick=e=>{const b=e.target.closest('[data-c]');if(b){CK=b.dataset.c;show3d()}};
+$('#mv').addEventListener('load',()=>{$('#vhint').textContent='드래그해서 돌려 보기';$('#viewerBox').classList.remove('ph')});
+$('#mv').addEventListener('error',()=>{$('#vhint').textContent='3D를 불러오지 못했어요. 새로고침해 주세요.'});
+/* images from one zip */
+const URLS={};let zipReady=null;
+function fill(){document.querySelectorAll('img[data-z]').forEach(im=>{const u=URLS[im.dataset.z];if(u&&im.src!==u){im.src=u;im.onload=()=>{const p=im.closest('.ph');if(p&&p.id!=='viewerBox')p.classList.remove('ph')}}})}
+fetch(ZIP).then(r=>r.arrayBuffer()).then(b=>JSZip.loadAsync(b)).then(async z=>{await Promise.all(Object.values(z.files).map(async f=>{const bl=await f.async('blob');URLS[f.name]=URL.createObjectURL(new Blob([bl],{type:'image/jpeg'}))}));fill()}).catch(()=>{document.querySelectorAll('.ph').forEach(p=>p.classList.remove('ph'))});
+grid();show3d();
+/* lightbox */
+$('#grid').onclick=e=>{const c=e.target.closest('.card');if(!c)return;const w=W.find(x=>x[0]==+c.dataset.i);const d=document.createElement('div');d.className='lb';d.setAttribute('role','dialog');d.setAttribute('aria-label',w[1]);
+ d.innerHTML=`<div><img src="${URLS['w'+w[0]+'.jpg']||''}" alt="${esc(w[1])}"><p>No.${String(w[0]).padStart(2,'0')} ${esc(w[1])}</p></div><button type="button" aria-label="닫기">✕</button>`;document.body.appendChild(d);const cl=()=>{d.remove();removeEventListener('keydown',k)};const k=e=>{if(e.key==='Escape')cl()};addEventListener('keydown',k);d.onclick=e=>{if(e.target===d||e.target.closest('button'))cl()};d.querySelector('button').focus()};
+/* gentle snow */
+(()=>{if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;const cv=$('#snow'),x=cv.getContext('2d');let w,h,P;function rs(){w=cv.width=cv.offsetWidth;h=cv.height=cv.offsetHeight;P=Array.from({length:Math.round(w/14)},()=>({x:Math.random()*w,y:Math.random()*h,r:1+Math.random()*2.4,s:.3+Math.random()*.7}))}rs();addEventListener('resize',rs);
+ (function t(){x.clearRect(0,0,w,h);x.fillStyle='rgba(160,190,220,.7)';P.forEach(p=>{p.y+=p.s;p.x+=Math.sin(p.y/30)*.3;if(p.y>h){p.y=-4;p.x=Math.random()*w}x.beginPath();x.arc(p.x,p.y,p.r,0,7);x.fill()});requestAnimationFrame(t)})()})();
+</script>
+</body>
+</html>

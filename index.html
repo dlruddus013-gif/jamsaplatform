@@ -58,7 +58,7 @@
  const onv=e=>{const v=e.target;if(!(v instanceof HTMLVideoElement))return;if(v.__mk===undefined)v.__mk=mkey(v);if(!v.__mk)return;
   if(e.type==='play'&&!v.muted)silence(v);if(v===sv||e.type==='play'){if(e.type==='play')sv=v;if(sv===v)sync(v)}};
  ['play','pause','seeked','volumechange','ended','emptied'].forEach(t=>document.addEventListener(t,e=>{const v=e.target;if(t==='emptied'||t==='loadstart'){if(v instanceof HTMLVideoElement)v.__mk=undefined}if(t==='ended'&&v===sv){side.pause();return}onv(e)},true));
- window.__audible=()=>{const bg=window.__bgm;for(const m of all)if(m!==bg&&!m.paused&&!m.muted&&m.volume>0)return true;
+ window.__audible=()=>{const bg=window.__bgm;for(const m of all)if(m!==bg&&!m.paused&&!m.muted&&m.volume>0&&!m.__sil)return true;
   for(const m of document.querySelectorAll('video,audio'))if(m!==bg&&!m.paused&&!m.muted&&m.volume>0&&!m.__sil)return true;
   return !!(window.__narrSpeaking&&window.__narrSpeaking())};
 })();

@@ -2945,7 +2945,7 @@ const BL=id=>'media/'+id+'.mp4';
  const st={get:k=>{try{return localStorage.getItem(k)}catch(e){return null}},set:(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}}};
  const m=new Date().getMonth()+1;const cur=m>=3&&m<=5?0:m>=6&&m<=8?1:m>=9&&m<=11?2:3;
  let el=null,i=cur,snd=false,ph=0;
- const PV=k=>'video/season/'+k+'.mp4';
+ const PVN={spring:'https://d2ol7oe51mr4n9.cloudfront.net/user_3HIffWpq3GSMBxHpmZpjIn8lEj6/f04f47f9-12ad-408a-977d-87485e8c7daa.mp4',summer:'https://d2ol7oe51mr4n9.cloudfront.net/user_3HIffWpq3GSMBxHpmZpjIn8lEj6/94e10197-b513-490a-9b56-eeaf6c2a5088.mp4',autumn:'https://d2ol7oe51mr4n9.cloudfront.net/user_3HIffWpq3GSMBxHpmZpjIn8lEj6/82308dce-8bd0-42c4-8c1a-15e315a82615.mp4',winter:'https://d2ol7oe51mr4n9.cloudfront.net/user_3HIffWpq3GSMBxHpmZpjIn8lEj6/8ef4e09f-0178-47d5-87e0-0973a9fb26eb.mp4'},PV=k=>PVN[k]||('video/season/'+k+'.mp4');
  let AC=null;function blip(f1,f2,d,g){if(!snd)return;try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();const o=AC.createOscillator(),v=AC.createGain(),t=AC.currentTime;o.type='sine';o.frequency.setValueAtTime(f1,t);o.frequency.exponentialRampToValueAtTime(f2,t+d);v.gain.setValueAtTime(g,t);v.gain.exponentialRampToValueAtTime(.001,t+d);o.connect(v).connect(AC.destination);o.start(t);o.stop(t+d+.02)}catch(e){}}
 
  function render(){const s=S[i];const v=el.querySelector('video');ph=1;v.poster='img/season/'+s[0]+'.jpg';v.src=PV(s[0]);el.querySelector('.svt').style.display='none';v.muted=!snd;v.play().catch(()=>{});

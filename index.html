@@ -1098,25 +1098,18 @@ p{letter-spacing:-.012em}
 .pcard{transition:transform .35s cubic-bezier(.2,.7,.2,1),box-shadow .35s}
 .pcard:hover{transform:translateY(-6px);box-shadow:0 26px 50px -30px rgba(58,42,49,.55)}
 .olbanner{padding-block:clamp(20px,3vw,36px) 0!important}
-/* 잠사 AR 가이드 섹션 */
+/* 잠사 AR 가이드 섹션 (배너 배경 + 배너 속 휴대폰에 실제 앱 시연) */
 .arsec{padding-block:clamp(20px,3vw,36px) clamp(8px,2vw,24px)}
-.arbox{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:clamp(20px,3vw,40px);align-items:center;background:var(--card);border:1px solid var(--line);border-radius:28px;padding:clamp(20px,3vw,40px);box-shadow:0 30px 60px -44px rgba(58,42,49,.45)}
-.arbox .ey{display:inline-flex;align-items:center;gap:8px;font-weight:700;font-size:13px;letter-spacing:.06em;color:var(--leaf-ink)}
-.arbox .ey i{font-style:normal;background:#5B2C4F;color:#fff;border-radius:999px;padding:2px 9px;font-size:11px;letter-spacing:.04em}
-.arbox h2{font-size:clamp(28px,3.2vw,42px);margin:8px 0 10px;color:var(--plum)}
-.arbox h2 span{font-family:var(--serif);font-weight:700;color:var(--ink)}
-.arbox p.d{color:var(--muted);font-size:16px;line-height:1.75}
-.arsteps{list-style:none;padding:0;margin:16px 0 20px;display:grid;gap:8px}
-.arsteps li{display:flex;gap:10px;align-items:flex-start;font-size:15px}
-.arsteps b{flex:none;width:24px;height:24px;border-radius:50%;background:var(--wash);color:var(--plum);display:grid;place-items:center;font-size:12.5px;font-weight:800}
-.arcta{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
-.arqr{display:flex;gap:10px;align-items:center;font-size:13px;color:var(--muted);line-height:1.45}
-.arqr img{width:92px;height:92px;border-radius:12px;border:1px solid var(--line);background:#fff;padding:4px}
-.arvid{position:relative;border-radius:22px;overflow:hidden;background:#111;aspect-ratio:16/9;box-shadow:0 24px 48px -30px rgba(0,0,0,.6)}
-.arvid video{width:100%;height:100%;object-fit:cover;display:block}
-.arvid .tag{position:absolute;left:12px;top:12px;background:rgba(255,255,255,.92);color:#5B2C4F;font-weight:700;font-size:12.5px;border-radius:999px;padding:4px 11px}
-.arvid .snd{position:absolute;right:12px;bottom:12px;border:0;border-radius:999px;background:rgba(0,0,0,.55);color:#fff;font:inherit;font-size:13px;padding:6px 12px;cursor:pointer}
-@media (max-width:860px){.arbox{grid-template-columns:1fr}.arvid{order:-1}.arqr img{width:80px;height:80px}}
+.arstage{position:relative;display:block;aspect-ratio:2400/1030;background:#f3ecdd url(https://d2ol7oe51mr4n9.cloudfront.net/user_3HIffWpq3GSMBxHpmZpjIn8lEj6/53636e38-32db-44f6-aac7-cd39a575efe6.jpg) center/cover no-repeat;border-radius:28px;overflow:hidden;box-shadow:0 30px 60px -40px rgba(58,42,49,.5)}
+.arstage .hit{position:absolute;left:0;top:0;width:44%;height:100%}
+.arphone{position:absolute;left:58.1%;top:52%;height:75%;aspect-ratio:390/844;transform:translate(-50%,-50%) rotate(11deg);border-radius:12%/5.6%;background:#16161b;box-shadow:0 18px 40px -12px rgba(0,0,0,.55),inset 0 0 0 1.5px #3a3a40}
+.arphone video{position:absolute;top:2.4%;left:5%;width:90%;height:95.2%;object-fit:cover;border-radius:10%/4.6%;background:#000;display:block}
+.arphone i{position:absolute;top:3.4%;left:50%;width:30%;height:2.6%;transform:translateX(-50%);background:#16161b;border-radius:99px;z-index:2}
+.arbar{display:flex;align-items:center;gap:14px 22px;flex-wrap:wrap;margin-top:16px;padding:0 4px}
+.arbar ol{list-style:none;margin:0;padding:0;display:flex;gap:8px 18px;flex-wrap:wrap;flex:1;color:var(--muted);font-size:14.5px}
+.arbar ol b{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--wash);color:var(--plum);font-size:12px;font-weight:800;margin-right:6px}
+.armob{display:none}
+@media (max-width:760px){.arstage{border-radius:18px}.arstage .arphone{display:none}.armob{display:block;position:relative;width:min(250px,64vw);aspect-ratio:390/844;margin:16px auto 0;border-radius:12%/5.6%;background:#16161b;box-shadow:0 20px 40px -18px rgba(0,0,0,.5)}.armob video{position:absolute;top:2.4%;left:5%;width:90%;height:95.2%;object-fit:cover;border-radius:10%/4.6%;background:#000}.arbar ol{flex-basis:100%}}
 </style>
 
 <div class="util" role="navigation" aria-label="빠른 메뉴">
@@ -2996,22 +2989,23 @@ const BL=id=>'media/'+id+'.mp4';
 </script>
 
 <script>
-/* v36: 잠사 AR 가이드 섹션 (온라인 박물관 배너 아래) */
-(()=>{const AR='https://jamsa-museum-ar.vercel.app/index.html',VID='https://d8j0ntlcm91z4.cloudfront.net/user_3HIffWpq3GSMBxHpmZpjIn8lEj6/hf_20261030_045756_2a444b6e-da3c-4082-9b3e-0ae6fc7bb986.mp4#t=0.6';
+/* v37: 잠사 AR 가이드 — 배너 배경 + 실제 앱 시연 영상 */
+(()=>{const AR='https://jamsa-museum-ar.vercel.app/index.html',VID='https://d2ol7oe51mr4n9.cloudfront.net/user_3HIffWpq3GSMBxHpmZpjIn8lEj6/5ab28e69-c392-4ecb-8465-bca18fa32769.mp4';
  const home=document.querySelector('.view[data-view="home"]');if(!home||home.querySelector('.arsec'))return;
  const s=document.createElement('section');s.className='arsec';s.id='ar-guide';
- s.innerHTML=`<div class="wrap"><div class="arbox">
-  <div><span class="ey">잠사 AR 가이드 <i>NEW</i></span>
-   <h2>휴대폰으로 찾는 <span>누에 친구 108</span></h2>
-   <p class="d">카메라를 켜고 박물관 곳곳을 비춰 보세요. 숨어 있는 누에 친구를 찾아 도감을 채우면, 친구마다 숨겨진 이야기가 열려요.</p>
-   <ol class="arsteps"><li><b>1</b><span>QR을 찍거나 아래 버튼으로 AR 가이드를 열어요</span></li><li><b>2</b><span>카메라 사용을 허용하고 전시실·정원을 비춰요</span></li><li><b>3</b><span>화면 속 누에 친구를 톡! 눌러 도감에 모아요</span></li></ol>
-   <div class="arcta"><a class="btn" href="${AR}" target="_blank" rel="noopener">AR 가이드 열기 ↗</a>
-    <div class="arqr"><img src="img/ar/ar-qr.png" alt="잠사 AR 가이드 QR 코드" width="92" height="92"><span>휴대폰 카메라로<br>QR을 찍으면 바로 시작</span></div></div></div>
-  <div class="arvid"><video src="${VID}" muted loop playsinline autoplay preload="metadata" aria-label="잠사 AR 가이드 시연 영상"></video><span class="tag">▶ 이렇게 놀아요</span><button type="button" class="snd">🔇 소리 켜기</button></div>
- </div></div>`;
+ const vtag=`<video src="${VID}#t=0.1" muted loop playsinline autoplay preload="metadata" aria-label="잠사 AR 가이드 실제 화면 시연"></video>`;
+ s.innerHTML=`<div class="wrap">
+  <div class="arstage" role="img" aria-label="잠사 AR 가이드 오픈! 휴대폰으로 누에 친구 108마리를 찾아라">
+   <a class="hit" href="${AR}" target="_blank" rel="noopener" aria-label="잠사 AR 가이드 열기"></a>
+   <div class="arphone"><i></i>${vtag}</div>
+  </div>
+  <div class="armob">${vtag}</div>
+  <div class="arbar"><a class="btn" href="${AR}" target="_blank" rel="noopener">AR 가이드 열기 ↗</a>
+   <ol><li><b>1</b>QR을 찍거나 버튼으로 열기</li><li><b>2</b>카메라 허용 후 전시실·정원 비추기</li><li><b>3</b>누에 친구를 톡! 눌러 도감에 모으기</li></ol></div>
+ </div>`;
  const after=home.querySelector('.olbanner');if(after&&after.nextSibling)home.insertBefore(s,after.nextSibling);else{const f=home.querySelector('section');f&&f.nextSibling?home.insertBefore(s,f.nextSibling):home.appendChild(s)}
- const v=s.querySelector('video'),b=s.querySelector('.snd');b.onclick=()=>{v.muted=!v.muted;if(!v.muted)v.play().catch(()=>{});b.textContent=v.muted?'🔇 소리 켜기':'🔊 소리 끄기'};
- if('IntersectionObserver' in window){new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)v.play().catch(()=>{});else v.pause()}),{threshold:.25}).observe(v)}
+ const vs=[...s.querySelectorAll('video')];
+ if('IntersectionObserver' in window){const io=new IntersectionObserver(es=>es.forEach(e=>{const v=e.target;if(e.isIntersecting&&v.offsetParent!==null)v.play().catch(()=>{});else v.pause()}),{threshold:.2});vs.forEach(v=>io.observe(v))}
 })();
 </script>
 </body>

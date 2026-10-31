@@ -1180,6 +1180,10 @@ p{letter-spacing:-.012em}
 .svs{right:66px!important;height:40px!important;top:13px!important}
 .svf [data-c]:not(.btn){background:#5B2C4F!important;color:#fff!important;font-weight:800!important;font-size:15px!important;padding:10px 20px!important;border-radius:99px!important;min-height:44px}
 .svf [data-h]{font-size:14px!important;padding:10px 6px!important;min-height:44px}
+.nfsnd{position:absolute;left:50%;top:12px;transform:translateX(-50%);z-index:3;display:inline-flex;align-items:center;gap:6px;min-height:48px;padding:0 22px;border:0;border-radius:999px;background:#fff;color:#3a2a31;font:inherit;font-size:16px;font-weight:900;white-space:nowrap;box-shadow:0 6px 18px rgba(0,0,0,.4);cursor:pointer;animation:nfsndP 1.8s ease-in-out infinite}
+.nfsnd.on{background:rgba(255,255,255,.85);animation:none;font-size:14px;min-height:40px;padding:0 16px}
+@keyframes nfsndP{0%,100%{box-shadow:0 6px 18px rgba(0,0,0,.4),0 0 0 0 rgba(255,215,122,.9)}50%{box-shadow:0 6px 18px rgba(0,0,0,.4),0 0 0 10px rgba(255,215,122,0)}}
+@media (max-width:760px){.nfsnd{font-size:14px;min-height:44px;padding:0 14px;top:8px}.nfsnd.on{font-size:12px;min-height:36px;padding:0 12px}}
 /* v38: 누에 친구 108 — 하루 한 친구 공개 */
 .nf108{margin-top:clamp(20px,2.6vw,32px)}
 .nfstage{position:relative;aspect-ratio:3840/1648;background:#f4ead8 url(https://d2ol7oe51mr4n9.cloudfront.net/user_3HIffWpq3GSMBxHpmZpjIn8lEj6/06ef88a9-e871-496d-bd54-85929fcc8e77.jpg) center/cover no-repeat;border-radius:28px;overflow:hidden;box-shadow:0 30px 60px -40px rgba(58,42,49,.5)}
@@ -3133,9 +3137,9 @@ const BL=id=>'media/'+id+'.mp4';
  const fig=box.querySelector('.nffig i'),bd=box.querySelector('.bd'),tx=box.querySelector('.nftx'),vb=box.querySelector('.nfvid');let vis=false;
  function show(n){const d=D[n-1];fig.setAttribute('style',pos(n));bd.textContent=n===open?'오늘 공개':'공개됨';
   tx.querySelector('small').textContent=`No.${String(n).padStart(3,'0')} / 108`;tx.querySelector('b').textContent=d[1];tx.querySelector('p').textContent=d[4]+'…';
-  vb.innerHTML=d[3]?`<i class="ph" style="${pos(n)}"></i><video src="${CDN+d[3]}#t=0.1" controls playsinline muted preload="metadata" aria-label="${d[1]} 홍보영상"></video>`:`<div class="none"><div><b>${d[1]}</b>의 영상은 준비 중이에요.<br><a href="${AR}" target="_blank" rel="noopener">AR 가이드에서 먼저 만나기 ›</a></div></div>`;
+  vb.innerHTML=d[3]?`<i class="ph" style="${pos(n)}"></i><video src="${CDN+d[3]}#t=0.1" controls playsinline muted preload="metadata" aria-label="${d[1]} 홍보영상"></video><button type="button" class="nfsnd" aria-pressed="false">🔇 소리 켜기</button>`:`<div class="none"><div><b>${d[1]}</b>의 영상은 준비 중이에요.<br><a href="${AR}" target="_blank" rel="noopener">AR 가이드에서 먼저 만나기 ›</a></div></div>`;
   box.querySelectorAll('.nft.on').forEach(t=>t.classList.remove('on'));box.querySelector(`.nft[data-n="${n}"]`).classList.add('on');
-  const v=vb.querySelector('video');if(v&&vis)v.play().catch(()=>{})}
+  const v=vb.querySelector('video'),sb=vb.querySelector('.nfsnd');if(v&&sb){const ui=()=>{const on=!v.muted;sb.textContent=on?'🔊 소리 끄기':'🔇 소리 켜기';sb.setAttribute('aria-pressed',on);sb.classList.toggle('on',on)};sb.onclick=e=>{e.stopPropagation();v.muted=!v.muted;if(!v.muted){v.volume=1;v.play().catch(()=>{})}ui()};v.addEventListener('volumechange',ui);ui()}if(v&&vis)v.play().catch(()=>{})}
  box.querySelector('.nfgrid').addEventListener('click',e=>{const t=e.target.closest('.nft.op');if(!t)return;show(+t.dataset.n);box.querySelector('.nfstage').scrollIntoView({behavior:'smooth',block:'nearest'});const v=vb.querySelector('video');v&&v.play().catch(()=>{})});
  const nx=tx.querySelector('.nfnx');function tick(){if(open>=108){nx.textContent='108마리 모두 공개됐어요!';return}const left=START+open*DAY-Date.now();if(left<=0){nx.textContent='새 친구가 도착했어요! 새로고침해 보세요';return}const h=left/36e5|0,m=left/6e4%60|0,s2=left/1e3%60|0;nx.innerHTML=`다음 친구 공개까지 <b>${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s2).padStart(2,'0')}</b>`}
  tick();setInterval(tick,1000);show(open);

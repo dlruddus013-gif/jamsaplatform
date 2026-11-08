@@ -1220,6 +1220,18 @@ p{letter-spacing:-.012em}
 .nfnote{margin:10px 0 0;text-align:center;font-size:13px;color:#7a6a70}
 @media (max-width:1000px){.nfgrid{grid-template-columns:repeat(18,1fr)}.nfinfo{width:52%;left:4%}.nftx p,.nftx .nfnx{display:none}}
 @media (max-width:760px){.nfstage{aspect-ratio:auto;background:#f4ead8 url(https://d2ol7oe51mr4n9.cloudfront.net/user_3HIffWpq3GSMBxHpmZpjIn8lEj6/06ef88a9-e871-496d-bd54-85929fcc8e77.jpg) 0 0/auto 100% no-repeat;padding:20px 16px;border-radius:20px}.nfstage::before{content:'';position:absolute;inset:0;background:rgba(244,234,216,.86)}.nfinfo{position:relative;transform:none;left:auto;top:auto;width:auto;text-align:center}.nfrow{flex-direction:column;text-align:center}.nftx p,.nftx .nfnx{display:block}.nftx p{display:-webkit-box}.nfvid{position:relative;left:auto;top:auto;width:min(250px,68vw);height:auto;aspect-ratio:720/966;margin:16px auto 0;border:9px solid #4a2f22;border-radius:6px;box-shadow:inset 0 0 0 2px #c9a24e,0 14px 28px -14px rgba(0,0,0,.5)}.nfgrid{grid-template-columns:repeat(12,1fr);gap:3px}}
+.psv{position:fixed;right:16px;bottom:16px;z-index:95;width:min(360px,calc(100vw - 32px));background:#fbf6ee;border-radius:18px;box-shadow:0 18px 50px -12px rgba(40,20,30,.45);padding:16px 16px 12px;transform:translateY(20px);opacity:0;transition:.3s}
+.psv.on{transform:none;opacity:1}
+.psx{position:absolute;right:10px;top:8px;border:0;background:none;font-size:16px;color:#8a7a80;cursor:pointer}
+.pst{display:flex;gap:10px;align-items:center;margin-bottom:10px}.pst img{height:44px}.pst b{display:block;color:#5B2C4F;font-size:16px}.pst small{color:#6d5f64;font-size:12.5px;line-height:1.4;display:block}
+.psq{margin:8px 0}.psq>span{font-size:12.5px;color:#6d5f64;font-weight:700}.psq>div{display:flex;flex-wrap:wrap;gap:6px;margin-top:5px}
+.psq button{border:1px solid #e3d6cf;background:#fff;border-radius:999px;padding:6px 11px;font:inherit;font-size:13px;cursor:pointer;color:#3a2f33}
+.psq button.sel{background:#5B2C4F;border-color:#5B2C4F;color:#fff}
+.psf{display:flex;justify-content:space-between;align-items:center;margin-top:12px}
+.pss{border:0;background:#5B2C4F;color:#fff;border-radius:10px;padding:9px 18px;font:inherit;font-weight:700;cursor:pointer}.pss:disabled{opacity:.4;cursor:default}
+.psl{border:0;background:none;color:#8a7a80;font:inherit;font-size:13px;cursor:pointer}
+.psn{font-size:11px;color:#9a8b90;margin:10px 0 0;line-height:1.45}
+@media (max-width:600px){.psv{right:8px;left:8px;bottom:calc(8px + env(safe-area-inset-bottom));width:auto;padding:12px 12px 10px}.pst img{height:34px}.pst b{font-size:15px}.psq{margin:6px 0}.psq>div{gap:5px;margin-top:4px}.psq button{padding:4px 9px;font-size:12.5px}.psf{margin-top:8px}.pss{padding:7px 16px}.psn{margin-top:6px}}
 </style>
 
 <div class="util" role="navigation" aria-label="빠른 메뉴">
@@ -1539,7 +1551,7 @@ p{letter-spacing:-.012em}
       <div class="f"><span class="lbl">10. 부가체험 (1인당 가격)</span><div class="opts"><label><input type="checkbox" name="add" value="none"> 없음</label><label><input type="checkbox" name="add" value="gel"> 젤캔들 체험 패키지 (+10,000원)</label><label><input type="checkbox" name="add" value="feed"> 동물 먹이주기체험 (+2,000원)</label><label><input type="checkbox" name="add" value="guide"> 현장 가이드 추가 (+2,000원, 50인 이상)</label></div><span class="hint">시설 자유관람이 원칙입니다.</span></div>
       <div class="f"><label for="g-mail">11. 거래내역서 받으실 이메일 주소</label><input id="g-mail" type="email" placeholder="예약내역서를 이메일로 보내 드려요"></div>
       <div class="f"><label for="g-visit">12. 사전 답사 예약일자</label><input id="g-visit" type="date"></div>
-      <div class="f"><span class="lbl">개인정보 수집 및 이용 동의</span><div class="consent">한국잠사박물관플레이팜(이하 ‘회사’)은 개인정보 보호법 제30조에 따라 정보주체의 개인정보를 보호하고 고충을 신속하게 처리하기 위해 개인정보 처리지침을 수립·공개합니다.<br><br>제1조(처리목적) 홈페이지 회원 가입 및 관리, 재화 또는 서비스 제공(예약 확인, 계약서·청구서 발송, 요금 결제 및 정산 등), 고충 처리.<br>제2조(처리 및 보유기간) 법령에 따른 보유·이용 기간 또는 수집 시 동의받은 기간 내에서 처리·보유하며, 회원 정보는 탈퇴 시까지 보유합니다. 관계 법령 위반에 따른 수사·조사 진행 시, 채권·채무관계 잔존 시에는 해당 사유 종료 시까지 보유합니다.<br>제10조(개인정보 보호책임자) 성명 이경연 · 직책 대표 · 연락처 043-235-1267, jamsa043@naver.com, 팩스 043-235-1268<br>제11조(열람청구) 정보주체는 개인정보 보호법 제35조에 따라 개인정보 열람을 청구할 수 있습니다.</div><label style="display:flex;gap:8px;align-items:center;font-size:15px"><input type="checkbox" id="g-agree"> 개인정보 수집 및 이용에 동의합니다.</label></div>
+      <div class="f"><span class="lbl">개인정보 수집 및 이용 동의</span><div class="consent">한국잠사박물관플레이팜(이하 ‘회사’)은 개인정보 보호법 제30조에 따라 정보주체의 개인정보를 보호하고 고충을 신속하게 처리하기 위해 개인정보 처리지침을 수립·공개합니다.<br><br>제1조(처리목적) 홈페이지 회원 가입 및 관리, 재화 또는 서비스 제공(예약 확인, 계약서·청구서 발송, 요금 결제 및 정산 등), 고충 처리.<br>제1조의2(자동 수집 항목) 홈페이지 이용 시 접속 IP 주소, 방문 일시, 본 페이지·누른 버튼, 유입 경로, 기기·브라우저 정보, 방문자 식별값(브라우저 저장소)이 자동으로 수집되며, 방문 통계·서비스 개선·부정 이용 방지에 쓰입니다. 방문자가 선택 설문에 답한 성별·연령대·동반 유형도 같은 목적으로만 씁니다. 접속 IP는 수집일로부터 6개월 뒤 자동 삭제합니다. 브라우저의 사이트 데이터를 지우면 방문자 식별값이 초기화됩니다.<br>제2조(처리 및 보유기간) 법령에 따른 보유·이용 기간 또는 수집 시 동의받은 기간 내에서 처리·보유하며, 회원 정보는 탈퇴 시까지 보유합니다. 관계 법령 위반에 따른 수사·조사 진행 시, 채권·채무관계 잔존 시에는 해당 사유 종료 시까지 보유합니다.<br>제10조(개인정보 보호책임자) 성명 이경연 · 직책 대표 · 연락처 043-235-1267, jamsa043@naver.com, 팩스 043-235-1268<br>제11조(열람청구) 정보주체는 개인정보 보호법 제35조에 따라 개인정보 열람을 청구할 수 있습니다.</div><label style="display:flex;gap:8px;align-items:center;font-size:15px"><input type="checkbox" id="g-agree"> 개인정보 수집 및 이용에 동의합니다.</label></div>
       <p class="err" id="g-err" hidden></p>
       <div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn" type="submit">예약 신청서 만들기</button><button class="btn ghost" type="reset">다시 쓰기</button><a class="btn ghost" href="#quote">공식 견적서 만들기 →</a></div>
     </form>
@@ -3020,7 +3032,7 @@ const BL=id=>'media/'+id+'.mp4';
   scr:screen.width+'x'+screen.height,lang:(navigator.language||'').slice(0,12)};env.inapp=/네이버앱|카카오톡|인스타그램|페이스북/.test(env.browser)?env.browser:'';
  const send=p=>{ls('jamsa_last',String(Date.now()));const body=Object.assign({vid,sid,mobile,newv,path:(location.hash||'#home').split(/[?&]/)[0]},fresh?{ref,ref_host:host,ref_kw:kw,utm}:{},(p&&p.type==='pv')?env:{},p);fresh=false;
   fetch(SBU+'/rest/v1/rpc/silk_event',{method:'POST',keepalive:true,headers:{apikey:SK,Authorization:'Bearer '+SK,'Content-Type':'application/json'},body:JSON.stringify({p:body})}).catch(()=>{})};
- window.__jt=send;const ft=document.querySelector('footer:not(#lbCap)');if(ft&&!ft.querySelector('.anon'))(ft.querySelector('.wrap')||ft).insertAdjacentHTML('beforeend','<p class="anon" style="width:100%;font-size:11.5px;opacity:.7;margin:8px 0 0">이 홈페이지는 서비스 개선을 위해 이름·연락처 없이 익명 방문 기록(방문 경로·클릭)만 수집해요.</p>');
+ window.__jt=send;const ft=document.querySelector('footer:not(#lbCap)');if(ft&&!ft.querySelector('.anon'))(ft.querySelector('.wrap')||ft).insertAdjacentHTML('beforeend','<p class="anon" style="width:100%;font-size:11.5px;opacity:.7;margin:8px 0 0">이 홈페이지는 서비스 개선과 보안을 위해 접속 IP·방문 기록(방문 경로·클릭·기기)을 자동 수집하며, IP는 6개월 뒤 삭제해요. 이름·연락처는 수집하지 않아요.</p>');
  let lastP='',t0=Date.now(),mx=0,act=0,vis=Date.now();
  const sc=()=>{const h=document.documentElement;const v=Math.round((scrollY+innerHeight)/Math.max(h.scrollHeight,1)*100);if(v>mx)mx=Math.min(v,100)};addEventListener('scroll',sc,{passive:true});
  const leave=()=>{if(!lastP)return;const d=Math.round((act+(document.hidden?0:Date.now()-vis))/1000);act=0;vis=Date.now();if(d>=1)send({type:'leave',path:lastP,dwell:d,scroll:mx});mx=0};
@@ -3044,6 +3056,29 @@ const BL=id=>'media/'+id+'.mp4';
   send({type:'click',label:txt,href:href.slice(0,300),kind:kindOf(el,href,txt)})},true);
 })();
 /* /v34 */
+/* v40: 방문자 선택 설문(성별·연령·동반) */
+(()=>{const SBU='https://ewxquecxsxsfhyzfaaci.supabase.co',SK='sb_publishable_G2wWHOhRazQUn2nkNr7ZWg_xasgzW_O';
+ const g=k=>{try{return localStorage.getItem(k)}catch(e){return null}},st=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
+ if(g('jamsa_prof_done'))return;const nx=+g('jamsa_prof_later')||0;if(Date.now()<nx)return;
+ if(/[?&]nosurvey/.test(location.search))return;
+ let shown=false,pvs=0;
+ const Q=[['gender','성별',['여성','남성','응답 안 함']],['age','연령대',['10대','20대','30대','40대','50대','60대 이상']],['companion','누구와 오세요?',['아이와 함께','가족','연인·친구','단체·기관','혼자']]];
+ const show=()=>{if(shown||document.querySelector('.admpop'))return;shown=true;const A={};
+  const d=document.createElement('div');d.className='psv';d.setAttribute('role','dialog');d.setAttribute('aria-label','방문자 설문');
+  d.innerHTML=`<button class="psx" type="button" aria-label="닫기">✕</button><div class="pst"><img src="img/ch/nue.png" alt=""><div><b>잠깐! 3초 설문</b><small>답해 주시면 딱 맞는 체험을 더 잘 안내해 드릴게요 (선택)</small></div></div>
+  ${Q.map(([k,t,o])=>`<div class="psq"><span>${t}</span><div>${o.map(x=>`<button type="button" data-k="${k}" data-v="${x}">${x}</button>`).join('')}</div></div>`).join('')}
+  <div class="psf"><button type="button" class="pss" disabled>보내기</button><button type="button" class="psl">다음에</button></div>
+  <p class="psn">이름·연락처는 묻지 않아요. 응답은 접속 IP·방문 기록과 함께 방문 통계에만 쓰고 6개월 뒤 IP는 지워요.</p>`;
+  document.body.appendChild(d);requestAnimationFrame(()=>d.classList.add('on'));
+  const sb=d.querySelector('.pss');
+  d.addEventListener('click',e=>{const b=e.target.closest('[data-k]');if(b){d.querySelectorAll(`[data-k="${b.dataset.k}"]`).forEach(x=>x.classList.toggle('sel',x===b));A[b.dataset.k]=b.dataset.v;sb.disabled=!Object.keys(A).length;return}
+   if(e.target.closest('.psx,.psl')){st('jamsa_prof_later',String(Date.now()+14*864e5));d.remove();return}
+   if(e.target.closest('.pss')){const vid=g('jamsa_vid')||'';fetch(SBU+'/rest/v1/rpc/silk_profile_save',{method:'POST',keepalive:true,headers:{apikey:SK,Authorization:'Bearer '+SK,'Content-Type':'application/json'},body:JSON.stringify({p:Object.assign({vid},A)})}).catch(()=>{});
+    st('jamsa_prof_done','1');d.innerHTML='<div class="pst"><img src="img/ch/nue.png" alt=""><div><b>고마워요! 🐛</b><small>더 알찬 체험으로 보답할게요.</small></div></div>';setTimeout(()=>d.remove(),2200)}})};
+ addEventListener('hashchange',()=>{if(++pvs>=1)setTimeout(show,4000)});setTimeout(show,30000);
+})();
+/* /v40 */
+
 /* v35: 사계절 홍보영상 팝업 */
 (()=>{const S=[['spring','봄','🌸','벚꽃 아래 롤러 썰매','꽃길 따라 박물관 나들이 · 잔디 롤러 썰매'],['summer','여름','🌊','시원한 물 썰매 · 오디 따기','물 썰매로 첨벙! 6월엔 까만 오디 수확 체험'],['autumn','가을','🍁','단풍 속 양떼정원','양에게 건초 주고, 낙엽 사이로 썰매 타기'],['winter','겨울','⛄','눈썰매 · 눈꽃축제','하얀 눈썰매장과 겨울 눈꽃축제']];
  const st={get:k=>{try{return localStorage.getItem(k)}catch(e){return null}},set:(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}}};

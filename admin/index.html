@@ -6,7 +6,25 @@
 <meta name="robots" content="noindex,nofollow">
 <title>잠사박물관 관리자</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
-<style>@font-face{font-family:"Jamsa Sans";src:url(/fonts/jamsa/jamsasans-regular.woff2) format("woff2");font-weight:400;font-display:swap}@font-face{font-family:"Jamsa Sans";src:url(/fonts/jamsa/jamsasans-medium.woff2) format("woff2");font-weight:500;font-display:swap}@font-face{font-family:"Jamsa Sans";src:url(/fonts/jamsa/jamsasans-semibold.woff2) format("woff2");font-weight:600;font-display:swap}@font-face{font-family:"Jamsa Sans";src:url(/fonts/jamsa/jamsasans-bold.woff2) format("woff2");font-weight:700;font-display:swap}@font-face{font-family:"Jamsa Sans";src:url(/fonts/jamsa/jamsasans-extrabold.woff2) format("woff2");font-weight:800 900;font-display:swap}</style>
+<style>@font-face{font-family:"Jamsa Sans";src:url(/fonts/jamsa/jamsasans-regular.woff2) format("woff2");font-weight:400;font-display:swap}@font-face{font-family:"Jamsa Sans";src:url(/fonts/jamsa/jamsasans-medium.woff2) format("woff2");font-weight:500;font-display:swap}@font-face{font-family:"Jamsa Sans";src:url(/fonts/jamsa/jamsasans-semibold.woff2) format("woff2");font-weight:600;font-display:swap}@font-face{font-family:"Jamsa Sans";src:url(/fonts/jamsa/jamsasans-bold.woff2) format("woff2");font-weight:700;font-display:swap}@font-face{font-family:"Jamsa Sans";src:url(/fonts/jamsa/jamsasans-extrabold.woff2) format("woff2");font-weight:800 900;font-display:swap}.kgrid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px}
+.kc{padding:16px 18px}.kc .kl{color:var(--sub);font-size:12.5px}.kc .kv{font-size:23px;font-weight:800;margin-top:4px}.kc .ks{color:var(--sub);font-size:12px;margin-top:3px}
+tr.vr:hover td{background:#f7f3f6}
+.hb{display:grid;grid-template-columns:repeat(24,1fr);gap:4px;height:190px;align-items:end}
+.hb>div{display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%;font-size:11px}
+.hb b{font-size:10.5px;color:#2f6fed;min-height:14px}.hb i{display:flex;flex-direction:column;justify-content:flex-end;width:100%;background:#9fd2f5;border-radius:4px 4px 0 0;min-height:1px;overflow:hidden}
+.hb u{display:block;width:100%;background:#e7558a}.hb span{color:var(--sub);margin-top:4px}
+.dgrid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.dt{font-size:13px}.dt td,.dt th{padding:7px 6px}
+.sess{border:1px solid var(--line);border-radius:12px;margin-bottom:8px;background:#fff}
+.sess summary{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:11px 14px;cursor:pointer;font-size:13.5px;list-style:none}
+.sess summary::-webkit-details-marker{display:none}.sess[open] summary{border-bottom:1px solid var(--line);background:#faf8fa;border-radius:12px 12px 0 0}
+.steps{list-style:none;margin:0;padding:10px 14px 12px;display:grid;gap:5px;font-size:13px}
+.steps li{display:flex;gap:10px;align-items:baseline;padding:5px 10px;border-radius:8px;background:#f6f7f9}
+.steps li.t-pv{background:#eef3ff}.steps li.t-leave{background:transparent;color:var(--sub)}.steps li.tk{background:#fde8ee}
+.steps time{font-variant-numeric:tabular-nums;color:var(--sub);font-size:12px;min-width:58px}.steps small{color:var(--sub)}
+@media (max-width:1100px){.kgrid{grid-template-columns:repeat(3,minmax(0,1fr))}.dgrid{grid-template-columns:1fr}}
+@media (max-width:600px){.kgrid{grid-template-columns:repeat(2,minmax(0,1fr))}.hb{gap:1px}.hb b{font-size:8px}.hb span{font-size:9px}}
+</style>
 <style>
 :root{--bg:#f4f5f7;--card:#fff;--ink:#1d1d1f;--sub:#6b7280;--line:#e8e8ec;--plum:#6b3a5b;--plum2:#f3e9f0;--ok:#22a45d;--warn:#f0a020;--bad:#d9534f;--blue:#2f6fed;--side:#fff}
 *{box-sizing:border-box}html,body{margin:0;height:100%}
@@ -177,12 +195,12 @@ const MENU=[['dash','🏠','대시보드'],
  ['stat','📈','통계',[['visits','방문자'],['people','방문자별 분석'],['inflow','유입 경로·검색어'],['funnel','클릭·티켓 전환'],['hourly','시간대별 행동'],['journey','방문자 여정'],['interest','관심 분야'],['chatlog','AI 대화 로그'],['demo','연령·성별 통계']]],
  ['mkt','📣','홍보·마케팅',[['seo','검색·공유 노출'],['links','외부 채널 바로가기'],['linkset','링크 주소 설정']]],
  ['set','⚙️','설정',[['staff','운영진'],['pw','내 비밀번호'],['audit','활동 기록'],['domain','도메인·배포']]]];
-const TITLES=Object.fromEntries(MENU.flatMap(m=>m[3]?m[3]:[[m[0],m[2]]]));
+const TITLES=Object.fromEntries(MENU.flatMap(m=>m[3]?m[3]:[[m[0],m[2]]]));TITLES.vday='방문 상세';
 function buildNav(){$('#nav').innerHTML=MENU.map(m=>m[3]?`<div class="grp" data-g="${m[0]}"><button type="button" data-tog="${m[0]}"><span class="ic">${m[1]}</span>${m[2]}${m[0]==='cust'?' <span class="badge" id="bCust">0</span>':''}<span class="car">▾</span></button><div class="sub">${m[3].map(s=>`<button type="button" data-go="${s[0]}">${s[1]}</button>`).join('')}</div></div>`:`<button type="button" data-go="${m[0]}"><span class="ic">${m[1]}</span>${m[2]}</button>`).join('');}
 document.addEventListener('click',e=>{const t=e.target.closest('[data-tog]');if(t){t.parentElement.classList.toggle('open');return}const g=e.target.closest('[data-go]');if(g){location.hash=g.dataset.go;$('#side').classList.remove('open')}});
 addEventListener('hashchange',route);
-function route(){if(!TOK)return;const p=(location.hash||'#dash').slice(1);$$('#nav [data-go]').forEach(b=>b.classList.toggle('on',b.dataset.go===p));
-  const grp=MENU.find(m=>m[3]&&m[3].some(s=>s[0]===p));if(grp)$(`.grp[data-g="${grp[0]}"]`)?.classList.add('open');
+function route(){if(!TOK)return;const p=(location.hash||'#dash').slice(1);$$('#nav [data-go]').forEach(b=>b.classList.toggle('on',b.dataset.go===(p==='vday'?'visits':p)));
+  const grp=MENU.find(m=>m[3]&&m[3].some(s=>s[0]===(p==='vday'?'visits':p)));if(grp)$(`.grp[data-g="${grp[0]}"]`)?.classList.add('open');
   $('#pTitle').textContent=p==='dash'?'잠사박물관':TITLES[p]||'잠사박물관';(PAGES[p]||PAGES.dash)()}
 
 /* ---------- 데이터 ---------- */
@@ -223,7 +241,7 @@ PAGES.dash=async()=>{$('#page').innerHTML='<div class="empty">불러오는 중�
    <div class="sec-t" style="margin-top:26px"><h3>통계</h3></div>
    <div class="stats"><div class="card chart"><div style="display:flex;justify-content:space-between"><h3>방문자</h3><a href="#visits" style="font-size:13px;color:var(--sub)">더보기</a></div><div class="legend"><span><i style="background:#9fd2f5"></i>페이지뷰</span><span><i style="background:#2f6fed"></i>방문자</span></div>${chartSVG(D.series)}</div>
     <div class="card"><div style="display:flex;justify-content:space-between"><h3>기간별 분석</h3><a href="#visits" style="font-size:13px;color:var(--sub)">더보기</a></div>
-     <table><thead><tr><th>일자</th><th>방문자</th><th>페이지뷰</th><th>견적 문의</th></tr></thead><tbody>${D.series.slice().reverse().slice(0,7).map((s,i)=>`<tr class="${i?'':'today'}"><td>${s.day}</td><td>${s.uv}</td><td>${s.pv}</td><td>${s.q}</td></tr>`).join('')}</tbody></table>
+     <table><thead><tr><th>일자</th><th>방문자</th><th>페이지뷰</th><th>견적 문의</th></tr></thead><tbody>${D.series.slice().reverse().slice(0,7).map((s,i)=>`<tr class="${i?'':'today'} vr" data-vday="${s.day}" style="cursor:pointer" title="눌러서 이날 상세 보기"><td>${s.day}</td><td>${s.uv}</td><td>${s.pv}</td><td>${s.q}</td></tr>`).join('')}</tbody></table>
      <p style="color:var(--sub);font-size:12.5px;margin:10px 0 0">최근 14일 방문자 ${tot}명 · 페이지뷰 ${pvt}회</p></div></div>
   </div>
   <div style="display:grid;gap:16px;align-content:start">
@@ -316,10 +334,75 @@ PAGES.popup=async()=>{const P=(await cfg('popup'))||{on:false,title:'',body:'',l
 PAGES.media=()=>{$('#page').innerHTML=`<div class="card"><h3>영상·사진 현황</h3><div class="links"><a><span>시설 실물 사진</span><span>159장</span></a><a><span>옛사람 재현 영상 (AI, 15초)</span><span>159편</span></a><a><span>오디 메뉴 실사 영상 (AI)</span><span>6편</span></a><a><span>체험 실사 영상 (AI, 12초)</span><span>17편</span></a><a><span>잠사카툰</span><span>3시리즈 12편</span></a></div><p style="color:var(--sub);font-size:13px;margin-top:12px">AI 영상을 실제 사진·영상으로 바꾸려면 파일을 보내 주세요. 같은 자리에 바로 교체해 드려요.</p></div>`};
 
 /* 통계 */
-PAGES.visits=async()=>{const D=await loadDash();const tot=D.series.reduce((a,s)=>a+s.uv,0);
-  $('#page').innerHTML=`<div class="card chart" style="margin-bottom:16px"><h3>최근 14일 방문자</h3><div class="legend"><span><i style="background:#9fd2f5"></i>페이지뷰</span><span><i style="background:#2f6fed"></i>방문자</span></div>${chartSVG(D.series)}</div>
-  <div class="card"><table><thead><tr><th>일자</th><th>방문자</th><th>페이지뷰</th><th>견적 문의</th></tr></thead><tbody>${D.series.slice().reverse().map((s,i)=>`<tr class="${i?'':'today'}"><td>${s.day}</td><td>${s.uv}</td><td>${s.pv}</td><td>${s.q}</td></tr>`).join('')}</tbody></table>
-  <p style="color:var(--sub);font-size:12.5px">휴대폰 ${D.mobile.m||0} · PC ${D.mobile.d||0} (최근 7일 페이지뷰) · 방문자는 브라우저 기준으로 셉니다.</p></div>`};
+/* ---------- 방문자 (기간 · 일자별 상세) ---------- */
+let VDAYS=14,VDAY=null,VDAY2=null,VSF='all',VSQ='';
+const kst=()=>new Date(Date.now()+9*36e5).toISOString().slice(0,10);
+const addDay=(d,n)=>{const x=new Date(d+'T00:00:00Z');x.setUTCDate(x.getUTCDate()+n);return x.toISOString().slice(0,10)};
+const WK=['일','월','화','수','목','금','토'],wk=d=>WK[new Date(d+'T00:00:00Z').getUTCDay()];
+const hm=t=>{const d=new Date(t);return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')+':'+String(d.getSeconds()).padStart(2,'0')};
+const csv=(name,rows)=>{const s='﻿'+rows.map(r=>r.map(v=>{v=String(v??'');return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v}).join(',')).join('\r\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([s],{type:'text/csv;charset=utf-8'}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000)};
+function lineChart(S,H0){const W=760,H=H0||230,P=34;const max=Math.max(5,...S.map(s=>Math.max(s.pv,s.uv)));const x=i=>P+i*(W-P*2)/(S.length-1||1),y=v=>H-P-(v/max)*(H-P*2);const step=Math.ceil(S.length/10);
+ const line=(k,c,f)=>{const pts=S.map((s,i)=>`${x(i)},${y(s[k])}`).join(' ');return (f?`<polygon points="${P},${H-P} ${pts} ${x(S.length-1)},${H-P}" fill="${f}"/>`:'')+`<polyline points="${pts}" fill="none" stroke="${c}" stroke-width="2.4"/>`+S.map((s,i)=>`<circle cx="${x(i)}" cy="${y(s[k])}" r="${S.length>40?2:3.2}" fill="${c}"/>`).join('')};
+ const grid=[0,.25,.5,.75,1].map(t=>`<line x1="${P}" x2="${W-P}" y1="${y(max*t)}" y2="${y(max*t)}" stroke="#eee"/><text x="4" y="${y(max*t)+4}" font-size="10" fill="#999">${Math.round(max*t)}</text>`).join('');
+ const lab=S.map((s,i)=>(S.length-1-i)%step?'':`<text x="${x(i)}" y="${H-10}" font-size="10" fill="#999" text-anchor="middle">${s.day.slice(5).replace('-','/')}</text>`).join('');
+ const hit=S.map((s,i)=>`<rect data-vday="${s.day}" x="${x(i)-(W-P*2)/(S.length-1||1)/2}" y="${P/2}" width="${(W-P*2)/(S.length-1||1)}" height="${H-P*1.5}" fill="transparent" style="cursor:pointer"><title>${s.day}(${wk(s.day)}) 방문자 ${s.uv} · 페이지뷰 ${s.pv} — 눌러서 상세 보기</title></rect>`).join('');
+ return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block">${grid}${line('pv','#9fd2f5','rgba(159,210,245,.35)')}${line('uv','#2f6fed')}${lab}${hit}</svg>`}
+const kpis=L=>`<div class="kgrid">${L.map(x=>`<div class="card kc"><div class="kl">${x[0]}</div><div class="kv">${x[1]}</div>${x[2]?`<div class="ks">${x[2]}</div>`:''}</div>`).join('')}</div>`;
+document.addEventListener('click',e=>{const r=e.target.closest('[data-vday]');if(!r)return;VDAY=r.dataset.vday;VDAY2=r.dataset.vday2||VDAY;VSF='all';VSQ='';if(location.hash==='#vday')PAGES.vday();else location.hash='vday'});
+
+PAGES.visits=async()=>{$('#page').innerHTML='<div class="empty">불러오는 중…</div>';let S;try{S=await rpc('silk_visit_series',{p_token:TOK,p_days:VDAYS})}catch(e){$('#page').innerHTML=`<div class="card empty">${esc(e.message)}</div>`;return}
+ const sum=k=>S.reduce((a,s)=>a+(s[k]||0),0),uv=sum('uv'),pv=sum('pv'),ss=sum('s'),best=S.reduce((a,s)=>s.uv>a.uv?s:a,S[0]);
+ $('#page').innerHTML=`<div class="toolbar"><select id="vdays">${[[7,'최근 7일'],[14,'최근 14일'],[30,'최근 30일'],[90,'최근 90일'],[180,'최근 180일']].map(([v,t])=>`<option value="${v}"${v===VDAYS?' selected':''}>${t}</option>`).join('')}</select>
+  <button class="btn sm" data-vday="${S[0].day}" data-vday2="${S[S.length-1].day}">이 기간 전체 상세 ›</button><button class="btn sm" id="vcsv">CSV 내려받기</button><span style="color:var(--sub);font-size:13px">날짜 행이나 그래프 점을 누르면 그날의 세부 방문 데이터가 열려요.</span></div>
+ ${kpis([['방문자 (일별 합)',uv.toLocaleString()+'명','하루 평균 '+(uv/S.length).toFixed(1)+'명'],['페이지뷰',pv.toLocaleString()+'회','방문자당 '+(uv?(pv/uv).toFixed(1):0)+'페이지'],['신규 방문자',sum('nv')+'명',pct(sum('nv'),uv)+' 처음 방문'],['방문 세션',ss+'회','휴대폰 '+pct(sum('m'),ss)],['티켓 링크 클릭',sum('t')+'세션','세션 대비 '+pct(sum('t'),ss)],['가장 많이 온 날',best?best.day.slice(5).replace('-','/')+'('+wk(best.day)+')':'-',best?best.uv+'명':'']])}
+ <div class="card chart" style="margin:16px 0"><div style="display:flex;justify-content:space-between;align-items:center"><h3 style="margin:0">일별 방문자</h3><div class="legend"><span><i style="background:#9fd2f5"></i>페이지뷰</span><span><i style="background:#2f6fed"></i>방문자</span></div></div>${lineChart(S)}</div>
+ <div class="card" style="padding:0;overflow:auto"><table style="min-width:860px"><thead><tr><th>일자</th><th>방문자</th><th>신규</th><th>페이지뷰</th><th>방문당 페이지</th><th>세션</th><th>휴대폰</th><th>클릭</th><th>티켓 클릭</th><th>견적 문의</th><th></th></tr></thead><tbody>
+ ${S.slice().reverse().map((s,i)=>`<tr class="${i?'':'today'} vr" data-vday="${s.day}" style="cursor:pointer"><td><b>${s.day}</b> <small style="color:${wk(s.day)==='일'?'#d9534f':wk(s.day)==='토'?'#2f6fed':'var(--sub)'}">(${wk(s.day)})</small></td><td><b>${s.uv}</b></td><td>${s.nv}</td><td>${s.pv}</td><td>${s.uv?(s.pv/s.uv).toFixed(1):'-'}</td><td>${s.s}</td><td>${s.s?pct(s.m,s.s):'-'}</td><td>${s.c}</td><td>${s.t?`<span class="pill b">${s.t}</span>`:0}</td><td>${s.q}</td><td style="color:var(--plum);font-weight:700">상세 ›</td></tr>`).join('')}</tbody></table></div>
+ <p style="color:var(--sub);font-size:12.5px">방문자는 브라우저 기준으로 셉니다. 세션·클릭·기기 정보는 2026-10-26부터 기록돼요.</p>`;
+ $('#vdays').onchange=e=>{VDAYS=+e.target.value;PAGES.visits()};
+ $('#vcsv').onclick=()=>csv(`방문자_${S[0].day}_${S[S.length-1].day}.csv`,[['일자','요일','방문자','신규','페이지뷰','세션','휴대폰세션','클릭','티켓클릭세션','견적문의'],...S.map(s=>[s.day,wk(s.day),s.uv,s.nv,s.pv,s.s,s.m,s.c,s.t,s.q])])};
+
+PAGES.vday=async()=>{if(!VDAY){VDAY=kst();VDAY2=VDAY}$('#page').innerHTML='<div class="empty">불러오는 중…</div>';let D;
+ try{D=await rpc('silk_day_detail',{p_token:TOK,p_from:VDAY,p_to:VDAY2||VDAY})}catch(e){$('#page').innerHTML=`<div class="card empty">${esc(e.message)}</div>`;return}
+ const one=D.from===D.to,U=D.sum,SS=D.ss,title=one?`${D.from} (${wk(D.from)})`:`${D.from} ~ ${D.to}`;$('#pTitle').textContent='방문 상세 · '+title;
+ const hb=D.hours,hm2=Math.max(1,...hb.map(h=>h.pv));
+ const tbl=(head,rows,empty)=>rows.length?`<table class="dt"><thead><tr>${head.map((h,i)=>`<th${i?'':' style="text-align:left"'}>${h}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr>${r.map((c,i)=>`<td${i?'':' style="text-align:left"'}>${c}</td>`).join('')}</tr>`).join('')}</tbody></table>`:`<div class="empty">${empty||'기록이 없어요'}</div>`;
+ const sec=s=>s==null?'-':vS(+s);
+ $('#page').innerHTML=`<div class="toolbar"><button class="btn sm" id="vback">← 방문자 목록</button>
+  ${one?`<button class="btn sm" id="vprev">‹ 전날</button><button class="btn sm" id="vnext"${D.to>=kst()?' disabled':''}>다음날 ›</button>`:''}
+  <input type="date" id="vf" value="${D.from}" max="${kst()}"><span>~</span><input type="date" id="vt" value="${D.to}" max="${kst()}"><button class="btn sm p" id="vgo">조회</button>
+  <button class="btn sm" id="vcsv2">세션 CSV</button></div>
+ ${kpis([['방문자',U.uv+'명','신규 '+U.newv+'명 · 재방문 '+Math.max(0,U.uv-U.newv)+'명'],['페이지뷰',U.pv+'회','방문자당 '+(U.uv?(U.pv/U.uv).toFixed(1):0)+'페이지'],['방문 세션',U.sessions+'회','휴대폰 '+pct(U.mobile,U.sessions)+' · PC '+pct(U.sessions-U.mobile,U.sessions)],['평균 체류',sec(SS.avg),'1페이지만 보고 나감 '+pct(SS.bounce,SS.n)],['버튼 클릭',U.clicks+'회','세션당 '+(U.sessions?(U.clicks/U.sessions).toFixed(1):0)+'회'],['티켓 링크 클릭',U.ticket+'세션','전화 '+U.call+' · 단체·견적 '+U.quote]])}
+ <div class="card" style="margin:16px 0"><h3>시간대별 방문 <small style="color:var(--sub);font-weight:500;font-size:12.5px">한국 시간 · 막대=페이지뷰, 숫자=방문자, 분홍=티켓 클릭 세션</small></h3>
+  <div class="hb">${hb.map(h=>`<div title="${h.h}시 · 방문자 ${h.uv}명 · 페이지뷰 ${h.pv} · 티켓 클릭 ${h.t}"><b>${h.uv||''}</b><i style="height:${h.pv/hm2*100}%">${h.t?`<u style="height:${Math.min(100,h.t/Math.max(h.uv,1)*100)}%"></u>`:''}</i><span>${h.h}</span></div>`).join('')}</div></div>
+ <div class="dgrid">
+  <div class="card"><h3>페이지별</h3>${tbl(['페이지','조회','방문자','평균 머문 시간','평균 스크롤'],D.paths.map(p=>[esc(pn(p.path)),p.pv,p.uv,sec(p.dw),p.sc?p.sc+'%':'-']))}</div>
+  <div class="card"><h3>클릭한 버튼·링크</h3>${tbl(['버튼·링크','종류','클릭','세션'],D.clicks.map(c=>[esc(c.label||'(이름 없음)'),esc(KIND[c.kind]||c.kind||'-'),c.n,c.s]),'클릭 기록이 없어요')}</div>
+  <div class="card"><h3>들어온 경로 (유입 사이트)</h3>${tbl(['사이트','세션'],D.refs.map(r=>[esc(r.host),r.n]))}
+   <h3 style="margin-top:16px">검색어</h3>${tbl(['검색어','세션'],D.kws.map(r=>[esc(r.kw),r.n]),'검색어가 넘어온 방문이 없어요')}
+   ${D.utm.length?`<h3 style="margin-top:16px">광고·캠페인 (UTM)</h3>${tbl(['캠페인','세션'],D.utm.map(r=>[esc(r.utm),r.n]))}`:''}</div>
+  <div class="card"><h3>처음 들어온 페이지 · 나간 페이지</h3><div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">${tbl(['첫 페이지','세션'],D.entry.map(r=>[esc(pn(r.path)),r.n]))}${tbl(['마지막 페이지','세션'],D.exit.map(r=>[esc(pn(r.path)),r.n]))}</div>
+   <h3 style="margin-top:16px">기기 · 브라우저</h3><div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">${tbl(['운영체제','세션'],D.os.map(r=>[esc(r.k),r.n]))}${tbl(['브라우저·앱','세션'],D.browser.map(r=>[esc(r.k),r.n]))}</div>
+   <h3 style="margin-top:16px">화면 크기</h3>${tbl(['해상도','세션'],D.scr.map(r=>[esc(r.k),r.n]))}</div>
+ </div>
+ <div class="card" style="margin-top:16px"><div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px"><h3 style="margin:0">방문 세션 하나하나 <small style="color:var(--sub);font-weight:500;font-size:12.5px">${D.sessions.length}건${D.sessions.length>=400?' (최근 400건)':''} · 누르면 순서대로 무엇을 봤는지 펼쳐져요</small></h3>
+  <div style="display:flex;gap:6px;flex-wrap:wrap">${[['all','전체'],['ticket','🎟 티켓 클릭'],['multi','2페이지 이상'],['bounce','1페이지 이탈'],['m','📱 휴대폰'],['pc','💻 PC'],['ref','외부 유입']].map(([k,t])=>`<button class="btn sm ${VSF===k?'p':''}" data-vsf="${k}">${t}</button>`).join('')}<input id="vsq" placeholder="검색: 페이지·버튼·유입·검색어" value="${esc(VSQ)}" style="border:1px solid var(--line);border-radius:10px;padding:5px 10px"></div></div>
+  <div id="vsl" style="margin-top:12px"></div></div>`;
+ const drawS=()=>{let L=D.sessions.filter(s=>VSF==='all'||(VSF==='ticket'&&s.ticket)||(VSF==='multi'&&s.pv>1)||(VSF==='bounce'&&s.pv<=1)||(VSF==='m'&&s.mobile)||(VSF==='pc'&&!s.mobile)||(VSF==='ref'&&s.ref));
+  if(VSQ)L=L.filter(s=>JSON.stringify([s.ref,s.kw,s.utm,s.os,s.br,s.vid,(s.steps||[]).map(x=>[pn(x.p),x.l])]).includes(VSQ));
+  $('#vsl').innerHTML=L.map(s=>{const dur=Math.round((new Date(s.end)-new Date(s.start))/1000);const st=(s.steps||[]);
+   return `<details class="sess"><summary><b>${one?'':new Date(s.start).toLocaleDateString('ko-KR',{month:'numeric',day:'numeric'})+' '}${hm(s.start)}</b><span class="pill g">${s.mobile?'📱 휴대폰':'💻 PC'}</span>${s.ticket?'<span class="pill b">🎟 티켓 클릭</span>':''}
+    <span>머문 시간 <b>${dur?vS(dur):'0초'}</b></span><span>페이지 <b>${s.pv}</b></span><span>클릭 <b>${s.c}</b></span><span style="color:var(--sub)">${esc([s.os,s.br].filter(Boolean).join(' · '))}</span>
+    <span style="color:var(--sub)">유입: ${esc(s.ref||'직접 방문')}${s.kw?` · "${esc(s.kw)}"`:''}${s.utm?' · '+esc(s.utm):''}</span><span style="color:#aaa;margin-left:auto">#${esc((s.vid||'').slice(0,6))}</span></summary>
+    <ol class="steps">${st.map(x=>`<li class="t-${x.t}${x.k==='ticket'?' tk':''}"><time>${hm(x.at)}</time>${x.t==='pv'?`📄 <b>${esc(pn(x.p))}</b> 페이지 열람`:x.t==='leave'?`↩ ${esc(pn(x.p))} 에서 ${x.d?vS(x.d)+' 머묾':'떠남'}`:x.t==='view'?`👀 ${esc(x.l||'')} 봄`:`👆 <b>${esc(x.l||'(이름 없음)')}</b> 클릭 <small>${esc(KIND[x.k]||x.k||'')}</small>`}</li>`).join('')}</ol></details>`}).join('')||'<div class="empty">조건에 맞는 세션이 없어요.</div>'};
+ drawS();
+ $$('[data-vsf]').forEach(b=>b.onclick=()=>{VSF=b.dataset.vsf;$$('[data-vsf]').forEach(x=>x.classList.toggle('p',x===b));drawS()});
+ $('#vsq').oninput=e=>{VSQ=e.target.value.trim();drawS()};
+ $('#vback').onclick=()=>{location.hash='visits'};
+ if(one){$('#vprev').onclick=()=>{VDAY=VDAY2=addDay(D.from,-1);PAGES.vday()};$('#vnext').onclick=()=>{VDAY=VDAY2=addDay(D.from,1);PAGES.vday()}}
+ $('#vgo').onclick=()=>{VDAY=$('#vf').value||D.from;VDAY2=$('#vt').value||VDAY;if(VDAY2<VDAY)[VDAY,VDAY2]=[VDAY2,VDAY];PAGES.vday()};
+ $('#vcsv2').onclick=()=>csv(`방문세션_${D.from}_${D.to}.csv`,[['시작','끝','머문초','페이지수','클릭수','티켓클릭','기기','운영체제','브라우저','유입','검색어','UTM','방문자번호','동선'],...D.sessions.map(s=>[new Date(s.start).toLocaleString('ko-KR'),new Date(s.end).toLocaleString('ko-KR'),Math.round((new Date(s.end)-new Date(s.start))/1000),s.pv,s.c,s.ticket?'Y':'',s.mobile?'휴대폰':'PC',s.os,s.br,s.ref||'직접',s.kw,s.utm,(s.vid||'').slice(0,6),(s.steps||[]).filter(x=>x.t==='pv'||x.t==='click').map(x=>x.t==='pv'?pn(x.p):'['+(x.l||x.k)+']').join(' > ')])])};
+
 PAGES.inflow=async()=>{const D=await loadDash();const bar=(L,k)=>{const m=Math.max(1,...L.map(x=>x.n));return L.length?L.map(x=>`<div class="b"><span>${esc(x[k]||'(첫 화면)')}</span><span class="t"><i style="width:${x.n/m*100}%"></i></span><span>${x.n}</span></div>`).join(''):'<div class="empty">아직 데이터가 없어요.</div>'};
   const NM={'#home':'홈','#learn':'방문체험학습','#story':'양잠이야기','#tour':'시설 둘러보기','#online':'온라인 박물관','#group':'단체예약','#visit':'오시는 길','#museum':'박물관'};
   D.paths.forEach(p=>p.path=NM[p.path]||p.path);

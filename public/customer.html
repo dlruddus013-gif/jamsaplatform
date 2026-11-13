@@ -381,6 +381,9 @@ function showTicket(tk) {
       h += '<div class="ticket-product">📦 ' + tk.product + '</div>';
     }
     // 매수 2 이상이면 분할 선택
+    if (tk.qty > 1 && tk.source === 'la2fdoci') {
+      h += '<div style="font-size:12px;color:#f57c00;background:#fff8f0;padding:10px;border-radius:8px;margin-bottom:12px;line-height:1.6">🎫 <b>라이프도시 얼리버드 등 여러 매 구매 티켓은 나눠서 따로 사용할 수 있어요.</b><br>오늘 오신 인원 수만큼만 선택해 주세요. 남은 매수는 다음 방문 때 사용하실 수 있습니다. (예: 7매 → 오늘 3매, 다음에 4매)</div>';
+    }
     if (tk.qty > 1) {
       h += '<div class="qty-control">';
       h += '<span>사용 매수</span>';

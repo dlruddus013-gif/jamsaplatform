@@ -138,6 +138,7 @@ function vRes(){
         '</div>'+
         '<div style="font-size:13px;font-weight:600;margin-bottom:4px;color:#ccc">'+r.ticketType+' · '+ps.join(' / ')+'</div>'+
         (items?'<div style="margin-top:4px">'+items+'</div>':'')+
+        (!u&&r.platform==='라이프도시'&&((r.adultCount||0)+(r.childCount||0))>1?'<div style="font-size:11px;color:#f59e0b;margin-top:6px;line-height:1.5">🎫 여러 매는 나눠서 따로 사용 가능 · 일부만 사용하시려면 <b>매표소</b>로 와주세요</div>':'')+
         '<div class="r-total"><span>합계</span><span style="color:#e91e7a">'+Number(r.totalAmount).toLocaleString()+'원</span></div>'+
         '<div style="font-size:11px;color:#e91e7a;text-align:center;margin-top:6px;font-weight:600">'+(u?'':'▲ 본인이면 터치하세요 ▲')+'</div>'+
       '</div>';
@@ -153,7 +154,9 @@ function vVerify(){
     '<div class="card"><div style="font-size:12px;color:#888;margin-bottom:4px">선택한 예약</div>'+
     '<div style="font-size:24px;font-weight:800;margin-bottom:4px">'+r.name+'</div>'+
     '<div style="font-size:13px;color:#aaa">'+r.ticketType+' ['+r.platform+'] · '+ps.join(' / ')+'</div>'+
-    '<div style="font-size:15px;color:#e91e7a;font-weight:700;margin-top:4px">팔찌 '+tot+'매 발급</div></div>'+
+    '<div style="font-size:15px;color:#e91e7a;font-weight:700;margin-top:4px">팔찌 '+tot+'매 발급</div>'+
+    (r.platform==='라이프도시'&&tot>1?'<div style="font-size:12px;color:#f59e0b;margin-top:8px;line-height:1.6;background:rgba(245,158,11,.08);border-radius:8px;padding:8px">⚠️ 여기서 확인하면 <b>'+tot+'매 전체</b>가 사용처리됩니다.<br>오늘 일부만 사용하시고 나머지는 다음에 오실 경우<br><b>매표소 직원</b>에게 말씀해 주세요 (예: 7매 → 오늘 3매, 다음에 4매)</div>':'')+
+    '</div>'+
     '<div style="font-size:16px;font-weight:700;margin-bottom:4px">📱 본인확인</div>'+
     '<div style="font-size:12px;color:#aaa;margin-bottom:8px">휴대폰 <b style="color:#fff">중간 4자리</b>를 입력해주세요</div>'+
     '<div style="font-size:16px;color:#aaa;margin-bottom:10px;letter-spacing:2px">010 - <b style="color:#fff;font-size:22px">'+(S.mid||'____')+'</b> - '+r.phone4+'</div>'+
